@@ -1,8 +1,17 @@
 import { useState, type SyntheticEvent } from 'react';
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  LockKeyhole,
+  Mail,
+} from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 import type { LoginRequest } from '@sigecal/shared';
 
+import { AuthLayout } from '../components/AuthLayout.js';
 import { useAuth } from '../features/auth/useAuth.js';
 import { ApiClientError } from '../lib/api-client.js';
 
@@ -15,26 +24,58 @@ const credentialsFrom = (form: HTMLFormElement): LoginRequest => {
   };
 };
 
-const LoginFields = (): React.JSX.Element => (
-  <>
-    <label htmlFor="email">Correo institucional</label>
-    <input
-      id="email"
-      name="email"
-      type="email"
-      autoComplete="username"
-      required
-    />
-    <label htmlFor="password">Contraseña</label>
-    <input
-      id="password"
-      name="password"
-      type="password"
-      autoComplete="current-password"
-      required
-    />
-  </>
+const PasswordVisibility = ({
+  action,
+  visible,
+}: {
+  readonly action: () => void;
+  readonly visible: boolean;
+}): React.JSX.Element => (
+  <button
+    className="password-visibility"
+    type="button"
+    aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+    onClick={action}
+  >
+    {visible ? <EyeOff /> : <Eye />}
+  </button>
 );
+
+const LoginFields = (): React.JSX.Element => {
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const togglePassword = (): void => {
+    setPasswordVisible((visible) => !visible);
+  };
+  return (
+    <>
+      <label htmlFor="email">Correo institucional</label>
+      <div className="auth-input-shell">
+        <Mail aria-hidden="true" />
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="username"
+          placeholder="nombre@empresa.com"
+          required
+        />
+      </div>
+      <label htmlFor="password">Contraseña</label>
+      <div className="auth-input-shell">
+        <LockKeyhole aria-hidden="true" />
+        <input
+          id="password"
+          name="password"
+          type={passwordVisible ? 'text' : 'password'}
+          autoComplete="current-password"
+          placeholder="Ingrese su contraseña"
+          required
+        />
+        <PasswordVisibility action={togglePassword} visible={passwordVisible} />
+      </div>
+    </>
+  );
+};
 
 const useLoginSubmission = () => {
   const auth = useAuth();
@@ -77,7 +118,9 @@ const LoginForm = (): React.JSX.Element => {
         type="submit"
         disabled={busy}
       >
-        {busy ? 'Verificando…' : 'Ingresar a SIGECAL'}
+        {busy ? <LoaderCircle className="auth-button-spinner" /> : null}
+        <span>{busy ? 'Verificando…' : 'Ingresar a SIGECAL'}</span>
+        {busy ? null : <ArrowRight aria-hidden="true" />}
       </button>
     </form>
   );
@@ -94,22 +137,14 @@ export const LoginPage = (): React.JSX.Element => {
     );
   }
   return (
-    <main className="auth-screen">
-      <section className="auth-card" aria-labelledby="login-title">
-        <div className="auth-brand">
-          <span className="brand-mark">S</span>
-          <strong>SIGECAL</strong>
-        </div>
-        <p className="eyebrow">Acceso controlado</p>
-        <h1 id="login-title">Iniciar sesión</h1>
-        <p className="auth-intro">
-          Use las credenciales asignadas por el administrador del sistema.
-        </p>
-        <LoginForm />
-        <small className="auth-footnote">
-          Sistema de Gestión de Control de Calidad
-        </small>
-      </section>
-    </main>
+    <AuthLayout
+      eyebrow="Acceso seguro"
+      title="Bienvenido a SIGECAL"
+      titleId="login-title"
+      intro="Ingrese con las credenciales asignadas por el administrador del sistema."
+      footnote="Acceso exclusivo para personal autorizado"
+    >
+      <LoginForm />
+    </AuthLayout>
   );
 };

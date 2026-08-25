@@ -1,7 +1,9 @@
 import { useState, type SyntheticEvent } from 'react';
+import { ArrowRight, LoaderCircle, LogOut } from 'lucide-react';
 
 import { PasswordSchema, type ChangePasswordRequest } from '@sigecal/shared';
 
+import { AuthLayout } from '../components/AuthLayout.js';
 import { useAuth } from '../features/auth/useAuth.js';
 import { ApiClientError } from '../lib/api-client.js';
 
@@ -114,22 +116,31 @@ const ChangePasswordForm = (): React.JSX.Element => {
         type="submit"
         disabled={busy}
       >
-        {busy ? 'Actualizando…' : 'Guardar nueva contraseña'}
+        {busy ? <LoaderCircle className="auth-button-spinner" /> : null}
+        <span>{busy ? 'Actualizando…' : 'Guardar nueva contraseña'}</span>
+        {busy ? null : <ArrowRight aria-hidden="true" />}
       </button>
     </form>
   );
 };
 
-export const ChangePasswordPage = (): React.JSX.Element => (
-  <main className="auth-screen">
-    <section className="auth-card" aria-labelledby="password-title">
-      <p className="eyebrow">Protección de la cuenta</p>
-      <h1 id="password-title">Cambie su contraseña provisional</h1>
-      <p className="auth-intro">
-        Antes de continuar, defina una contraseña personal. Se cerrarán las
-        demás sesiones.
-      </p>
+export const ChangePasswordPage = (): React.JSX.Element => {
+  const { signOut } = useAuth();
+  const closeSession = (): void => {
+    void signOut();
+  };
+  return (
+    <AuthLayout
+      eyebrow="Protección de la cuenta"
+      title="Cambie su contraseña provisional"
+      titleId="password-title"
+      intro="Antes de continuar, defina una contraseña personal. Se cerrarán las demás sesiones."
+      footnote="La contraseña se procesa mediante una conexión protegida"
+    >
       <ChangePasswordForm />
-    </section>
-  </main>
-);
+      <button className="auth-signout" type="button" onClick={closeSession}>
+        <LogOut aria-hidden="true" /> Cerrar sesión y usar otra cuenta
+      </button>
+    </AuthLayout>
+  );
+};

@@ -11,6 +11,8 @@ import './styles/typography-refresh.css';
 import './styles/dashboard-refresh.css';
 import './styles/dashboard-visual.css';
 import './styles/components-refresh.css';
+import './styles/auth-refresh.css';
+import './styles/auth-form-refresh.css';
 
 const rootElement = document.querySelector('#root');
 

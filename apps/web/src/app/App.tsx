@@ -5,10 +5,18 @@ import { AppShell } from '../components/AppShell.js';
 import { ProtectedRoute } from '../features/auth/ProtectedRoute.js';
 import { PermissionRoute } from '../features/auth/PermissionRoute.js';
 import { Permission } from '@sigecal/shared';
-import { ChangePasswordPage } from '../pages/ChangePasswordPage.js';
 import { HomePage } from '../pages/HomePage.js';
-import { LoginPage } from '../pages/LoginPage.js';
 import { NotFoundPage } from '../pages/NotFoundPage.js';
+
+const LoginPage = lazy(async () => {
+  const module = await import('../pages/LoginPage.js');
+  return { default: module.LoginPage };
+});
+
+const ChangePasswordPage = lazy(async () => {
+  const module = await import('../pages/ChangePasswordPage.js');
+  return { default: module.ChangePasswordPage };
+});
 
 const AreasPage = lazy(async () => {
   const module = await import('../pages/AreasPage.js');
@@ -49,9 +57,9 @@ const deferred = (element: React.JSX.Element): React.JSX.Element => (
 
 export const App = (): React.JSX.Element => (
   <Routes>
-    <Route path="login" element={<LoginPage />} />
+    <Route path="login" element={deferred(<LoginPage />)} />
     <Route element={<ProtectedRoute />}>
-      <Route path="password" element={<ChangePasswordPage />} />
+      <Route path="password" element={deferred(<ChangePasswordPage />)} />
       <Route element={<AppShell />}>
         <Route index element={<HomePage />} />
         <Route path="lotes" element={deferred(<BatchesPage />)} />
