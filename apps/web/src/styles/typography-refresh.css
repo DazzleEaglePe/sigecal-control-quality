@@ -1,0 +1,18 @@
+h1,
+h2,
+h3 {
+  color: var(--ui-ink);
+  font-family: inherit;
+}
+
+h1 {
+  font-size: clamp(1.85rem, 3vw, 2.6rem);
+  font-weight: 690;
+  letter-spacing: -0.045em;
+}
+
+h2 {
+  font-size: 1.18rem;
+  font-weight: 660;
+  letter-spacing: -0.028em;
+}

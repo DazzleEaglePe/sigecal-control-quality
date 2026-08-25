@@ -1,0 +1,25 @@
+@media (max-width: 850px) {
+  .sidebar {
+    box-shadow: 18px 0 48px rgb(17 31 24 / 18%);
+  }
+
+  .workspace {
+    margin-left: 0;
+  }
+
+  .topbar {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .topbar-actions,
+  .session-chevron,
+  .logout-button span {
+    display: none;
+  }
+
+  .session-placeholder {
+    padding-left: 0.55rem;
+  }
+}

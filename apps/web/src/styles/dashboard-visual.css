@@ -1,0 +1,90 @@
+.indicator-empty {
+  display: grid;
+  min-height: 13rem;
+  grid-template-columns: minmax(15rem, 1.2fr) minmax(13rem, 0.8fr);
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 1.05rem;
+  padding: 1rem;
+  border-radius: 0.82rem;
+  background: #f8faf8;
+}
+
+.indicator-visual {
+  display: flex;
+  height: 8rem;
+  align-items: end;
+  gap: 0.62rem;
+  padding: 0.8rem;
+  border-bottom: 1px solid #d9e3dd;
+  background: repeating-linear-gradient(
+    to top,
+    transparent 0 1.95rem,
+    #ebefec 2rem
+  );
+}
+
+.indicator-visual span {
+  width: 16.66%;
+  border-radius: 0.42rem 0.42rem 0 0;
+  background: linear-gradient(to top, #b8dfca, #e6f3ec);
+}
+
+.indicator-visual span:nth-child(1) {
+  height: 35%;
+}
+
+.indicator-visual span:nth-child(2) {
+  height: 52%;
+}
+
+.indicator-visual span:nth-child(3) {
+  height: 43%;
+}
+
+.indicator-visual span:nth-child(4) {
+  height: 72%;
+  background: linear-gradient(to top, #159264, #8ed9b6);
+}
+
+.indicator-visual span:nth-child(5) {
+  height: 58%;
+}
+
+.indicator-visual span:nth-child(6) {
+  height: 65%;
+}
+
+.indicator-empty h3 {
+  margin: 0.8rem 0 0.4rem;
+}
+
+.indicator-empty p,
+.focus-panel > p {
+  margin-bottom: 0;
+  color: #748079;
+  font-size: 0.76rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 1050px) {
+  .module-grid,
+  .dashboard-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .module-card {
+    min-height: 11.5rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .indicator-empty {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

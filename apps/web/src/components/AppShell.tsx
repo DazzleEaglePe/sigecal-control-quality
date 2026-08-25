@@ -1,32 +1,84 @@
 import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import {
+  Bell,
+  Building2,
+  ChartNoAxesCombined,
+  ChevronDown,
+  CircleHelp,
+  ClipboardCheck,
+  FlaskConical,
+  LayoutDashboard,
+  LibraryBig,
+  LogOut,
+  Menu,
+  PackageSearch,
+  Search,
+  Settings2,
+  ShieldCheck,
+  TriangleAlert,
+  UsersRound,
+  Wine,
+  type LucideIcon,
+} from 'lucide-react';
+import { NavLink, Outlet, type NavLinkRenderProps } from 'react-router-dom';
 
 import { Permission, type Permission as PermissionName } from '@sigecal/shared';
 
 import { useAuth } from '../features/auth/useAuth.js';
 
-const pendingModules: readonly {
+interface NavigationItem {
   readonly name: string;
+  readonly icon: LucideIcon;
   readonly permission: PermissionName;
-}[] = [
-  { name: 'Inspecciones', permission: Permission.INSPECTIONS_SCHEDULE },
-  { name: 'Análisis', permission: Permission.RESULTS_RECORD },
-  { name: 'Organoléptico', permission: Permission.SENSORY_RECORD },
-  { name: 'No conformidades', permission: Permission.NONCONFORMITIES_RECORD },
-  { name: 'Reportes', permission: Permission.REPORTS_EXPORT },
-];
+}
+interface LinkProps {
+  readonly action: () => void;
+  readonly icon: LucideIcon;
+  readonly label: string;
+  readonly to: string;
+}
+interface MenuProps {
+  readonly open: boolean;
+  readonly action: () => void;
+}
 
+const pendingModules: readonly NavigationItem[] = [
+  {
+    name: 'Inspecciones',
+    icon: ClipboardCheck,
+    permission: Permission.INSPECTIONS_SCHEDULE,
+  },
+  {
+    name: 'Análisis',
+    icon: FlaskConical,
+    permission: Permission.RESULTS_RECORD,
+  },
+  { name: 'Organoléptico', icon: Wine, permission: Permission.SENSORY_RECORD },
+  {
+    name: 'No conformidades',
+    icon: TriangleAlert,
+    permission: Permission.NONCONFORMITIES_RECORD,
+  },
+  {
+    name: 'Reportes',
+    icon: ChartNoAxesCombined,
+    permission: Permission.REPORTS_EXPORT,
+  },
+];
 const roleLabels = {
   ADMIN: 'Administrador',
   JEFE_CALIDAD: 'Jefe de calidad',
   ANALISTA: 'Analista',
   OPERARIO: 'Operario',
 } as const;
+const navClass = ({ isActive }: NavLinkRenderProps): string =>
+  `nav-item${isActive ? ' active' : ''}`;
 
-const MenuIcon = (): React.JSX.Element => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M4 7h16M4 12h16M4 17h16" />
-  </svg>
+const NavigationLink = ({ action, icon: Icon, label, to }: LinkProps) => (
+  <NavLink className={navClass} to={to} onClick={action}>
+    <Icon className="nav-symbol" aria-hidden="true" />
+    <span>{label}</span>
+  </NavLink>
 );
 
 const PendingNavigation = (): React.JSX.Element => {
@@ -35,154 +87,177 @@ const PendingNavigation = (): React.JSX.Element => {
     <>
       {pendingModules
         .filter((module) => user?.permissions.includes(module.permission))
-        .map((module) => (
+        .map(({ icon: Icon, name }) => (
           <span
             className="nav-item is-disabled"
-            key={module.name}
+            key={name}
             aria-disabled="true"
           >
-            <span className="nav-symbol" aria-hidden="true">
-              ·
-            </span>
-            {module.name}
-            <small>Próximamente</small>
+            <Icon className="nav-symbol" aria-hidden="true" />
+            <span>{name}</span>
+            <small>Pronto</small>
           </span>
         ))}
     </>
   );
 };
 
-const MasterNavigation = ({
-  action,
-}: {
-  readonly action: () => void;
-}): React.JSX.Element => (
-  <>
-    <NavLink className="nav-item" to="/configuracion/areas" onClick={action}>
-      <span className="nav-symbol" aria-hidden="true">
-        □
-      </span>
-      Áreas
-    </NavLink>
-    <NavLink className="nav-item" to="/configuracion/maestros" onClick={action}>
-      <span className="nav-symbol" aria-hidden="true">
-        ≡
-      </span>
-      Catálogos maestros
-    </NavLink>
-    <NavLink
-      className="nav-item"
-      to="/configuracion/estandares"
-      onClick={action}
-    >
-      <span className="nav-symbol" aria-hidden="true">
-        ⌁
-      </span>
-      Estándares
-    </NavLink>
-  </>
-);
-
-const AvailableNavigation = ({ action }: { readonly action: () => void }) => {
+const PrimaryNavigation = ({ action }: { readonly action: () => void }) => {
   const { user } = useAuth();
   return (
     <>
-      <NavLink className="nav-item" to="/lotes" onClick={action}>
-        <span className="nav-symbol" aria-hidden="true">
-          ◫
-        </span>
-        Lotes
-      </NavLink>
+      <NavigationLink
+        action={action}
+        icon={LayoutDashboard}
+        label="Tablero"
+        to="/"
+      />
+      <NavigationLink
+        action={action}
+        icon={PackageSearch}
+        label="Lotes"
+        to="/lotes"
+      />
       {user?.permissions.includes(Permission.USERS_MANAGE) ? (
-        <NavLink className="nav-item" to="/usuarios" onClick={action}>
-          <span className="nav-symbol" aria-hidden="true">
-            ◇
-          </span>
-          Usuarios
-        </NavLink>
-      ) : null}
-      {user?.permissions.includes(Permission.MASTERS_MANAGE) ? (
-        <MasterNavigation action={action} />
+        <NavigationLink
+          action={action}
+          icon={UsersRound}
+          label="Usuarios"
+          to="/usuarios"
+        />
       ) : null}
     </>
   );
 };
 
-interface MenuProps {
-  readonly open: boolean;
+const ConfigurationNavigation = ({
+  action,
+}: {
   readonly action: () => void;
-}
-
-const Sidebar = ({ open, action }: MenuProps): React.JSX.Element => {
+}) => {
+  const { user } = useAuth();
+  if (!user?.permissions.includes(Permission.MASTERS_MANAGE)) return null;
   return (
-    <aside className={`sidebar ${open ? 'is-open' : ''}`}>
-      <div className="brand">
-        <span className="brand-mark" aria-hidden="true">
-          S
-        </span>
-        <span>
-          <strong>SIGECAL</strong>
-          <small>Control de calidad</small>
-        </span>
-      </div>
-      <nav aria-label="Navegación principal">
-        <p className="nav-label">Operación</p>
-        <NavLink className="nav-item" to="/" onClick={action}>
-          <span className="nav-symbol" aria-hidden="true">
-            ⌂
-          </span>
-          Tablero
-        </NavLink>
-        <AvailableNavigation action={action} />
-        <PendingNavigation />
-      </nav>
-      <div className="sidebar-footer">
-        <span className="environment-dot" aria-hidden="true" />
-        Entorno de desarrollo
-      </div>
-    </aside>
+    <>
+      <p className="nav-label nav-label-spaced">Configuración</p>
+      <NavigationLink
+        action={action}
+        icon={Building2}
+        label="Áreas"
+        to="/configuracion/areas"
+      />
+      <NavigationLink
+        action={action}
+        icon={LibraryBig}
+        label="Catálogos"
+        to="/configuracion/maestros"
+      />
+      <NavigationLink
+        action={action}
+        icon={Settings2}
+        label="Estándares"
+        to="/configuracion/estandares"
+      />
+    </>
   );
 };
 
-const Topbar = ({ open, action }: MenuProps): React.JSX.Element => {
+const Sidebar = ({ open, action }: MenuProps): React.JSX.Element => (
+  <aside className={`sidebar ${open ? 'is-open' : ''}`}>
+    <div className="brand">
+      <span className="brand-mark" aria-hidden="true">
+        <ShieldCheck />
+      </span>
+      <span>
+        <strong>SIGECAL</strong>
+        <small>Control de calidad</small>
+      </span>
+    </div>
+    <nav aria-label="Navegación principal">
+      <p className="nav-label">Principal</p>
+      <PrimaryNavigation action={action} />
+      <p className="nav-label nav-label-spaced">Control de calidad</p>
+      <PendingNavigation />
+      <ConfigurationNavigation action={action} />
+    </nav>
+    <div className="sidebar-footer">
+      <span className="environment-dot" aria-hidden="true" />
+      <span>
+        <small>Entorno</small>
+        <strong>Desarrollo</strong>
+      </span>
+    </div>
+  </aside>
+);
+
+const Session = (): React.JSX.Element => {
   const { user, signOut } = useAuth();
   const initials = `${user?.firstName[0] ?? ''}${user?.lastName[0] ?? ''}`;
   return (
-    <header className="topbar">
+    <div className="session-placeholder">
+      <span className="avatar" aria-hidden="true">
+        {initials}
+      </span>
+      <span className="session-copy">
+        <strong>
+          {user?.firstName} {user?.lastName}
+        </strong>
+        <small>{user ? roleLabels[user.role] : ''}</small>
+      </span>
+      <ChevronDown className="session-chevron" aria-hidden="true" />
       <button
-        className="icon-button menu-button"
+        className="logout-button"
         type="button"
-        aria-label="Abrir navegación"
-        aria-expanded={open}
-        onClick={action}
+        aria-label="Cerrar sesión"
+        title="Cerrar sesión"
+        onClick={() => void signOut()}
       >
-        <MenuIcon />
+        <LogOut aria-hidden="true" />
+        <span>Salir</span>
       </button>
-      <div className="search-placeholder" aria-disabled="true">
-        <span aria-hidden="true">⌕</span>
-        <span>Búsqueda disponible próximamente</span>
-      </div>
-      <div className="session-placeholder">
-        <span className="avatar" aria-hidden="true">
-          {initials}
-        </span>
-        <span>
-          <strong>
-            {user?.firstName} {user?.lastName}
-          </strong>
-          <small>{user ? roleLabels[user.role] : ''}</small>
-        </span>
-        <button
-          className="logout-button"
-          type="button"
-          onClick={() => void signOut()}
-        >
-          Salir
-        </button>
-      </div>
-    </header>
+    </div>
   );
 };
+
+const Topbar = ({ open, action }: MenuProps): React.JSX.Element => (
+  <header className="topbar">
+    <button
+      className="icon-button menu-button"
+      type="button"
+      aria-label="Abrir navegación"
+      aria-expanded={open}
+      onClick={action}
+    >
+      <Menu aria-hidden="true" />
+    </button>
+    <div className="search-placeholder" aria-disabled="true">
+      <Search aria-hidden="true" />
+      <span>Búsqueda global</span>
+      <kbd>⌘ K</kbd>
+    </div>
+    <div className="topbar-actions">
+      <button
+        className="icon-button"
+        type="button"
+        disabled
+        title="Ayuda disponible próximamente"
+        aria-label="Ayuda disponible próximamente"
+      >
+        <CircleHelp />
+      </button>
+      <button
+        className="icon-button"
+        type="button"
+        disabled
+        title="Notificaciones disponibles próximamente"
+        aria-label="Notificaciones disponibles próximamente"
+      >
+        <Bell />
+      </button>
+    </div>
+    <Session />
+  </header>
+);
 
 export const AppShell = (): React.JSX.Element => {
   const [menuOpen, setMenuOpen] = useState(false);

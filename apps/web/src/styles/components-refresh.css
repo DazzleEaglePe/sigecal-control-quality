@@ -1,0 +1,201 @@
+.page-stack {
+  gap: 1.25rem;
+}
+
+.page-stack > *,
+.admin-panel,
+.table-scroll {
+  min-width: 0;
+}
+
+.page-heading {
+  padding: 0.2rem 0;
+}
+
+.page-heading p:last-child,
+.empty-panel p,
+.foundation-grid p,
+.not-found > p {
+  color: var(--ui-muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.eyebrow {
+  color: #78847e;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+}
+
+.phase-badge {
+  border-color: #e0e6e1;
+  color: #53615a;
+  background: white;
+  box-shadow: 0 4px 14px rgb(26 42 34 / 4%);
+}
+
+.admin-panel,
+.empty-panel,
+.foundation-grid article,
+.table-scroll {
+  border-color: var(--ui-line);
+  border-radius: 1rem;
+  background: var(--ui-surface);
+  box-shadow: var(--ui-shadow);
+}
+
+.admin-panel {
+  padding: 1.15rem;
+}
+
+.admin-panel h2 {
+  font-size: 1.05rem;
+}
+
+.admin-form label,
+.batch-filters label {
+  color: #66736c;
+  font-size: 0.68rem;
+  font-weight: 680;
+}
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea,
+.batch-filters input,
+.batch-filters select {
+  min-height: 2.65rem;
+  border-color: #e0e6e2;
+  border-radius: 0.72rem;
+  color: #26332d;
+  background: #fafbfa;
+}
+
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus,
+.batch-filters input:focus,
+.batch-filters select:focus {
+  border-color: #42a77e;
+  outline: 3px solid rgb(36 151 105 / 10%);
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.auth-submit {
+  min-height: 2.5rem;
+  border-radius: 0.72rem;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.primary-button,
+.auth-submit {
+  background: linear-gradient(135deg, #10875d, #086446);
+  box-shadow: 0 8px 18px rgb(15 124 84 / 18%);
+}
+
+.primary-button:hover,
+.secondary-button:hover,
+.auth-submit:hover {
+  transform: translateY(-1px);
+}
+
+.secondary-button {
+  border-color: #dce3de;
+  color: #334b40;
+  background: #fff;
+}
+
+.table-scroll {
+  width: 100%;
+  overflow: auto;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+thead th {
+  color: #8a948f;
+  background: #f7f8f7;
+  font-size: 0.59rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+tbody tr {
+  transition: background 120ms ease;
+}
+
+tbody tr:hover {
+  background: #fafcfb;
+}
+
+.state-pill {
+  border-radius: 999px;
+  font-size: 0.59rem;
+  font-weight: 720;
+}
+
+.state-pill.is-active,
+.batch-status-en_proceso,
+.origin-real {
+  color: #08714d;
+  background: #e7f5ed;
+}
+
+.table-action {
+  color: #08704c;
+  font-weight: 720;
+}
+
+.catalog-tabs {
+  gap: 0.35rem;
+  padding: 0.3rem;
+  border: 1px solid var(--ui-line);
+  border-radius: 0.82rem;
+  background: #f6f8f6;
+}
+
+.catalog-tabs button {
+  border-radius: 0.62rem;
+}
+
+.catalog-tabs button.is-selected {
+  color: #fff;
+  background: #16231d;
+  box-shadow: 0 5px 14px rgb(17 30 23 / 12%);
+}
+
+.auth-screen {
+  background:
+    radial-gradient(
+      circle at 18% 20%,
+      rgb(72 177 132 / 20%),
+      transparent 24rem
+    ),
+    linear-gradient(145deg, #edf3ef, #f7f8f6);
+}
+
+.auth-card {
+  border-color: #e2e8e4;
+  border-radius: 1.15rem;
+  box-shadow: 0 24px 70px rgb(22 45 33 / 12%);
+}
+
+.auth-brand {
+  color: #08714d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-item,
+  .primary-button,
+  .secondary-button,
+  .auth-submit {
+    transition: none;
+  }
+}

@@ -5,6 +5,12 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './app/App.js';
 import { AuthProvider } from './features/auth/AuthProvider.js';
 import './styles.css';
+import './styles/shell-refresh.css';
+import './styles/shell-responsive.css';
+import './styles/typography-refresh.css';
+import './styles/dashboard-refresh.css';
+import './styles/dashboard-visual.css';
+import './styles/components-refresh.css';
 
 const rootElement = document.querySelector('#root');
 

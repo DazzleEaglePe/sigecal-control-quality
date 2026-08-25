@@ -1,8 +1,12 @@
+import { CircleCheck, LoaderCircle, TriangleAlert } from 'lucide-react';
+
 import { useHealth } from './useHealth.js';
 
 const LoadingStatus = (): React.JSX.Element => (
   <section className="status-card" aria-live="polite" aria-busy="true">
-    <span className="status-indicator is-loading" aria-hidden="true" />
+    <span className="status-indicator is-loading" aria-hidden="true">
+      <LoaderCircle />
+    </span>
     <div>
       <strong>Comprobando el entorno</strong>
       <p>Conectando con la API y PostgreSQL…</p>
@@ -13,7 +17,7 @@ const LoadingStatus = (): React.JSX.Element => (
 const ErrorStatus = ({ retry }: { retry: () => void }): React.JSX.Element => (
   <section className="status-card is-error" role="alert">
     <span className="status-indicator" aria-hidden="true">
-      !
+      <TriangleAlert />
     </span>
     <div>
       <strong>No pudimos conectar con el servicio</strong>
@@ -28,7 +32,7 @@ const ErrorStatus = ({ retry }: { retry: () => void }): React.JSX.Element => (
 const AvailableStatus = (): React.JSX.Element => (
   <section className="status-card is-success" aria-live="polite">
     <span className="status-indicator" aria-hidden="true">
-      ✓
+      <CircleCheck />
     </span>
     <div>
       <strong>Entorno disponible</strong>

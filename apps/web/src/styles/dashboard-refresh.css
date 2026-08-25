@@ -1,0 +1,260 @@
+.dashboard-page {
+  gap: 1.25rem;
+}
+
+.dashboard-heading {
+  align-items: center;
+  padding: 0.25rem 0 0.4rem;
+}
+
+.dashboard-heading h1 {
+  margin-bottom: 0.42rem;
+}
+
+.dashboard-heading .phase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  border-color: #cae8d8;
+  color: #08704c;
+  background: #eaf7f0;
+}
+
+.dashboard-heading .phase-badge svg {
+  width: 0.85rem;
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.module-card,
+.indicator-panel,
+.focus-panel {
+  border: 1px solid var(--ui-line);
+  border-radius: 1rem;
+  background: var(--ui-surface);
+  box-shadow: var(--ui-shadow);
+}
+
+.module-card {
+  position: relative;
+  min-height: 12.5rem;
+  padding: 1.15rem;
+  overflow: hidden;
+}
+
+.module-card::after {
+  position: absolute;
+  right: -2.5rem;
+  bottom: -3rem;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  background: rgb(28 166 108 / 5%);
+  content: '';
+}
+
+.module-card.is-featured {
+  border-color: #177a58;
+  color: white;
+  background: linear-gradient(145deg, #12845d, #075c40);
+}
+
+.module-card-top,
+.panel-heading,
+.focus-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.module-icon,
+.empty-icon {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border: 1px solid #e3e9e5;
+  border-radius: 0.7rem;
+  color: #0c7d55;
+  background: #f6faf7;
+}
+
+.module-icon svg,
+.empty-icon svg {
+  width: 1.15rem;
+  stroke-width: 1.8;
+}
+
+.module-card.is-featured .module-icon {
+  border-color: rgb(255 255 255 / 20%);
+  color: white;
+  background: rgb(255 255 255 / 13%);
+}
+
+.module-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #7a8780;
+  font-size: 0.61rem;
+  font-weight: 720;
+}
+
+.module-status > span {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: #d2a34c;
+}
+
+.module-card.is-available .module-status > span {
+  background: #28bf82;
+}
+
+.module-card.is-featured .module-status {
+  color: #d7f4e5;
+}
+
+.module-card.is-featured .module-status > span {
+  background: #77efb6;
+}
+
+.module-card h2 {
+  margin: 1.1rem 0 0.42rem;
+  font-size: 1rem;
+}
+
+.module-card.is-featured h2 {
+  color: white;
+}
+
+.module-card p {
+  max-width: 22rem;
+  margin: 0;
+  color: #748079;
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+
+.module-card.is-featured p {
+  color: #cfebde;
+}
+
+.module-card a {
+  position: absolute;
+  right: 1.15rem;
+  bottom: 1rem;
+  left: 1.15rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.72rem;
+  border-top: 1px solid #edf0ed;
+  color: #37604f;
+  font-size: 0.68rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.module-card.is-featured a {
+  border-top-color: rgb(255 255 255 / 17%);
+  color: white;
+}
+
+.module-card a svg {
+  width: 0.92rem;
+}
+
+.dashboard-page .status-card {
+  min-height: 4.6rem;
+  border-color: #d9eadf;
+  background: #fbfdfb;
+  box-shadow: none;
+}
+
+.dashboard-page .status-indicator {
+  width: 2.25rem;
+  height: 2.25rem;
+  color: #08724d;
+  background: #e1f3e9;
+}
+
+.status-indicator svg {
+  width: 1.1rem;
+}
+
+.status-indicator.is-loading {
+  border: 0;
+}
+
+.status-indicator.is-loading svg {
+  animation: spin 0.9s linear infinite;
+}
+
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(17rem, 0.8fr);
+  gap: 0.9rem;
+}
+
+.indicator-panel,
+.focus-panel {
+  padding: 1.2rem;
+}
+
+.panel-heading h2,
+.focus-panel h2 {
+  margin-bottom: 0;
+}
+
+.soft-badge {
+  padding: 0.38rem 0.58rem;
+  border-radius: 999px;
+  color: #7c7564;
+  background: #f4f1e8;
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.focus-panel-heading {
+  justify-content: flex-start;
+}
+
+.focus-panel-heading .phase-badge {
+  margin-left: auto;
+}
+
+.module-icon.is-dark {
+  color: white;
+  background: #16231d;
+}
+
+.focus-panel ul {
+  display: grid;
+  gap: 0.72rem;
+  margin: 1.15rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.focus-panel li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #53615a;
+  font-size: 0.7rem;
+}
+
+.focus-panel li svg {
+  width: 1rem;
+  padding: 0.15rem;
+  border-radius: 50%;
+  color: #0a744f;
+  background: #e2f2e9;
+}
