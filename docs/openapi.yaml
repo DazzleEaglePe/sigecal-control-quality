@@ -1,0 +1,5312 @@
+openapi: 3.1.0
+info:
+  title: SIGECAL API
+  version: 0.1.0
+  description: Contrato ejecutable del Sistema de Gestión de Control de Calidad.
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Desarrollo local
+tags:
+  - name: Estado
+    description: Disponibilidad de la API y sus dependencias.
+  - name: Autenticación
+    description: Inicio, renovación y cierre seguro de sesión.
+  - name: Usuarios
+    description: Administración de cuentas y roles.
+  - name: Maestros
+    description: Catálogos configurables del sistema.
+  - name: Lotes
+    description: Ciclo de vida y trazabilidad de lotes productivos.
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Comprueba la API y la conexión con PostgreSQL
+      tags:
+        - Estado
+      responses:
+        '200':
+          description: La API y PostgreSQL están disponibles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                success: true
+                data:
+                  status: ok
+                  database: connected
+                  timestamp: 2026-09-01T15:00:00.000Z
+        '503':
+          description: PostgreSQL no está disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseUnavailableErrorResponse'
+              example:
+                success: false
+                error:
+                  code: DATABASE_UNAVAILABLE
+                  message: El servicio no está disponible temporalmente.
+                  details: []
+  /auth/login:
+    post:
+      operationId: login
+      summary: Inicia sesión y establece la cookie de refresco
+      tags:
+        - Autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Sesión iniciada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Credenciales inválidas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '423':
+          description: Cuenta bloqueada temporalmente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '429':
+          description: Demasiados intentos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/refresh:
+    post:
+      operationId: refreshSession
+      summary: Rota el token de refresco y renueva el acceso
+      tags:
+        - Autenticación
+      security:
+        - refreshCookie: []
+      responses:
+        '200':
+          description: Token renovado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '401':
+          description: Token de refresco inválido o vencido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/logout:
+    post:
+      operationId: logout
+      summary: Revoca el token de refresco y limpia la cookie
+      tags:
+        - Autenticación
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Sesión cerrada.
+        '401':
+          description: La sesión no es válida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/me:
+    get:
+      operationId: getCurrentSession
+      summary: Devuelve el usuario y sus permisos efectivos
+      tags:
+        - Autenticación
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Sesión actual.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+        '401':
+          description: La sesión no es válida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/password:
+    patch:
+      operationId: changeOwnPassword
+      summary: Cambia la contraseña del usuario actual
+      tags:
+        - Autenticación
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '204':
+          description: Contraseña cambiada y sesiones revocadas.
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: La sesión o contraseña actual no es válida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /users:
+    get:
+      security: &a1
+        - bearerAuth: []
+      operationId: listUsers
+      summary: Lista usuarios con filtros y paginación
+      tags:
+        - Usuarios
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum:
+              - ADMIN
+              - JEFE_CALIDAD
+              - ANALISTA
+              - OPERARIO
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Usuarios paginados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+        '401':
+          description: Sesión inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Acceso exclusivo de ADMIN.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      security: *a1
+      operationId: createUser
+      summary: Crea un usuario con contraseña provisional
+      tags:
+        - Usuarios
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Usuario creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sesión inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Acceso exclusivo de ADMIN.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Correo o área no disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /users/{id}:
+    get:
+      security: *a1
+      operationId: getUser
+      summary: Obtiene el detalle de un usuario
+      tags:
+        - Usuarios
+      parameters:
+        - &a2
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Usuario encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: Usuario inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      security: *a1
+      operationId: updateUser
+      summary: Actualiza datos y rol de un usuario
+      tags:
+        - Usuarios
+      parameters:
+        - *a2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Usuario actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Usuario inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Correo o área no disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /users/{id}/status:
+    patch:
+      security: *a1
+      operationId: setUserStatus
+      summary: Activa o desactiva un usuario sin eliminarlo
+      tags:
+        - Usuarios
+      parameters:
+        - *a2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserStatusRequest'
+      responses:
+        '200':
+          description: Estado actualizado y sesiones revocadas al desactivar.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '409':
+          description: No se permite la autodesactivación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /users/{id}/reset-password:
+    post:
+      security: *a1
+      operationId: resetUserPassword
+      summary: Asigna una contraseña provisional y revoca sesiones
+      tags:
+        - Usuarios
+      parameters:
+        - *a2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetUserPasswordRequest'
+      responses:
+        '204':
+          description: Contraseña restablecida.
+        '404':
+          description: Usuario inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/areas:
+    get:
+      security: *a1
+      operationId: listAreas
+      summary: Lista el catálogo mínimo de áreas
+      tags:
+        - Maestros
+      parameters:
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Áreas disponibles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AreaListResponse'
+    post:
+      security: *a1
+      operationId: createArea
+      summary: Crea un área organizacional
+      tags:
+        - Maestros
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAreaRequest'
+      responses:
+        '201':
+          description: Área creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AreaResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/areas/{id}:
+    patch:
+      security: *a1
+      operationId: updateArea
+      summary: Actualiza o desactiva un área
+      tags:
+        - Maestros
+      parameters:
+        - *a2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAreaRequest'
+      responses:
+        '200':
+          description: Área actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AreaResponse'
+        '404':
+          description: Área inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Área en uso o código duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/standards:
+    get:
+      security: &a3
+        - bearerAuth: []
+      operationId: listStandards
+      summary: Lista el historial de estándares de un parámetro
+      tags:
+        - Maestros
+      parameters:
+        - name: parameterId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Historial completo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardListResponse'
+    post:
+      security: *a3
+      operationId: createStandardVersion
+      summary: Crea una versión y cierra la anterior del mismo ámbito
+      tags:
+        - Maestros
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStandardRequest'
+      responses:
+        '201':
+          description: Versión creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          description: Límites o fechas inválidas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Intervalo de vigencia superpuesto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/standards/{id}:
+    patch:
+      security: *a3
+      operationId: updateUnusedStandard
+      summary: Actualiza un estándar que aún no fue aplicado
+      tags:
+        - Maestros
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStandardRequest'
+      responses:
+        '200':
+          description: Estándar actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '404':
+          description: Estándar inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Estándar aplicado o límites resultantes inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/standards/effective:
+    get:
+      security: *a3
+      operationId: resolveEffectiveStandard
+      summary: Resuelve por fecha y prioridad de ámbito
+      tags:
+        - Maestros
+      parameters:
+        - name: parameterId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: piscoTypeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: stageId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - &a4
+          name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - &a5
+          name: dataOrigin
+          in: query
+          schema:
+            type: string
+            enum:
+              - REAL
+              - DEMO
+            default: REAL
+      responses:
+        '200':
+          description: Estándar aplicable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '422':
+          description: No existe un estándar confirmado aplicable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/sensory-thresholds:
+    get:
+      security: *a3
+      operationId: listSensoryThresholds
+      summary: Lista el historial de umbrales sensoriales
+      tags:
+        - Maestros
+      parameters:
+        - name: piscoTypeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Historial de umbrales.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensoryThresholdListResponse'
+    post:
+      security: *a3
+      operationId: createSensoryThresholdVersion
+      summary: Crea un umbral y cierra la versión anterior
+      tags:
+        - Maestros
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSensoryThresholdRequest'
+      responses:
+        '201':
+          description: Umbral creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensoryThresholdResponse'
+        '409':
+          description: Intervalo de vigencia superpuesto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/sensory-thresholds/effective:
+    get:
+      security: *a3
+      operationId: resolveEffectiveSensoryThreshold
+      summary: Resuelve el umbral sensorial por tipo y fecha
+      tags:
+        - Maestros
+      parameters:
+        - name: piscoTypeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - *a4
+        - *a5
+      responses:
+        '200':
+          description: Umbral aplicable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensoryThresholdResponse'
+        '422':
+          description: No existe un umbral confirmado aplicable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/varieties:
+    get:
+      security: &a6
+        - bearerAuth: []
+      tags: &a7
+        - Maestros
+      operationId: listGrapeVariety
+      summary: Lista variedad de uva
+      parameters:
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Catálogo disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrapeVarietyListResponse'
+    post:
+      security: *a6
+      tags: *a7
+      operationId: createGrapeVariety
+      summary: Crea variedad de uva
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGrapeVarietyRequest'
+      responses:
+        '201':
+          description: Elemento creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrapeVarietyResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/varieties/{id}:
+    patch:
+      security: *a6
+      tags: *a7
+      operationId: updateGrapeVariety
+      summary: Actualiza o desactiva variedad de uva
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGrapeVarietyRequest'
+      responses:
+        '200':
+          description: Elemento actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrapeVarietyResponse'
+        '404':
+          description: Elemento inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/pisco-types:
+    get:
+      security: *a6
+      tags: *a7
+      operationId: listPiscoType
+      summary: Lista tipo de pisco
+      parameters:
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Catálogo disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PiscoTypeListResponse'
+    post:
+      security: *a6
+      tags: *a7
+      operationId: createPiscoType
+      summary: Crea tipo de pisco
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePiscoTypeRequest'
+      responses:
+        '201':
+          description: Elemento creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PiscoTypeResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/pisco-types/{id}:
+    patch:
+      security: *a6
+      tags: *a7
+      operationId: updatePiscoType
+      summary: Actualiza o desactiva tipo de pisco
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePiscoTypeRequest'
+      responses:
+        '200':
+          description: Elemento actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PiscoTypeResponse'
+        '404':
+          description: Elemento inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/stages:
+    get:
+      security: *a6
+      tags: *a7
+      operationId: listProcessStage
+      summary: Lista etapa del proceso
+      parameters:
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Catálogo disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessStageListResponse'
+    post:
+      security: *a6
+      tags: *a7
+      operationId: createProcessStage
+      summary: Crea etapa del proceso
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProcessStageRequest'
+      responses:
+        '201':
+          description: Elemento creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessStageResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/stages/{id}:
+    patch:
+      security: *a6
+      tags: *a7
+      operationId: updateProcessStage
+      summary: Actualiza o desactiva etapa del proceso
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProcessStageRequest'
+      responses:
+        '200':
+          description: Elemento actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessStageResponse'
+        '404':
+          description: Elemento inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/equipment:
+    get:
+      security: *a6
+      tags: *a7
+      operationId: listEquipment
+      summary: Lista instrumento de laboratorio
+      parameters:
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Catálogo disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentListResponse'
+    post:
+      security: *a6
+      tags: *a7
+      operationId: createEquipment
+      summary: Crea instrumento de laboratorio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEquipmentRequest'
+      responses:
+        '201':
+          description: Elemento creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/equipment/{id}:
+    patch:
+      security: *a6
+      tags: *a7
+      operationId: updateEquipment
+      summary: Actualiza o desactiva instrumento de laboratorio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEquipmentRequest'
+      responses:
+        '200':
+          description: Elemento actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentResponse'
+        '404':
+          description: Elemento inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/sensory-attributes:
+    get:
+      security: *a6
+      tags: *a7
+      operationId: listSensoryAttribute
+      summary: Lista atributo sensorial
+      parameters:
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Catálogo disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensoryAttributeListResponse'
+    post:
+      security: *a6
+      tags: *a7
+      operationId: createSensoryAttribute
+      summary: Crea atributo sensorial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSensoryAttributeRequest'
+      responses:
+        '201':
+          description: Elemento creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensoryAttributeResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/sensory-attributes/{id}:
+    patch:
+      security: *a6
+      tags: *a7
+      operationId: updateSensoryAttribute
+      summary: Actualiza o desactiva atributo sensorial
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSensoryAttributeRequest'
+      responses:
+        '200':
+          description: Elemento actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensoryAttributeResponse'
+        '404':
+          description: Elemento inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/parameters:
+    get:
+      security: *a6
+      tags: *a7
+      operationId: listParameter
+      summary: Lista parámetro de calidad
+      parameters:
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Catálogo disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterListResponse'
+    post:
+      security: *a6
+      tags: *a7
+      operationId: createParameter
+      summary: Crea parámetro de calidad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateParameterRequest'
+      responses:
+        '201':
+          description: Elemento creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/parameters/{id}:
+    patch:
+      security: *a6
+      tags: *a7
+      operationId: updateParameter
+      summary: Actualiza o desactiva parámetro de calidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateParameterRequest'
+      responses:
+        '200':
+          description: Elemento actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterResponse'
+        '404':
+          description: Elemento inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código u orden duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /batches:
+    get:
+      security: &a8
+        - bearerAuth: []
+      tags: &a9
+        - Lotes
+      operationId: listBatches
+      summary: Lista lotes con alcance por rol y paginación
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - EN_PROCESO
+              - EN_OBSERVACION
+              - CERRADO
+              - RECHAZADO
+        - name: varietyId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: piscoTypeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: stageId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: dataOrigin
+          in: query
+          schema:
+            type: string
+            enum:
+              - REAL
+              - DEMO
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Lotes accesibles para la persona autenticada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchListResponse'
+        '401':
+          description: Sesión inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      security: *a8
+      tags: *a9
+      operationId: createBatch
+      summary: Crea un lote REAL y abre su primera etapa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBatchRequest'
+      responses:
+        '201':
+          description: Lote creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchResponse'
+        '400':
+          description: Composición o datos inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Rol no autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Catálogo inactivo o composición incompatible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /batches/{id}:
+    get:
+      security: *a8
+      tags: *a9
+      operationId: getBatch
+      summary: Obtiene el detalle de un lote accesible
+      parameters:
+        - &a10
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lote encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchResponse'
+        '404':
+          description: Lote inexistente o fuera de alcance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      security: *a8
+      tags: *a9
+      operationId: updateBatch
+      summary: Actualiza los datos permitidos de un lote no terminal
+      parameters:
+        - *a10
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBatchRequest'
+      responses:
+        '200':
+          description: Lote actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchResponse'
+        '403':
+          description: Rol no autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Lote inexistente o fuera de alcance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Lote terminal o datos de identidad congelados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /batches/{id}/timeline:
+    get:
+      security: *a8
+      tags: *a9
+      operationId: getBatchTimeline
+      summary: Obtiene la trazabilidad cronológica de todas las etapas
+      parameters:
+        - *a10
+      responses:
+        '200':
+          description: Línea de tiempo del lote.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchTimelineResponse'
+        '404':
+          description: Lote inexistente o fuera de alcance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /batches/{id}/advance-stage:
+    post:
+      security: *a8
+      tags: *a9
+      operationId: advanceBatchStage
+      summary: Cierra la etapa actual y abre la siguiente inmediata
+      parameters:
+        - *a10
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvanceBatchStageRequest'
+      responses:
+        '200':
+          description: Etapa avanzada con advertencias no bloqueantes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchAdvanceResponse'
+        '409':
+          description: Lote terminal, responsable inválido o etapa final.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /batches/{id}/close:
+    post:
+      security: *a8
+      tags: *a9
+      operationId: closeBatch
+      summary: Cierra un lote sin no conformidades abiertas
+      parameters:
+        - *a10
+      responses:
+        '200':
+          description: Lote cerrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Existen no conformidades abiertas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /batches/{id}/reject:
+    post:
+      security: *a8
+      tags: *a9
+      operationId: rejectBatch
+      summary: Rechaza un lote con motivo, fecha y actor
+      parameters:
+        - *a10
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectBatchRequest'
+      responses:
+        '200':
+          description: Lote rechazado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Lote en estado terminal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /batches/{id}/qr:
+    get:
+      security: *a8
+      tags: *a9
+      operationId: getBatchQr
+      summary: Genera el QR del enlace de trazabilidad
+      parameters:
+        - *a10
+      responses:
+        '200':
+          description: Código QR en SVG.
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+        '404':
+          description: Lote inexistente o fuera de alcance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /batches/{id}/traceability:
+    get:
+      security: *a8
+      tags: *a9
+      operationId: getBatchTraceability
+      summary: Obtiene el lote y su línea de tiempo consolidada
+      parameters:
+        - *a10
+      responses:
+        '200':
+          description: Trazabilidad consolidada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchTraceabilityResponse'
+        '404':
+          description: Lote inexistente o fuera de alcance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: sigecal_refresh
+  schemas:
+    ApiError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              pattern: ^[A-Z][A-Z0-9_]*$
+            message:
+              type: string
+              minLength: 1
+            details:
+              type: array
+              items: {}
+          required:
+            - code
+            - message
+            - details
+          additionalProperties: false
+      required:
+        - success
+        - error
+      additionalProperties: false
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              const: ok
+            database:
+              type: string
+              const: connected
+            timestamp:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+          required:
+            - status
+            - database
+            - timestamp
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    DatabaseUnavailableErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              const: DATABASE_UNAVAILABLE
+            message:
+              type: string
+              const: El servicio no está disponible temporalmente.
+            details:
+              type: array
+              items: {}
+          required:
+            - code
+            - message
+            - details
+          additionalProperties: false
+      required:
+        - success
+        - error
+      additionalProperties: false
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+        password:
+          type: string
+          minLength: 1
+          maxLength: 128
+      required:
+        - email
+        - password
+      additionalProperties: false
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+              minLength: 1
+            user:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                firstName:
+                  type: string
+                  minLength: 1
+                lastName:
+                  type: string
+                  minLength: 1
+                email:
+                  type: string
+                  format: email
+                  pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+                role:
+                  type: string
+                  enum:
+                    - ADMIN
+                    - JEFE_CALIDAD
+                    - ANALISTA
+                    - OPERARIO
+                mustChangePassword:
+                  type: boolean
+                permissions:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - USERS_MANAGE
+                      - AREAS_MANAGE
+                      - MASTERS_MANAGE
+                      - BATCHES_OPERATE
+                      - BATCHES_CLOSE
+                      - BATCHES_REJECT
+                      - INSPECTIONS_SCHEDULE
+                      - RESULTS_RECORD
+                      - SENSORY_RECORD
+                      - NONCONFORMITIES_RECORD
+                      - ACTIONS_OPERATE
+                      - NONCONFORMITIES_CLOSE
+                      - DASHBOARD_VIEW
+                      - REPORTS_EXPORT
+                      - AUDIT_VIEW
+              required:
+                - id
+                - firstName
+                - lastName
+                - email
+                - role
+                - mustChangePassword
+                - permissions
+              additionalProperties: false
+          required:
+            - accessToken
+            - user
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    RefreshResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+              minLength: 1
+          required:
+            - accessToken
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    MeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            firstName:
+              type: string
+              minLength: 1
+            lastName:
+              type: string
+              minLength: 1
+            email:
+              type: string
+              format: email
+              pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+            role:
+              type: string
+              enum:
+                - ADMIN
+                - JEFE_CALIDAD
+                - ANALISTA
+                - OPERARIO
+            mustChangePassword:
+              type: boolean
+            permissions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - USERS_MANAGE
+                  - AREAS_MANAGE
+                  - MASTERS_MANAGE
+                  - BATCHES_OPERATE
+                  - BATCHES_CLOSE
+                  - BATCHES_REJECT
+                  - INSPECTIONS_SCHEDULE
+                  - RESULTS_RECORD
+                  - SENSORY_RECORD
+                  - NONCONFORMITIES_RECORD
+                  - ACTIONS_OPERATE
+                  - NONCONFORMITIES_CLOSE
+                  - DASHBOARD_VIEW
+                  - REPORTS_EXPORT
+                  - AUDIT_VIEW
+          required:
+            - id
+            - firstName
+            - lastName
+            - email
+            - role
+            - mustChangePassword
+            - permissions
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    UserSession:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+          pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - JEFE_CALIDAD
+            - ANALISTA
+            - OPERARIO
+        mustChangePassword:
+          type: boolean
+        permissions:
+          type: array
+          items:
+            type: string
+            enum:
+              - USERS_MANAGE
+              - AREAS_MANAGE
+              - MASTERS_MANAGE
+              - BATCHES_OPERATE
+              - BATCHES_CLOSE
+              - BATCHES_REJECT
+              - INSPECTIONS_SCHEDULE
+              - RESULTS_RECORD
+              - SENSORY_RECORD
+              - NONCONFORMITIES_RECORD
+              - ACTIONS_OPERATE
+              - NONCONFORMITIES_CLOSE
+              - DASHBOARD_VIEW
+              - REPORTS_EXPORT
+              - AUDIT_VIEW
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+        - role
+        - mustChangePassword
+        - permissions
+      additionalProperties: false
+    ChangePasswordRequest:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+          minLength: 1
+          maxLength: 128
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 128
+          allOf:
+            - pattern: '[A-Za-z]'
+            - pattern: '[0-9]'
+      required:
+        - currentPassword
+        - newPassword
+      additionalProperties: false
+    UserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            firstName:
+              type: string
+            lastName:
+              type: string
+            email:
+              type: string
+              format: email
+              pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+            role:
+              type: string
+              enum:
+                - ADMIN
+                - JEFE_CALIDAD
+                - ANALISTA
+                - OPERARIO
+            area:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                    isActive:
+                      type: boolean
+                    isProvisional:
+                      type: boolean
+                    createdAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                    updatedAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  required:
+                    - id
+                    - code
+                    - name
+                    - isActive
+                    - isProvisional
+                    - createdAt
+                    - updatedAt
+                  additionalProperties: false
+                - type: 'null'
+            position:
+              anyOf:
+                - type: string
+                - type: 'null'
+            isActive:
+              type: boolean
+            mustChangePassword:
+              type: boolean
+            lastLoginAt:
+              anyOf:
+                - type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                - type: 'null'
+            createdAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            updatedAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+          required:
+            - id
+            - firstName
+            - lastName
+            - email
+            - role
+            - area
+            - position
+            - isActive
+            - mustChangePassword
+            - lastLoginAt
+            - createdAt
+            - updatedAt
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    UserListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              firstName:
+                type: string
+              lastName:
+                type: string
+              email:
+                type: string
+                format: email
+                pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+              role:
+                type: string
+                enum:
+                  - ADMIN
+                  - JEFE_CALIDAD
+                  - ANALISTA
+                  - OPERARIO
+              area:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      code:
+                        type: string
+                      name:
+                        type: string
+                      isActive:
+                        type: boolean
+                      isProvisional:
+                        type: boolean
+                      createdAt:
+                        type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                    required:
+                      - id
+                      - code
+                      - name
+                      - isActive
+                      - isProvisional
+                      - createdAt
+                      - updatedAt
+                    additionalProperties: false
+                  - type: 'null'
+              position:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              isActive:
+                type: boolean
+              mustChangePassword:
+                type: boolean
+              lastLoginAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  - type: 'null'
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              updatedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - id
+              - firstName
+              - lastName
+              - email
+              - role
+              - area
+              - position
+              - isActive
+              - mustChangePassword
+              - lastLoginAt
+              - createdAt
+              - updatedAt
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateUserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        email:
+          type: string
+          maxLength: 254
+          format: email
+          pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - JEFE_CALIDAD
+            - ANALISTA
+            - OPERARIO
+        areaId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        position:
+          type: string
+          minLength: 1
+          maxLength: 120
+        temporaryPassword:
+          type: string
+          minLength: 8
+          maxLength: 128
+          allOf:
+            - pattern: '[A-Za-z]'
+            - pattern: '[0-9]'
+      required:
+        - firstName
+        - lastName
+        - email
+        - role
+        - areaId
+        - temporaryPassword
+      additionalProperties: false
+    UpdateUserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        email:
+          type: string
+          maxLength: 254
+          format: email
+          pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - JEFE_CALIDAD
+            - ANALISTA
+            - OPERARIO
+        areaId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        position:
+          type: string
+          minLength: 1
+          maxLength: 120
+      additionalProperties: false
+    UpdateUserStatusRequest:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+      required:
+        - isActive
+      additionalProperties: false
+    ResetUserPasswordRequest:
+      type: object
+      properties:
+        temporaryPassword:
+          type: string
+          minLength: 8
+          maxLength: 128
+          allOf:
+            - pattern: '[A-Za-z]'
+            - pattern: '[0-9]'
+      required:
+        - temporaryPassword
+      additionalProperties: false
+    AreaResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+            name:
+              type: string
+            isActive:
+              type: boolean
+            isProvisional:
+              type: boolean
+            createdAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            updatedAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+          required:
+            - id
+            - code
+            - name
+            - isActive
+            - isProvisional
+            - createdAt
+            - updatedAt
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    AreaListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+              name:
+                type: string
+              isActive:
+                type: boolean
+              isProvisional:
+                type: boolean
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              updatedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - id
+              - code
+              - name
+              - isActive
+              - isProvisional
+              - createdAt
+              - updatedAt
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateAreaRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_]{2,30}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        isProvisional:
+          default: true
+          type: boolean
+      required:
+        - code
+        - name
+        - isProvisional
+      additionalProperties: false
+    UpdateAreaRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_]{2,30}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        isActive:
+          type: boolean
+        isProvisional:
+          type: boolean
+      additionalProperties: false
+    StandardResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            parameterId:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            piscoTypeId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            stageId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            minValue:
+              anyOf:
+                - type: string
+                  pattern: ^-?\d+(\.\d+)?$
+                - type: 'null'
+            maxValue:
+              anyOf:
+                - type: string
+                  pattern: ^-?\d+(\.\d+)?$
+                - type: 'null'
+            targetValue:
+              anyOf:
+                - type: string
+                  pattern: ^-?\d+(\.\d+)?$
+                - type: 'null'
+            referenceNorm:
+              anyOf:
+                - type: string
+                - type: 'null'
+            defaultSeverity:
+              type: string
+              enum:
+                - LEVE
+                - MODERADA
+                - CRITICA
+            isProvisional:
+              type: boolean
+            validFrom:
+              type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            validTo:
+              anyOf:
+                - type: string
+                  format: date
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                - type: 'null'
+            isActive:
+              type: boolean
+          required:
+            - id
+            - parameterId
+            - piscoTypeId
+            - stageId
+            - minValue
+            - maxValue
+            - targetValue
+            - referenceNorm
+            - defaultSeverity
+            - isProvisional
+            - validFrom
+            - validTo
+            - isActive
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    StandardListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              parameterId:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              piscoTypeId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              stageId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              minValue:
+                anyOf:
+                  - type: string
+                    pattern: ^-?\d+(\.\d+)?$
+                  - type: 'null'
+              maxValue:
+                anyOf:
+                  - type: string
+                    pattern: ^-?\d+(\.\d+)?$
+                  - type: 'null'
+              targetValue:
+                anyOf:
+                  - type: string
+                    pattern: ^-?\d+(\.\d+)?$
+                  - type: 'null'
+              referenceNorm:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              defaultSeverity:
+                type: string
+                enum:
+                  - LEVE
+                  - MODERADA
+                  - CRITICA
+              isProvisional:
+                type: boolean
+              validFrom:
+                type: string
+                format: date
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+              validTo:
+                anyOf:
+                  - type: string
+                    format: date
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                  - type: 'null'
+              isActive:
+                type: boolean
+            required:
+              - id
+              - parameterId
+              - piscoTypeId
+              - stageId
+              - minValue
+              - maxValue
+              - targetValue
+              - referenceNorm
+              - defaultSeverity
+              - isProvisional
+              - validFrom
+              - validTo
+              - isActive
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateStandardRequest:
+      type: object
+      properties:
+        parameterId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        piscoTypeId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        stageId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        minValue:
+          anyOf:
+            - type: number
+            - type: 'null'
+        maxValue:
+          anyOf:
+            - type: number
+            - type: 'null'
+        targetValue:
+          anyOf:
+            - type: number
+            - type: 'null'
+        referenceNorm:
+          type: string
+          minLength: 1
+          maxLength: 160
+        defaultSeverity:
+          type: string
+          enum:
+            - LEVE
+            - MODERADA
+            - CRITICA
+        isProvisional:
+          default: true
+          type: boolean
+        validFrom:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        validTo:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+      required:
+        - parameterId
+        - defaultSeverity
+        - isProvisional
+        - validFrom
+      additionalProperties: false
+    UpdateStandardRequest:
+      type: object
+      properties:
+        minValue:
+          anyOf:
+            - type: number
+            - type: 'null'
+        maxValue:
+          anyOf:
+            - type: number
+            - type: 'null'
+        targetValue:
+          anyOf:
+            - type: number
+            - type: 'null'
+        referenceNorm:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 160
+            - type: 'null'
+        defaultSeverity:
+          type: string
+          enum:
+            - LEVE
+            - MODERADA
+            - CRITICA
+        isProvisional:
+          type: boolean
+        isActive:
+          type: boolean
+      additionalProperties: false
+    SensoryThresholdResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            piscoTypeId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            minAverage:
+              type: string
+              pattern: ^-?\d+(\.\d+)?$
+            defaultSeverity:
+              type: string
+              enum:
+                - LEVE
+                - MODERADA
+                - CRITICA
+            referenceNorm:
+              anyOf:
+                - type: string
+                - type: 'null'
+            validFrom:
+              type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            validTo:
+              anyOf:
+                - type: string
+                  format: date
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                - type: 'null'
+            isActive:
+              type: boolean
+            isProvisional:
+              type: boolean
+          required:
+            - id
+            - piscoTypeId
+            - minAverage
+            - defaultSeverity
+            - referenceNorm
+            - validFrom
+            - validTo
+            - isActive
+            - isProvisional
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    SensoryThresholdListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              piscoTypeId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              minAverage:
+                type: string
+                pattern: ^-?\d+(\.\d+)?$
+              defaultSeverity:
+                type: string
+                enum:
+                  - LEVE
+                  - MODERADA
+                  - CRITICA
+              referenceNorm:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              validFrom:
+                type: string
+                format: date
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+              validTo:
+                anyOf:
+                  - type: string
+                    format: date
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                  - type: 'null'
+              isActive:
+                type: boolean
+              isProvisional:
+                type: boolean
+            required:
+              - id
+              - piscoTypeId
+              - minAverage
+              - defaultSeverity
+              - referenceNorm
+              - validFrom
+              - validTo
+              - isActive
+              - isProvisional
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateSensoryThresholdRequest:
+      type: object
+      properties:
+        piscoTypeId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        minAverage:
+          type: number
+          minimum: 1
+          maximum: 5
+        defaultSeverity:
+          type: string
+          enum:
+            - LEVE
+            - MODERADA
+            - CRITICA
+        referenceNorm:
+          type: string
+          minLength: 1
+          maxLength: 160
+        validFrom:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        validTo:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        isProvisional:
+          default: true
+          type: boolean
+      required:
+        - minAverage
+        - defaultSeverity
+        - validFrom
+        - isProvisional
+      additionalProperties: false
+    GrapeVarietyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+            name:
+              type: string
+            isActive:
+              type: boolean
+          required:
+            - id
+            - code
+            - name
+            - isActive
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    GrapeVarietyListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+              name:
+                type: string
+              isActive:
+                type: boolean
+            required:
+              - id
+              - code
+              - name
+              - isActive
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateGrapeVarietyRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+      required:
+        - code
+        - name
+      additionalProperties: false
+    UpdateGrapeVarietyRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        isActive:
+          type: boolean
+      additionalProperties: false
+    PiscoTypeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+            name:
+              type: string
+            description:
+              anyOf:
+                - type: string
+                - type: 'null'
+            isActive:
+              type: boolean
+          required:
+            - id
+            - code
+            - name
+            - description
+            - isActive
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    PiscoTypeListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+              name:
+                type: string
+              description:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              isActive:
+                type: boolean
+            required:
+              - id
+              - code
+              - name
+              - description
+              - isActive
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreatePiscoTypeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+        - code
+        - name
+      additionalProperties: false
+    UpdatePiscoTypeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 500
+            - type: 'null'
+        isActive:
+          type: boolean
+      additionalProperties: false
+    ProcessStageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+            name:
+              type: string
+            sequence:
+              type: integer
+              exclusiveMinimum: 0
+              maximum: 9007199254740991
+            description:
+              anyOf:
+                - type: string
+                - type: 'null'
+            isActive:
+              type: boolean
+          required:
+            - id
+            - code
+            - name
+            - sequence
+            - description
+            - isActive
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    ProcessStageListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+              name:
+                type: string
+              sequence:
+                type: integer
+                exclusiveMinimum: 0
+                maximum: 9007199254740991
+              description:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              isActive:
+                type: boolean
+            required:
+              - id
+              - code
+              - name
+              - sequence
+              - description
+              - isActive
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateProcessStageRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        sequence:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 999
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+        - code
+        - name
+        - sequence
+      additionalProperties: false
+    UpdateProcessStageRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        sequence:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 999
+        description:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 500
+            - type: 'null'
+        isActive:
+          type: boolean
+      additionalProperties: false
+    EquipmentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+            name:
+              type: string
+            status:
+              type: string
+              enum:
+                - OPERATIVO
+                - EN_MANTENIMIENTO
+                - FUERA_DE_SERVICIO
+            lastCalibrationRef:
+              anyOf:
+                - type: string
+                - type: 'null'
+            isActive:
+              type: boolean
+          required:
+            - id
+            - code
+            - name
+            - status
+            - lastCalibrationRef
+            - isActive
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    EquipmentListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+              name:
+                type: string
+              status:
+                type: string
+                enum:
+                  - OPERATIVO
+                  - EN_MANTENIMIENTO
+                  - FUERA_DE_SERVICIO
+              lastCalibrationRef:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              isActive:
+                type: boolean
+            required:
+              - id
+              - code
+              - name
+              - status
+              - lastCalibrationRef
+              - isActive
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateEquipmentRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        status:
+          type: string
+          enum:
+            - OPERATIVO
+            - EN_MANTENIMIENTO
+            - FUERA_DE_SERVICIO
+        lastCalibrationRef:
+          type: string
+          minLength: 1
+          maxLength: 160
+      required:
+        - code
+        - name
+        - status
+      additionalProperties: false
+    UpdateEquipmentRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        status:
+          type: string
+          enum:
+            - OPERATIVO
+            - EN_MANTENIMIENTO
+            - FUERA_DE_SERVICIO
+        lastCalibrationRef:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 160
+            - type: 'null'
+        isActive:
+          type: boolean
+      additionalProperties: false
+    SensoryAttributeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+            name:
+              type: string
+            description:
+              anyOf:
+                - type: string
+                - type: 'null'
+            sequence:
+              type: integer
+              exclusiveMinimum: 0
+              maximum: 9007199254740991
+            isActive:
+              type: boolean
+          required:
+            - id
+            - code
+            - name
+            - description
+            - sequence
+            - isActive
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    SensoryAttributeListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+              name:
+                type: string
+              description:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              sequence:
+                type: integer
+                exclusiveMinimum: 0
+                maximum: 9007199254740991
+              isActive:
+                type: boolean
+            required:
+              - id
+              - code
+              - name
+              - description
+              - sequence
+              - isActive
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateSensoryAttributeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+        sequence:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 999
+      required:
+        - code
+        - name
+        - sequence
+      additionalProperties: false
+    UpdateSensoryAttributeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 500
+            - type: 'null'
+        sequence:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 999
+        isActive:
+          type: boolean
+      additionalProperties: false
+    ParameterResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+            name:
+              type: string
+            unit:
+              type: string
+            type:
+              type: string
+              enum:
+                - FISICOQUIMICO
+                - SENSORIAL
+            testMethod:
+              anyOf:
+                - type: string
+                - type: 'null'
+            decimals:
+              type: integer
+              minimum: 0
+              maximum: 6
+            isActive:
+              type: boolean
+          required:
+            - id
+            - code
+            - name
+            - unit
+            - type
+            - testMethod
+            - decimals
+            - isActive
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    ParameterListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+              name:
+                type: string
+              unit:
+                type: string
+              type:
+                type: string
+                enum:
+                  - FISICOQUIMICO
+                  - SENSORIAL
+              testMethod:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              decimals:
+                type: integer
+                minimum: 0
+                maximum: 6
+              isActive:
+                type: boolean
+            required:
+              - id
+              - code
+              - name
+              - unit
+              - type
+              - testMethod
+              - decimals
+              - isActive
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateParameterRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        unit:
+          type: string
+          minLength: 1
+          maxLength: 40
+        type:
+          type: string
+          enum:
+            - FISICOQUIMICO
+            - SENSORIAL
+        testMethod:
+          type: string
+          minLength: 1
+          maxLength: 160
+        decimals:
+          default: 2
+          type: integer
+          minimum: 0
+          maximum: 6
+      required:
+        - code
+        - name
+        - unit
+        - type
+        - decimals
+      additionalProperties: false
+    UpdateParameterRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,40}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        unit:
+          type: string
+          minLength: 1
+          maxLength: 40
+        type:
+          type: string
+          enum:
+            - FISICOQUIMICO
+            - SENSORIAL
+        testMethod:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 160
+            - type: 'null'
+        decimals:
+          type: integer
+          minimum: 0
+          maximum: 6
+        isActive:
+          type: boolean
+      additionalProperties: false
+    CreateBatchRequest:
+      type: object
+      properties:
+        piscoTypeId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        varieties:
+          minItems: 1
+          maxItems: 20
+          type: array
+          items:
+            type: object
+            properties:
+              varietyId:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              percentage:
+                type: number
+                exclusiveMinimum: 0
+                maximum: 100
+            required:
+              - varietyId
+            additionalProperties: false
+        startDate:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        volumeLiters:
+          type: number
+          exclusiveMinimum: 0
+        harvestOrigin:
+          type: string
+          minLength: 1
+          maxLength: 200
+        notes:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 500
+            - type: 'null'
+      required:
+        - piscoTypeId
+        - varieties
+        - startDate
+        - volumeLiters
+      additionalProperties: false
+    UpdateBatchRequest:
+      type: object
+      properties:
+        piscoTypeId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        varieties:
+          minItems: 1
+          maxItems: 20
+          type: array
+          items:
+            type: object
+            properties:
+              varietyId:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              percentage:
+                type: number
+                exclusiveMinimum: 0
+                maximum: 100
+            required:
+              - varietyId
+            additionalProperties: false
+        startDate:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        volumeLiters:
+          type: number
+          exclusiveMinimum: 0
+        harvestOrigin:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 200
+            - type: 'null'
+        notes:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 500
+            - type: 'null'
+      additionalProperties: false
+    AdvanceBatchStageRequest:
+      type: object
+      properties:
+        responsibleId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        observations:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+        - responsibleId
+      additionalProperties: false
+    RejectBatchRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+        - reason
+      additionalProperties: false
+    BatchResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+              pattern: ^LT-\d{4}-\d{4}$
+            piscoType:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                code:
+                  type: string
+                name:
+                  type: string
+              required:
+                - id
+                - code
+                - name
+              additionalProperties: false
+            currentStage:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                code:
+                  type: string
+                name:
+                  type: string
+                sequence:
+                  type: integer
+                  exclusiveMinimum: 0
+                  maximum: 9007199254740991
+              required:
+                - id
+                - code
+                - name
+                - sequence
+              additionalProperties: false
+            status:
+              type: string
+              enum:
+                - EN_PROCESO
+                - EN_OBSERVACION
+                - CERRADO
+                - RECHAZADO
+            startDate:
+              type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            closeDate:
+              anyOf:
+                - type: string
+                  format: date
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                - type: 'null'
+            rejectedAt:
+              anyOf:
+                - type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                - type: 'null'
+            rejectedBy:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                - type: 'null'
+            rejectionReason:
+              anyOf:
+                - type: string
+                - type: 'null'
+            volumeLiters:
+              type: string
+              pattern: ^\d+(\.\d+)?$
+            harvestOrigin:
+              anyOf:
+                - type: string
+                - type: 'null'
+            notes:
+              anyOf:
+                - type: string
+                - type: 'null'
+            createdBy:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+              required:
+                - id
+                - firstName
+                - lastName
+              additionalProperties: false
+            dataOrigin:
+              type: string
+              enum:
+                - REAL
+                - DEMO
+            createdAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            updatedAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            varieties:
+              type: array
+              items:
+                type: object
+                properties:
+                  variety:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      code:
+                        type: string
+                      name:
+                        type: string
+                    required:
+                      - id
+                      - code
+                      - name
+                    additionalProperties: false
+                  percentage:
+                    anyOf:
+                      - type: string
+                        pattern: ^\d+(\.\d+)?$
+                      - type: 'null'
+                required:
+                  - variety
+                  - percentage
+                additionalProperties: false
+            openNonConformities:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            hasInspections:
+              type: boolean
+          required:
+            - id
+            - code
+            - piscoType
+            - currentStage
+            - status
+            - startDate
+            - closeDate
+            - rejectedAt
+            - rejectedBy
+            - rejectionReason
+            - volumeLiters
+            - harvestOrigin
+            - notes
+            - createdBy
+            - dataOrigin
+            - createdAt
+            - updatedAt
+            - varieties
+            - openNonConformities
+            - hasInspections
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    BatchListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+                pattern: ^LT-\d{4}-\d{4}$
+              piscoType:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                  name:
+                    type: string
+                required:
+                  - id
+                  - code
+                  - name
+                additionalProperties: false
+              currentStage:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                  name:
+                    type: string
+                  sequence:
+                    type: integer
+                    exclusiveMinimum: 0
+                    maximum: 9007199254740991
+                required:
+                  - id
+                  - code
+                  - name
+                  - sequence
+                additionalProperties: false
+              status:
+                type: string
+                enum:
+                  - EN_PROCESO
+                  - EN_OBSERVACION
+                  - CERRADO
+                  - RECHAZADO
+              startDate:
+                type: string
+                format: date
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+              closeDate:
+                anyOf:
+                  - type: string
+                    format: date
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                  - type: 'null'
+              rejectedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  - type: 'null'
+              rejectedBy:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                    required:
+                      - id
+                      - firstName
+                      - lastName
+                    additionalProperties: false
+                  - type: 'null'
+              rejectionReason:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              volumeLiters:
+                type: string
+                pattern: ^\d+(\.\d+)?$
+              harvestOrigin:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              notes:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              createdBy:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                required:
+                  - id
+                  - firstName
+                  - lastName
+                additionalProperties: false
+              dataOrigin:
+                type: string
+                enum:
+                  - REAL
+                  - DEMO
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              updatedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              varieties:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    variety:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                        code:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                        - id
+                        - code
+                        - name
+                      additionalProperties: false
+                    percentage:
+                      anyOf:
+                        - type: string
+                          pattern: ^\d+(\.\d+)?$
+                        - type: 'null'
+                  required:
+                    - variety
+                    - percentage
+                  additionalProperties: false
+              openNonConformities:
+                type: integer
+                minimum: 0
+                maximum: 9007199254740991
+              hasInspections:
+                type: boolean
+            required:
+              - id
+              - code
+              - piscoType
+              - currentStage
+              - status
+              - startDate
+              - closeDate
+              - rejectedAt
+              - rejectedBy
+              - rejectionReason
+              - volumeLiters
+              - harvestOrigin
+              - notes
+              - createdBy
+              - dataOrigin
+              - createdAt
+              - updatedAt
+              - varieties
+              - openNonConformities
+              - hasInspections
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    BatchTimelineResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              stage:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                  name:
+                    type: string
+                  sequence:
+                    type: integer
+                    exclusiveMinimum: 0
+                    maximum: 9007199254740991
+                required:
+                  - id
+                  - code
+                  - name
+                  - sequence
+                additionalProperties: false
+              state:
+                type: string
+                enum:
+                  - COMPLETED
+                  - CURRENT
+                  - PENDING
+              startedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  - type: 'null'
+              finishedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  - type: 'null'
+              responsible:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                    required:
+                      - id
+                      - firstName
+                      - lastName
+                    additionalProperties: false
+                  - type: 'null'
+              observations:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              inspections:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    type:
+                      type: string
+                      enum:
+                        - FISICOQUIMICO
+                        - ORGANOLEPTICO
+                    status:
+                      type: string
+                      enum:
+                        - PROGRAMADA
+                        - EN_PROCESO
+                        - COMPLETADA
+                        - VENCIDA
+                        - CANCELADA
+                        - REPROGRAMADA
+                    scheduledDate:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  required:
+                    - id
+                    - code
+                    - type
+                    - status
+                    - scheduledDate
+                  additionalProperties: false
+              nonConformities:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    status:
+                      type: string
+                      enum:
+                        - ABIERTA
+                        - EN_ANALISIS
+                        - EN_TRATAMIENTO
+                        - EN_VERIFICACION
+                        - CERRADA
+                        - ANULADA
+                    severity:
+                      type: string
+                      enum:
+                        - LEVE
+                        - MODERADA
+                        - CRITICA
+                    description:
+                      type: string
+                  required:
+                    - id
+                    - code
+                    - status
+                    - severity
+                    - description
+                  additionalProperties: false
+            required:
+              - stage
+              - state
+              - startedAt
+              - finishedAt
+              - responsible
+              - observations
+              - inspections
+              - nonConformities
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    BatchAdvanceResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            batch:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                code:
+                  type: string
+                  pattern: ^LT-\d{4}-\d{4}$
+                piscoType:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                    - id
+                    - code
+                    - name
+                  additionalProperties: false
+                currentStage:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                    sequence:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                  required:
+                    - id
+                    - code
+                    - name
+                    - sequence
+                  additionalProperties: false
+                status:
+                  type: string
+                  enum:
+                    - EN_PROCESO
+                    - EN_OBSERVACION
+                    - CERRADO
+                    - RECHAZADO
+                startDate:
+                  type: string
+                  format: date
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                closeDate:
+                  anyOf:
+                    - type: string
+                      format: date
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                    - type: 'null'
+                rejectedAt:
+                  anyOf:
+                    - type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                    - type: 'null'
+                rejectedBy:
+                  anyOf:
+                    - type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                        firstName:
+                          type: string
+                        lastName:
+                          type: string
+                      required:
+                        - id
+                        - firstName
+                        - lastName
+                      additionalProperties: false
+                    - type: 'null'
+                rejectionReason:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                volumeLiters:
+                  type: string
+                  pattern: ^\d+(\.\d+)?$
+                harvestOrigin:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                notes:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                createdBy:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                dataOrigin:
+                  type: string
+                  enum:
+                    - REAL
+                    - DEMO
+                createdAt:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                updatedAt:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                varieties:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      variety:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                          code:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                          - id
+                          - code
+                          - name
+                        additionalProperties: false
+                      percentage:
+                        anyOf:
+                          - type: string
+                            pattern: ^\d+(\.\d+)?$
+                          - type: 'null'
+                    required:
+                      - variety
+                      - percentage
+                    additionalProperties: false
+                openNonConformities:
+                  type: integer
+                  minimum: 0
+                  maximum: 9007199254740991
+                hasInspections:
+                  type: boolean
+              required:
+                - id
+                - code
+                - piscoType
+                - currentStage
+                - status
+                - startDate
+                - closeDate
+                - rejectedAt
+                - rejectedBy
+                - rejectionReason
+                - volumeLiters
+                - harvestOrigin
+                - notes
+                - createdBy
+                - dataOrigin
+                - createdAt
+                - updatedAt
+                - varieties
+                - openNonConformities
+                - hasInspections
+              additionalProperties: false
+            warnings:
+              type: array
+              items:
+                type: string
+                enum:
+                  - PENDING_INSPECTIONS
+                  - OPEN_NONCONFORMITIES
+          required:
+            - batch
+            - warnings
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    BatchTraceabilityResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            batch:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                code:
+                  type: string
+                  pattern: ^LT-\d{4}-\d{4}$
+                piscoType:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                    - id
+                    - code
+                    - name
+                  additionalProperties: false
+                currentStage:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                    sequence:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                  required:
+                    - id
+                    - code
+                    - name
+                    - sequence
+                  additionalProperties: false
+                status:
+                  type: string
+                  enum:
+                    - EN_PROCESO
+                    - EN_OBSERVACION
+                    - CERRADO
+                    - RECHAZADO
+                startDate:
+                  type: string
+                  format: date
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                closeDate:
+                  anyOf:
+                    - type: string
+                      format: date
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                    - type: 'null'
+                rejectedAt:
+                  anyOf:
+                    - type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                    - type: 'null'
+                rejectedBy:
+                  anyOf:
+                    - type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                        firstName:
+                          type: string
+                        lastName:
+                          type: string
+                      required:
+                        - id
+                        - firstName
+                        - lastName
+                      additionalProperties: false
+                    - type: 'null'
+                rejectionReason:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                volumeLiters:
+                  type: string
+                  pattern: ^\d+(\.\d+)?$
+                harvestOrigin:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                notes:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                createdBy:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                dataOrigin:
+                  type: string
+                  enum:
+                    - REAL
+                    - DEMO
+                createdAt:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                updatedAt:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                varieties:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      variety:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                          code:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                          - id
+                          - code
+                          - name
+                        additionalProperties: false
+                      percentage:
+                        anyOf:
+                          - type: string
+                            pattern: ^\d+(\.\d+)?$
+                          - type: 'null'
+                    required:
+                      - variety
+                      - percentage
+                    additionalProperties: false
+                openNonConformities:
+                  type: integer
+                  minimum: 0
+                  maximum: 9007199254740991
+                hasInspections:
+                  type: boolean
+              required:
+                - id
+                - code
+                - piscoType
+                - currentStage
+                - status
+                - startDate
+                - closeDate
+                - rejectedAt
+                - rejectedBy
+                - rejectionReason
+                - volumeLiters
+                - harvestOrigin
+                - notes
+                - createdBy
+                - dataOrigin
+                - createdAt
+                - updatedAt
+                - varieties
+                - openNonConformities
+                - hasInspections
+              additionalProperties: false
+            timeline:
+              type: array
+              items:
+                type: object
+                properties:
+                  stage:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      code:
+                        type: string
+                      name:
+                        type: string
+                      sequence:
+                        type: integer
+                        exclusiveMinimum: 0
+                        maximum: 9007199254740991
+                    required:
+                      - id
+                      - code
+                      - name
+                      - sequence
+                    additionalProperties: false
+                  state:
+                    type: string
+                    enum:
+                      - COMPLETED
+                      - CURRENT
+                      - PENDING
+                  startedAt:
+                    anyOf:
+                      - type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      - type: 'null'
+                  finishedAt:
+                    anyOf:
+                      - type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      - type: 'null'
+                  responsible:
+                    anyOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                          firstName:
+                            type: string
+                          lastName:
+                            type: string
+                        required:
+                          - id
+                          - firstName
+                          - lastName
+                        additionalProperties: false
+                      - type: 'null'
+                  observations:
+                    anyOf:
+                      - type: string
+                      - type: 'null'
+                  inspections:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                        code:
+                          type: string
+                        type:
+                          type: string
+                          enum:
+                            - FISICOQUIMICO
+                            - ORGANOLEPTICO
+                        status:
+                          type: string
+                          enum:
+                            - PROGRAMADA
+                            - EN_PROCESO
+                            - COMPLETADA
+                            - VENCIDA
+                            - CANCELADA
+                            - REPROGRAMADA
+                        scheduledDate:
+                          type: string
+                          format: date-time
+                          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      required:
+                        - id
+                        - code
+                        - type
+                        - status
+                        - scheduledDate
+                      additionalProperties: false
+                  nonConformities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                        code:
+                          type: string
+                        status:
+                          type: string
+                          enum:
+                            - ABIERTA
+                            - EN_ANALISIS
+                            - EN_TRATAMIENTO
+                            - EN_VERIFICACION
+                            - CERRADA
+                            - ANULADA
+                        severity:
+                          type: string
+                          enum:
+                            - LEVE
+                            - MODERADA
+                            - CRITICA
+                        description:
+                          type: string
+                      required:
+                        - id
+                        - code
+                        - status
+                        - severity
+                        - description
+                      additionalProperties: false
+                required:
+                  - stage
+                  - state
+                  - startedAt
+                  - finishedAt
+                  - responsible
+                  - observations
+                  - inspections
+                  - nonConformities
+                additionalProperties: false
+          required:
+            - batch
+            - timeline
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false

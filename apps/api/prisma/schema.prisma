@@ -1,0 +1,620 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  JEFE_CALIDAD
+  ANALISTA
+  OPERARIO
+}
+
+enum BatchStatus {
+  EN_PROCESO
+  EN_OBSERVACION
+  CERRADO
+  RECHAZADO
+}
+
+enum InspectionType {
+  FISICOQUIMICO
+  ORGANOLEPTICO
+}
+
+enum InspectionStatus {
+  PROGRAMADA
+  EN_PROCESO
+  COMPLETADA
+  VENCIDA
+  CANCELADA
+  REPROGRAMADA
+}
+
+enum ParameterType {
+  FISICOQUIMICO
+  SENSORIAL
+}
+
+enum ResultStatus {
+  CONFORME
+  NO_CONFORME
+  ANULADO
+}
+
+enum NCStatus {
+  ABIERTA
+  EN_ANALISIS
+  EN_TRATAMIENTO
+  EN_VERIFICACION
+  CERRADA
+  ANULADA
+}
+
+enum NCSeverity {
+  LEVE
+  MODERADA
+  CRITICA
+}
+
+enum NCOrigin {
+  AUTOMATICA_FISICOQUIMICA
+  AUTOMATICA_SENSORIAL
+  MANUAL
+}
+
+enum ActionType {
+  CORRECCION
+  CORRECTIVA
+  PREVENTIVA
+}
+
+enum ActionStatus {
+  PENDIENTE
+  EN_EJECUCION
+  EJECUTADA
+  VERIFICADA
+  NO_EFICAZ
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  STATE_CHANGE
+  LOGIN
+  LOGOUT
+  EXPORT
+}
+
+enum EquipmentStatus {
+  OPERATIVO
+  EN_MANTENIMIENTO
+  FUERA_DE_SERVICIO
+}
+
+enum DataOrigin {
+  REAL
+  DEMO
+}
+
+model Area {
+  id              String          @id @default(uuid()) @db.Uuid
+  code            String          @unique
+  name            String
+  isActive        Boolean         @default(true)
+  isProvisional   Boolean         @default(true)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime        @updatedAt @db.Timestamptz(3)
+  users           User[]
+  nonConformities NonConformity[]
+
+  @@index([isActive])
+}
+
+model User {
+  id                      String               @id @default(uuid()) @db.Uuid
+  firstName               String
+  lastName                String
+  email                   String               @unique
+  passwordHash            String
+  role                    Role
+  areaId                  String?              @db.Uuid
+  position                String?
+  isActive                Boolean              @default(true)
+  mustChangePassword      Boolean              @default(true)
+  failedAttempts          Int                  @default(0)
+  lockedUntil             DateTime?            @db.Timestamptz(3)
+  lastLoginAt             DateTime?            @db.Timestamptz(3)
+  createdAt               DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt               DateTime             @updatedAt @db.Timestamptz(3)
+  area                    Area?                @relation(fields: [areaId], references: [id], onDelete: Restrict)
+  refreshTokens           RefreshToken[]
+  auditLogs               AuditLog[]
+  notifications           Notification[]
+  createdBatches          Batch[]              @relation("BatchCreatedBy")
+  rejectedBatches         Batch[]              @relation("BatchRejectedBy")
+  responsibleBatchStages  BatchStage[]
+  responsibleInspections  Inspection[]         @relation("InspectionResponsible")
+  createdInspections      Inspection[]         @relation("InspectionCreatedBy")
+  createdTemplates        InspectionTemplate[]
+  recordedPhysChemResults PhysChemResult[]     @relation("PhysChemRecordedBy")
+  annulledPhysChemResults PhysChemResult[]     @relation("PhysChemAnnulledBy")
+  recordedSensorySessions SensorySession[]     @relation("SensoryRecordedBy")
+  annulledSensorySessions SensorySession[]     @relation("SensoryAnnulledBy")
+  sensoryPanelMemberships SensoryPanelist[]
+  detectedNonConformities NonConformity[]      @relation("NCDetectedBy")
+  assignedNonConformities NonConformity[]      @relation("NCAssignedTo")
+  closedNonConformities   NonConformity[]      @relation("NCClosedBy")
+  annulledNonConformities NonConformity[]      @relation("NCAnnulledBy")
+  responsibleActions      CorrectiveAction[]   @relation("ActionResponsible")
+  verifiedActions         CorrectiveAction[]   @relation("ActionVerifiedBy")
+
+  @@index([areaId])
+  @@index([role, isActive])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+}
+
+model AuditLog {
+  id        String      @id @default(uuid()) @db.Uuid
+  userId    String?     @db.Uuid
+  action    AuditAction
+  entity    String
+  entityId  String
+  before    Json?
+  after     Json?
+  ipAddress String?
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  type       String
+  title      String
+  message    String
+  entityType String?
+  entityId   String?
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model GrapeVariety {
+  id             String              @id @default(uuid()) @db.Uuid
+  code           String              @unique
+  name           String
+  isActive       Boolean             @default(true)
+  batchVarieties BatchGrapeVariety[]
+}
+
+model PiscoType {
+  id                String               @id @default(uuid()) @db.Uuid
+  code              String               @unique
+  name              String
+  description       String?
+  isActive          Boolean              @default(true)
+  standards         Standard[]
+  sensoryThresholds SensoryThreshold[]
+  batches           Batch[]
+  templates         InspectionTemplate[]
+}
+
+model ProcessStage {
+  id              String                   @id @default(uuid()) @db.Uuid
+  code            String                   @unique
+  name            String
+  sequence        Int                      @unique
+  description     String?
+  isActive        Boolean                  @default(true)
+  standards       Standard[]
+  currentBatches  Batch[]
+  batchStages     BatchStage[]
+  inspections     Inspection[]
+  templateItems   InspectionTemplateItem[]
+  nonConformities NonConformity[]
+}
+
+model Parameter {
+  id                   String                        @id @default(uuid()) @db.Uuid
+  code                 String                        @unique
+  name                 String
+  unit                 String
+  type                 ParameterType
+  testMethod           String?
+  decimals             Int                           @default(2)
+  isActive             Boolean                       @default(true)
+  standards            Standard[]
+  inspectionParameters InspectionParameter[]
+  templateParameters   InspectionTemplateParameter[]
+  physChemResults      PhysChemResult[]
+}
+
+model Standard {
+  id              String           @id @default(uuid()) @db.Uuid
+  parameterId     String           @db.Uuid
+  piscoTypeId     String?          @db.Uuid
+  stageId         String?          @db.Uuid
+  minValue        Decimal?         @db.Decimal(16, 6)
+  maxValue        Decimal?         @db.Decimal(16, 6)
+  targetValue     Decimal?         @db.Decimal(16, 6)
+  referenceNorm   String?
+  defaultSeverity NCSeverity
+  isProvisional   Boolean          @default(true)
+  validFrom       DateTime         @db.Date
+  validTo         DateTime?        @db.Date
+  isActive        Boolean          @default(true)
+  parameter       Parameter        @relation(fields: [parameterId], references: [id], onDelete: Restrict)
+  piscoType       PiscoType?       @relation(fields: [piscoTypeId], references: [id], onDelete: Restrict)
+  stage           ProcessStage?    @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  results         PhysChemResult[]
+
+  @@index([parameterId, validFrom, validTo])
+  @@index([piscoTypeId])
+  @@index([stageId])
+}
+
+model SensoryThreshold {
+  id              String           @id @default(uuid()) @db.Uuid
+  piscoTypeId     String?          @db.Uuid
+  minAverage      Decimal          @db.Decimal(3, 2)
+  defaultSeverity NCSeverity
+  referenceNorm   String?
+  validFrom       DateTime         @db.Date
+  validTo         DateTime?        @db.Date
+  isActive        Boolean          @default(true)
+  isProvisional   Boolean          @default(true)
+  piscoType       PiscoType?       @relation(fields: [piscoTypeId], references: [id], onDelete: Restrict)
+  sessions        SensorySession[]
+
+  @@index([piscoTypeId, validFrom, validTo])
+}
+
+model SensoryAttribute {
+  id          String         @id @default(uuid()) @db.Uuid
+  code        String         @unique
+  name        String
+  description String?
+  sequence    Int            @unique
+  isActive    Boolean        @default(true)
+  scores      SensoryScore[]
+}
+
+model Equipment {
+  id                 String                   @id @default(uuid()) @db.Uuid
+  code               String                   @unique
+  name               String
+  status             EquipmentStatus
+  lastCalibrationRef String?
+  isActive           Boolean                  @default(true)
+  inspections        Inspection[]
+  templateItems      InspectionTemplateItem[]
+  results            PhysChemResult[]
+}
+
+model Batch {
+  id              String              @id @default(uuid()) @db.Uuid
+  code            String              @unique
+  piscoTypeId     String              @db.Uuid
+  currentStageId  String              @db.Uuid
+  status          BatchStatus         @default(EN_PROCESO)
+  startDate       DateTime            @db.Date
+  closeDate       DateTime?           @db.Date
+  rejectedAt      DateTime?           @db.Timestamptz(3)
+  rejectedById    String?             @db.Uuid
+  rejectionReason String?
+  volumeLiters    Decimal             @db.Decimal(14, 3)
+  harvestOrigin   String?
+  notes           String?
+  createdById     String              @db.Uuid
+  dataOrigin      DataOrigin          @default(REAL)
+  createdAt       DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime            @updatedAt @db.Timestamptz(3)
+  piscoType       PiscoType           @relation(fields: [piscoTypeId], references: [id], onDelete: Restrict)
+  currentStage    ProcessStage        @relation(fields: [currentStageId], references: [id], onDelete: Restrict)
+  rejectedBy      User?               @relation("BatchRejectedBy", fields: [rejectedById], references: [id], onDelete: Restrict)
+  createdBy       User                @relation("BatchCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  varieties       BatchGrapeVariety[]
+  stages          BatchStage[]
+  inspections     Inspection[]
+  nonConformities NonConformity[]
+
+  @@index([status])
+  @@index([currentStageId])
+  @@index([startDate])
+}
+
+model BatchGrapeVariety {
+  id         String       @id @default(uuid()) @db.Uuid
+  batchId    String       @db.Uuid
+  varietyId  String       @db.Uuid
+  percentage Decimal?     @db.Decimal(5, 2)
+  batch      Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  variety    GrapeVariety @relation(fields: [varietyId], references: [id], onDelete: Restrict)
+
+  @@unique([batchId, varietyId])
+}
+
+model BatchStage {
+  id            String       @id @default(uuid()) @db.Uuid
+  batchId       String       @db.Uuid
+  stageId       String       @db.Uuid
+  startedAt     DateTime     @db.Timestamptz(3)
+  finishedAt    DateTime?    @db.Timestamptz(3)
+  responsibleId String       @db.Uuid
+  observations  String?
+  batch         Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  stage         ProcessStage @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  responsible   User         @relation(fields: [responsibleId], references: [id], onDelete: Restrict)
+
+  @@unique([batchId, stageId])
+  @@index([startedAt])
+}
+
+model Inspection {
+  id                String                @id @default(uuid()) @db.Uuid
+  code              String                @unique
+  batchId           String                @db.Uuid
+  stageId           String                @db.Uuid
+  type              InspectionType
+  status            InspectionStatus      @default(PROGRAMADA)
+  scheduledDate     DateTime              @db.Timestamptz(3)
+  executedAt        DateTime?             @db.Timestamptz(3)
+  responsibleId     String                @db.Uuid
+  equipmentId       String?               @db.Uuid
+  rescheduledFromId String?               @unique @db.Uuid
+  changeReason      String?
+  notes             String?
+  createdById       String                @db.Uuid
+  dataOrigin        DataOrigin            @default(REAL)
+  batch             Batch                 @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  stage             ProcessStage          @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  responsible       User                  @relation("InspectionResponsible", fields: [responsibleId], references: [id], onDelete: Restrict)
+  equipment         Equipment?            @relation(fields: [equipmentId], references: [id], onDelete: Restrict)
+  rescheduledFrom   Inspection?           @relation("InspectionReschedule", fields: [rescheduledFromId], references: [id], onDelete: Restrict)
+  rescheduledTo     Inspection?           @relation("InspectionReschedule")
+  createdBy         User                  @relation("InspectionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  parameters        InspectionParameter[]
+  results           PhysChemResult[]
+  sensorySessions   SensorySession[]
+  nonConformities   NonConformity[]
+
+  @@index([batchId])
+  @@index([status])
+  @@index([scheduledDate])
+  @@index([responsibleId])
+}
+
+model InspectionParameter {
+  id           String     @id @default(uuid()) @db.Uuid
+  inspectionId String     @db.Uuid
+  parameterId  String     @db.Uuid
+  inspection   Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  parameter    Parameter  @relation(fields: [parameterId], references: [id], onDelete: Restrict)
+
+  @@unique([inspectionId, parameterId])
+}
+
+model InspectionTemplate {
+  id          String                   @id @default(uuid()) @db.Uuid
+  code        String                   @unique
+  name        String
+  piscoTypeId String                   @db.Uuid
+  validFrom   DateTime                 @db.Date
+  validTo     DateTime?                @db.Date
+  isActive    Boolean                  @default(true)
+  createdById String                   @db.Uuid
+  piscoType   PiscoType                @relation(fields: [piscoTypeId], references: [id], onDelete: Restrict)
+  createdBy   User                     @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  items       InspectionTemplateItem[]
+
+  @@index([piscoTypeId, validFrom, validTo])
+}
+
+model InspectionTemplateItem {
+  id                       String                        @id @default(uuid()) @db.Uuid
+  templateId               String                        @db.Uuid
+  stageId                  String                        @db.Uuid
+  type                     InspectionType
+  offsetDaysFromBatchStart Int
+  scheduledLocalTime       DateTime                      @db.Time(0)
+  responsibleRole          Role
+  equipmentId              String?                       @db.Uuid
+  template                 InspectionTemplate            @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  stage                    ProcessStage                  @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  equipment                Equipment?                    @relation(fields: [equipmentId], references: [id], onDelete: Restrict)
+  parameters               InspectionTemplateParameter[]
+
+  @@index([templateId])
+}
+
+model InspectionTemplateParameter {
+  id             String                 @id @default(uuid()) @db.Uuid
+  templateItemId String                 @db.Uuid
+  parameterId    String                 @db.Uuid
+  templateItem   InspectionTemplateItem @relation(fields: [templateItemId], references: [id], onDelete: Cascade)
+  parameter      Parameter              @relation(fields: [parameterId], references: [id], onDelete: Restrict)
+
+  @@unique([templateItemId, parameterId])
+}
+
+model PhysChemResult {
+  id             String          @id @default(uuid()) @db.Uuid
+  inspectionId   String          @db.Uuid
+  parameterId    String          @db.Uuid
+  standardId     String          @db.Uuid
+  value          Decimal         @db.Decimal(16, 6)
+  status         ResultStatus
+  observation    String?
+  equipmentId    String          @db.Uuid
+  calibrationRef String?
+  recordedById   String          @db.Uuid
+  recordedAt     DateTime        @db.Timestamptz(3)
+  dataOrigin     DataOrigin      @default(REAL)
+  annulledById   String?         @db.Uuid
+  annulledAt     DateTime?       @db.Timestamptz(3)
+  annulReason    String?
+  replacesId     String?         @unique @db.Uuid
+  inspection     Inspection      @relation(fields: [inspectionId], references: [id], onDelete: Restrict)
+  parameter      Parameter       @relation(fields: [parameterId], references: [id], onDelete: Restrict)
+  standard       Standard        @relation(fields: [standardId], references: [id], onDelete: Restrict)
+  equipment      Equipment       @relation(fields: [equipmentId], references: [id], onDelete: Restrict)
+  recordedBy     User            @relation("PhysChemRecordedBy", fields: [recordedById], references: [id], onDelete: Restrict)
+  annulledBy     User?           @relation("PhysChemAnnulledBy", fields: [annulledById], references: [id], onDelete: Restrict)
+  replaces       PhysChemResult? @relation("PhysChemCorrection", fields: [replacesId], references: [id], onDelete: Restrict)
+  replacement    PhysChemResult? @relation("PhysChemCorrection")
+  nonConformity  NonConformity?  @relation("NCPhysChemSource")
+
+  @@index([inspectionId])
+  @@index([parameterId])
+  @@index([recordedAt])
+  @@index([status])
+}
+
+model SensorySession {
+  id                 String            @id @default(uuid()) @db.Uuid
+  inspectionId       String            @db.Uuid
+  sessionDate        DateTime          @db.Date
+  overallAverage     Decimal           @db.Decimal(3, 2)
+  sensoryThresholdId String            @db.Uuid
+  appliedThreshold   Decimal           @db.Decimal(3, 2)
+  status             ResultStatus
+  defectsFound       String?
+  notes              String?
+  recordedById       String            @db.Uuid
+  recordedAt         DateTime          @db.Timestamptz(3)
+  dataOrigin         DataOrigin        @default(REAL)
+  annulledById       String?           @db.Uuid
+  annulledAt         DateTime?         @db.Timestamptz(3)
+  annulReason        String?
+  replacesId         String?           @unique @db.Uuid
+  inspection         Inspection        @relation(fields: [inspectionId], references: [id], onDelete: Restrict)
+  sensoryThreshold   SensoryThreshold  @relation(fields: [sensoryThresholdId], references: [id], onDelete: Restrict)
+  recordedBy         User              @relation("SensoryRecordedBy", fields: [recordedById], references: [id], onDelete: Restrict)
+  annulledBy         User?             @relation("SensoryAnnulledBy", fields: [annulledById], references: [id], onDelete: Restrict)
+  replaces           SensorySession?   @relation("SensoryCorrection", fields: [replacesId], references: [id], onDelete: Restrict)
+  replacement        SensorySession?   @relation("SensoryCorrection")
+  panelists          SensoryPanelist[]
+  scores             SensoryScore[]
+  nonConformity      NonConformity?    @relation("NCSensorySource")
+
+  @@index([inspectionId])
+  @@index([recordedAt])
+  @@index([status])
+}
+
+model SensoryPanelist {
+  id           String         @id @default(uuid()) @db.Uuid
+  sessionId    String         @db.Uuid
+  userId       String?        @db.Uuid
+  externalName String?
+  session      SensorySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user         User?          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  scores       SensoryScore[]
+
+  @@index([sessionId])
+  @@index([userId])
+}
+
+model SensoryScore {
+  id          String           @id @default(uuid()) @db.Uuid
+  sessionId   String           @db.Uuid
+  panelistId  String           @db.Uuid
+  attributeId String           @db.Uuid
+  score       Int
+  descriptor  String?
+  session     SensorySession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  panelist    SensoryPanelist  @relation(fields: [panelistId], references: [id], onDelete: Cascade)
+  attribute   SensoryAttribute @relation(fields: [attributeId], references: [id], onDelete: Restrict)
+
+  @@unique([panelistId, attributeId])
+  @@index([sessionId])
+}
+
+model NonConformity {
+  id                 String             @id @default(uuid()) @db.Uuid
+  code               String             @unique
+  batchId            String             @db.Uuid
+  stageId            String?            @db.Uuid
+  inspectionId       String?            @db.Uuid
+  physChemResultId   String?            @unique @db.Uuid
+  sensorySessionId   String?            @unique @db.Uuid
+  origin             NCOrigin
+  severity           NCSeverity
+  status             NCStatus           @default(ABIERTA)
+  description        String
+  rootCause          String?
+  detectedAt         DateTime           @db.Timestamptz(3)
+  detectedById       String             @db.Uuid
+  assignedToId       String?            @db.Uuid
+  assignedAreaId     String?            @db.Uuid
+  attentionStartedAt DateTime?          @db.Timestamptz(3)
+  closedAt           DateTime?          @db.Timestamptz(3)
+  closedById         String?            @db.Uuid
+  closeComment       String?
+  annulledAt         DateTime?          @db.Timestamptz(3)
+  annulledById       String?            @db.Uuid
+  annulReason        String?
+  dataOrigin         DataOrigin         @default(REAL)
+  batch              Batch              @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  stage              ProcessStage?      @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  inspection         Inspection?        @relation(fields: [inspectionId], references: [id], onDelete: Restrict)
+  physChemResult     PhysChemResult?    @relation("NCPhysChemSource", fields: [physChemResultId], references: [id], onDelete: Restrict)
+  sensorySession     SensorySession?    @relation("NCSensorySource", fields: [sensorySessionId], references: [id], onDelete: Restrict)
+  detectedBy         User               @relation("NCDetectedBy", fields: [detectedById], references: [id], onDelete: Restrict)
+  assignedTo         User?              @relation("NCAssignedTo", fields: [assignedToId], references: [id], onDelete: Restrict)
+  assignedArea       Area?              @relation(fields: [assignedAreaId], references: [id], onDelete: Restrict)
+  closedBy           User?              @relation("NCClosedBy", fields: [closedById], references: [id], onDelete: Restrict)
+  annulledBy         User?              @relation("NCAnnulledBy", fields: [annulledById], references: [id], onDelete: Restrict)
+  actions            CorrectiveAction[]
+
+  @@index([batchId])
+  @@index([status])
+  @@index([severity])
+  @@index([detectedAt])
+}
+
+model CorrectiveAction {
+  id                  String        @id @default(uuid()) @db.Uuid
+  nonConformityId     String        @db.Uuid
+  type                ActionType
+  description         String
+  responsibleId       String        @db.Uuid
+  committedDate       DateTime      @db.Date
+  executedAt          DateTime?     @db.Timestamptz(3)
+  status              ActionStatus  @default(PENDIENTE)
+  isEffective         Boolean?
+  verifiedById        String?       @db.Uuid
+  verifiedAt          DateTime?     @db.Timestamptz(3)
+  verificationComment String?
+  nonConformity       NonConformity @relation(fields: [nonConformityId], references: [id], onDelete: Cascade)
+  responsible         User          @relation("ActionResponsible", fields: [responsibleId], references: [id], onDelete: Restrict)
+  verifiedBy          User?         @relation("ActionVerifiedBy", fields: [verifiedById], references: [id], onDelete: Restrict)
+
+  @@index([nonConformityId])
+  @@index([responsibleId])
+  @@index([committedDate])
+  @@index([status])
+}

@@ -1,0 +1,11 @@
+{
+  "schema_version": 2,
+  "commit": "HEAD",
+  "indexed_at": "2026-08-25T04:10:00Z",
+  "project": "sigecal",
+  "nodes": 1880,
+  "edges": 4526,
+  "original_size": 5636096,
+  "compressed_size": 974769,
+  "compression_level": 3
+}
