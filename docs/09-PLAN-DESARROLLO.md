@@ -114,8 +114,8 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [x] Programación, reprogramación y cancelación de inspecciones con motivo
 - [x] Selección de parámetros por inspección
 - [x] Plantillas versionadas y generación del plan de inspecciones por lote
-- [ ] Vistas de calendario y de listado con filtros
-- [ ] Panel "mis inspecciones pendientes"
+- [x] Vistas de calendario y de listado con filtros
+- [x] Panel "mis inspecciones pendientes"
 - [x] Tarea programada de marcado de vencidas
 - [x] Reporte de cobertura por etapa
 - [x] Registro de resultados con validación contra estándar
@@ -127,7 +127,7 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [x] Completado automático de la inspección
 - [x] Histórico por parámetro
 - [x] Gráfico de control con límites ±3σ
-- [ ] Pantallas: calendario, programación, ejecución de inspección, gráfico de control
+- [x] Pantallas: calendario, programación, ejecución de inspección, gráfico de control
 - [x] Pruebas unitarias: conformidad en los bordes del rango, transiciones de estado, cálculo de límites de control
 
 **Criterio de cierre:** un valor fuera de rango genera automáticamente una no conformidad, y el resultado guardado no puede alterarse.

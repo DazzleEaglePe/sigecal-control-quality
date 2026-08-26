@@ -52,14 +52,14 @@
 
 ## 5. Interfaz
 
-- [ ] Habilitar navegación de Inspecciones y el panel “mis inspecciones pendientes”.
-- [ ] Crear listado con filtros y calendario mensual/semanal con estado textual además del color.
-- [ ] Crear formularios de programación, reprogramación, cancelación y plan desde plantilla.
-- [ ] Crear detalle y ejecución optimizados para tableta, con unidad y rango visible por parámetro.
-- [ ] Previsualizar conforme/no conforme al salir del campo y conservar el borrador si falta estándar.
+- [x] Habilitar navegación de Inspecciones y el panel “mis inspecciones pendientes”.
+- [x] Crear listado con filtros y calendario mensual/semanal con estado textual además del color.
+- [x] Crear formularios de programación, reprogramación, cancelación y plan desde plantilla.
+- [x] Crear detalle y ejecución optimizados para tableta, con unidad y rango visible por parámetro.
+- [x] Previsualizar conforme/no conforme al salir del campo y conservar el borrador si falta estándar.
 - [ ] Mostrar resumen antes de guardar y enlaces a las no conformidades generadas.
-- [ ] Crear histórico por parámetro y gráfico de control con aviso de muestra insuficiente.
-- [ ] Confirmar explícitamente toda transición o guardado definitivo.
+- [x] Crear histórico por parámetro y gráfico de control con aviso de muestra insuficiente.
+- [x] Confirmar explícitamente toda transición o guardado definitivo.
 
 ## 6. Calidad y cierre
 
@@ -74,6 +74,8 @@
 - [x] Actualizar plan, contrato y estado documental.
 
 **Criterio de cierre:** una inspección puede programarse, iniciarse y completarse con todos sus parámetros; cada resultado queda ligado al estándar vigente de la fecha de inspección, un valor no conforme crea su NC y ninguna corrección destruye el historial.
+
+> Estado de validación visual: login verificado en escritorio, tableta y móvil. El recorrido autenticado de inspecciones queda pendiente de una sesión iniciada por el usuario; no se marca como completado para evitar declarar una evidencia no ejecutada.
 
 ## Orden de ejecución aprobado
 

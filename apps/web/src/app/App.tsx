@@ -50,9 +50,44 @@ const BatchDetailPage = lazy(async () => {
   const module = await import('../pages/BatchDetailPage.js');
   return { default: module.BatchDetailPage };
 });
+const InspectionsPage = lazy(async () => {
+  const module = await import('../pages/InspectionsPage.js');
+  return { default: module.InspectionsPage };
+});
+const NewInspectionPage = lazy(async () => {
+  const module = await import('../pages/NewInspectionPage.js');
+  return { default: module.NewInspectionPage };
+});
+const InspectionDetailPage = lazy(async () => {
+  const module = await import('../pages/InspectionDetailPage.js');
+  return { default: module.InspectionDetailPage };
+});
+const PhysChemAnalysisPage = lazy(async () => {
+  const module = await import('../pages/PhysChemAnalysisPage.js');
+  return { default: module.PhysChemAnalysisPage };
+});
 
 const deferred = (element: React.JSX.Element): React.JSX.Element => (
   <Suspense fallback={<p>Cargando módulo…</p>}>{element}</Suspense>
+);
+
+const qualityRoutes = (
+  <>
+    <Route path="inspecciones" element={deferred(<InspectionsPage />)} />
+    <Route
+      path="inspecciones/:id"
+      element={deferred(<InspectionDetailPage />)}
+    />
+    <Route path="analisis" element={deferred(<PhysChemAnalysisPage />)} />
+    <Route
+      element={<PermissionRoute permission={Permission.INSPECTIONS_SCHEDULE} />}
+    >
+      <Route
+        path="inspecciones/nueva"
+        element={deferred(<NewInspectionPage />)}
+      />
+    </Route>
+  </>
 );
 
 export const App = (): React.JSX.Element => (
@@ -64,6 +99,7 @@ export const App = (): React.JSX.Element => (
         <Route index element={<HomePage />} />
         <Route path="lotes" element={deferred(<BatchesPage />)} />
         <Route path="lotes/:id" element={deferred(<BatchDetailPage />)} />
+        {qualityRoutes}
         <Route
           element={<PermissionRoute permission={Permission.BATCHES_OPERATE} />}
         >

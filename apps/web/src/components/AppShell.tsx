@@ -43,16 +43,6 @@ interface MenuProps {
 }
 
 const pendingModules: readonly NavigationItem[] = [
-  {
-    name: 'Inspecciones',
-    icon: ClipboardCheck,
-    permission: Permission.INSPECTIONS_SCHEDULE,
-  },
-  {
-    name: 'Análisis',
-    icon: FlaskConical,
-    permission: Permission.RESULTS_RECORD,
-  },
   { name: 'Organoléptico', icon: Wine, permission: Permission.SENSORY_RECORD },
   {
     name: 'No conformidades',
@@ -101,6 +91,24 @@ const PendingNavigation = (): React.JSX.Element => {
     </>
   );
 };
+
+const QualityNavigation = ({ action }: { readonly action: () => void }) => (
+  <>
+    <NavigationLink
+      action={action}
+      icon={ClipboardCheck}
+      label="Inspecciones"
+      to="/inspecciones"
+    />
+    <NavigationLink
+      action={action}
+      icon={FlaskConical}
+      label="Análisis"
+      to="/analisis"
+    />
+    <PendingNavigation />
+  </>
+);
 
 const PrimaryNavigation = ({ action }: { readonly action: () => void }) => {
   const { user } = useAuth();
@@ -177,7 +185,7 @@ const Sidebar = ({ open, action }: MenuProps): React.JSX.Element => (
       <p className="nav-label">Principal</p>
       <PrimaryNavigation action={action} />
       <p className="nav-label nav-label-spaced">Control de calidad</p>
-      <PendingNavigation />
+      <QualityNavigation action={action} />
       <ConfigurationNavigation action={action} />
     </nav>
     <div className="sidebar-footer">
