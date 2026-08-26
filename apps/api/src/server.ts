@@ -4,11 +4,16 @@ import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { prisma } from './config/prisma.js';
+import { InspectionMutationRepository } from './modules/inspections/inspections.mutations.js';
+import { startInspectionOverdueJob } from './modules/inspections/inspections.overdue-job.js';
 
 const app = createApp();
 const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT }, 'API de SIGECAL disponible');
 });
+const overdueJob = startInspectionOverdueJob(
+  new InspectionMutationRepository(prisma),
+);
 
 const closeServer = (httpServer: Server): Promise<void> =>
   new Promise((resolve, reject) => {
@@ -26,6 +31,7 @@ const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
   logger.info({ signal }, 'Iniciando apagado ordenado');
 
   try {
+    clearInterval(overdueJob);
     await closeServer(server);
     await prisma.$disconnect();
     logger.info('API y conexión de base cerradas correctamente');

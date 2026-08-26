@@ -17,6 +17,12 @@ tags:
     description: Catálogos configurables del sistema.
   - name: Lotes
     description: Ciclo de vida y trazabilidad de lotes productivos.
+  - name: Plantillas
+    description: Planes versionados para programar inspecciones.
+  - name: Inspecciones
+    description: Programación, ejecución y cobertura de controles.
+  - name: Fisicoquímico
+    description: Resultados finales, correcciones y control estadístico.
 paths:
   /health:
     get:
@@ -1549,6 +1555,769 @@ paths:
                 $ref: '#/components/schemas/BatchTraceabilityResponse'
         '404':
           description: Lote inexistente o fuera de alcance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/inspection-templates:
+    get:
+      security: &a11
+        - bearerAuth: []
+      tags: &a12
+        - Plantillas
+      operationId: listInspectionTemplates
+      summary: Lista el historial de plantillas por tipo de pisco
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: piscoTypeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Plantillas versionadas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionTemplateListResponse'
+        '401':
+          description: Sesión inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      security: *a11
+      tags: *a12
+      operationId: createInspectionTemplate
+      summary: Crea una plantilla versionada sin solapar vigencias
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInspectionTemplateRequest'
+      responses:
+        '201':
+          description: Plantilla creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionTemplateResponse'
+        '400':
+          description: Estructura de plantilla inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Código duplicado o vigencia solapada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /masters/inspection-templates/{id}/deactivate:
+    post:
+      security: *a11
+      tags: *a12
+      operationId: deactivateInspectionTemplate
+      summary: Desactiva una plantilla conservando su historial
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Plantilla desactivada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionTemplateResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Plantilla no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: La plantilla ya estaba inactiva.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /inspections:
+    get:
+      security: &a13
+        - bearerAuth: []
+      tags: &a14
+        - Inspecciones
+      operationId: listInspections
+      summary: Lista inspecciones paginadas con alcance por rol
+      parameters:
+        - &a15
+          name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - &a16
+          name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - &a17
+          name: search
+          in: query
+          schema:
+            type: string
+        - name: batchId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: responsibleId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: stageId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - PROGRAMADA
+              - EN_PROCESO
+              - COMPLETADA
+              - VENCIDA
+              - CANCELADA
+              - REPROGRAMADA
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum:
+              - FISICOQUIMICO
+              - ORGANOLEPTICO
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Inspecciones accesibles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionListResponse'
+        '401':
+          description: Sesión inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      security: *a13
+      tags: *a14
+      operationId: createInspection
+      summary: Programa una inspección y sus parámetros esperados
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInspectionRequest'
+      responses:
+        '201':
+          description: Inspección programada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Lote, etapa, responsable o parámetros inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /inspections/calendar:
+    get:
+      security: *a13
+      tags: *a14
+      operationId: getInspectionCalendar
+      summary: Consulta un calendario mensual o por rango
+      parameters:
+        - *a15
+        - *a16
+        - *a17
+        - name: month
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+        - name: year
+          in: query
+          schema:
+            type: integer
+            minimum: 2000
+            maximum: 2100
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Inspecciones dentro del rango.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionListResponse'
+        '400':
+          description: Rango de calendario inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /inspections/my-pending:
+    get:
+      security: *a13
+      tags: *a14
+      operationId: listMyPendingInspections
+      summary: Lista inspecciones pendientes de la persona en sesión
+      parameters:
+        - *a15
+        - *a16
+        - *a17
+      responses:
+        '200':
+          description: Inspecciones asignadas pendientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionListResponse'
+  /inspections/coverage:
+    get:
+      security: *a13
+      tags: *a14
+      operationId: getInspectionCoverage
+      summary: Reporta etapas del lote con y sin inspección programada
+      parameters:
+        - name: batchId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Cobertura por etapa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionCoverageResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Lote no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /inspections/plans/from-template:
+    post:
+      security: *a13
+      tags: *a14
+      operationId: createInspectionPlanFromTemplate
+      summary: Genera transaccionalmente un plan desde una plantilla vigente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInspectionPlanRequest'
+      responses:
+        '201':
+          description: Plan completo generado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionPlanResponse'
+        '403':
+          description: Requiere ADMIN o JEFE_CALIDAD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Plantilla no vigente o asignaciones inválidas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /inspections/{id}:
+    get:
+      security: *a13
+      tags: *a14
+      operationId: getInspection
+      summary: Obtiene detalle, parámetros y resultados registrados
+      parameters:
+        - &a18
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Inspección encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionResponse'
+        '404':
+          description: Inspección inexistente o fuera de alcance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      security: *a13
+      tags: *a14
+      operationId: updateInspection
+      summary: Edita datos permitidos antes de iniciar la inspección
+      parameters:
+        - *a18
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInspectionRequest'
+      responses:
+        '200':
+          description: Inspección actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionResponse'
+        '409':
+          description: La inspección ya inició o es terminal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /inspections/{id}/reschedule:
+    post:
+      security: *a13
+      tags: *a14
+      operationId: rescheduleInspection
+      summary: Cierra el registro original y crea una nueva programación
+      parameters:
+        - *a18
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RescheduleInspectionRequest'
+      responses:
+        '201':
+          description: Nueva inspección programada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionResponse'
+        '409':
+          description: Transición no permitida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /inspections/{id}/cancel:
+    post:
+      security: *a13
+      tags: *a14
+      operationId: cancelInspection
+      summary: Cancela una inspección con motivo obligatorio
+      parameters:
+        - *a18
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelInspectionRequest'
+      responses:
+        '200':
+          description: Inspección cancelada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionResponse'
+        '409':
+          description: Transición no permitida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /inspections/{id}/start:
+    post:
+      security: *a13
+      tags: *a14
+      operationId: startInspection
+      summary: Inicia una inspección con equipo operativo
+      parameters:
+        - *a18
+      responses:
+        '200':
+          description: Inspección iniciada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionResponse'
+        '403':
+          description: Rol o asignación no autorizados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Transición no permitida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Equipo ausente o no operativo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /physchem/results:
+    get:
+      security: &a19
+        - bearerAuth: []
+      tags: &a20
+        - Fisicoquímico
+      operationId: listPhysChemResults
+      summary: Lista resultados fisicoquímicos con alcance por rol
+      parameters:
+        - &a21
+          name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - &a22
+          name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: inspectionId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: parameterId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: batchId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - CONFORME
+              - NO_CONFORME
+              - ANULADO
+      responses:
+        '200':
+          description: Resultados accesibles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhysChemResultListResponse'
+        '401':
+          description: Sesión inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      security: *a19
+      tags: *a20
+      operationId: createPhysChemResults
+      summary: Registra resultados finales y NC automáticas en una transacción
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePhysChemResultsRequest'
+      responses:
+        '201':
+          description: Resultados finales registrados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhysChemResultListResponse'
+        '403':
+          description: Rol o asignación no autorizados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Parámetro ya registrado o inspección inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: No existe estándar definitivo aplicable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /physchem/results/validate:
+    post:
+      security: *a19
+      tags: *a20
+      operationId: validatePhysChemResults
+      summary: Previsualiza la conformidad sin guardar datos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidatePhysChemResultsRequest'
+      responses:
+        '200':
+          description: Conformidad calculada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhysChemValidationResponse'
+        '403':
+          description: Rol o asignación no autorizados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: No existe estándar definitivo aplicable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /physchem/results/{id}/correct:
+    post:
+      security: *a19
+      tags: *a20
+      operationId: correctPhysChemResult
+      summary: Anula un resultado y crea su reemplazo transaccional
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CorrectPhysChemResultRequest'
+      responses:
+        '201':
+          description: Resultado corregido sin perder historial.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhysChemCorrectionResponse'
+        '403':
+          description: Rol o asignación no autorizados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Resultado ya anulado o reemplazado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: No existe estándar definitivo aplicable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /physchem/history:
+    get:
+      security: *a19
+      tags: *a20
+      operationId: getPhysChemHistory
+      summary: Consulta histórico final por parámetro y tipo de pisco
+      parameters:
+        - *a21
+        - *a22
+        - name: parameterId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: piscoTypeId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Histórico sin anulados ni datos DEMO.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhysChemResultListResponse'
+  /physchem/control-chart:
+    get:
+      security: *a19
+      tags: *a20
+      operationId: getPhysChemControlChart
+      summary: Calcula media y límites ±3σ con al menos ocho mediciones
+      parameters:
+        - name: parameterId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: piscoTypeId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: stageId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: standardId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: includeDemo
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Serie comparable y límites calculados cuando procede.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhysChemControlChartResponse'
+        '403':
+          description: includeDemo requiere ADMIN o JEFE_CALIDAD.
           content:
             application/json:
               schema:
@@ -5285,6 +6054,2505 @@ components:
           required:
             - batch
             - timeline
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateInspectionTemplateRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 2
+          maxLength: 30
+          pattern: ^[A-Z0-9_-]+$
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+        piscoTypeId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        validFrom:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        validTo:
+          anyOf:
+            - type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            - type: 'null'
+        items:
+          minItems: 1
+          maxItems: 100
+          type: array
+          items:
+            type: object
+            properties:
+              stageId:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              type:
+                type: string
+                enum:
+                  - FISICOQUIMICO
+                  - ORGANOLEPTICO
+              offsetDaysFromBatchStart:
+                type: integer
+                minimum: 0
+                maximum: 9007199254740991
+              scheduledLocalTime:
+                type: string
+                pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+              responsibleRole:
+                type: string
+                enum:
+                  - ADMIN
+                  - JEFE_CALIDAD
+                  - ANALISTA
+                  - OPERARIO
+              equipmentId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              parameterIds:
+                maxItems: 100
+                type: array
+                items:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            required:
+              - stageId
+              - type
+              - offsetDaysFromBatchStart
+              - scheduledLocalTime
+              - responsibleRole
+              - parameterIds
+            additionalProperties: false
+      required:
+        - code
+        - name
+        - piscoTypeId
+        - validFrom
+        - items
+      additionalProperties: false
+    InspectionTemplateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+            name:
+              type: string
+            piscoType:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                code:
+                  type: string
+                name:
+                  type: string
+              required:
+                - id
+                - code
+                - name
+              additionalProperties: false
+            validFrom:
+              type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            validTo:
+              anyOf:
+                - type: string
+                  format: date
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                - type: 'null'
+            isActive:
+              type: boolean
+            createdBy:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+              required:
+                - id
+                - firstName
+                - lastName
+              additionalProperties: false
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  stage:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      code:
+                        type: string
+                      name:
+                        type: string
+                    required:
+                      - id
+                      - code
+                      - name
+                    additionalProperties: false
+                  type:
+                    type: string
+                    enum:
+                      - FISICOQUIMICO
+                      - ORGANOLEPTICO
+                  offsetDaysFromBatchStart:
+                    type: integer
+                    minimum: 0
+                    maximum: 9007199254740991
+                  scheduledLocalTime:
+                    type: string
+                    pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+                  responsibleRole:
+                    type: string
+                    enum:
+                      - ADMIN
+                      - JEFE_CALIDAD
+                      - ANALISTA
+                      - OPERARIO
+                  equipment:
+                    anyOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                          code:
+                            type: string
+                          name:
+                            type: string
+                          status:
+                            type: string
+                            enum:
+                              - OPERATIVO
+                              - EN_MANTENIMIENTO
+                              - FUERA_DE_SERVICIO
+                        required:
+                          - id
+                          - code
+                          - name
+                          - status
+                        additionalProperties: false
+                      - type: 'null'
+                  parameters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                        code:
+                          type: string
+                        name:
+                          type: string
+                        type:
+                          type: string
+                          enum:
+                            - FISICOQUIMICO
+                            - SENSORIAL
+                        unit:
+                          anyOf:
+                            - type: string
+                            - type: 'null'
+                      required:
+                        - id
+                        - code
+                        - name
+                        - type
+                        - unit
+                      additionalProperties: false
+                required:
+                  - id
+                  - stage
+                  - type
+                  - offsetDaysFromBatchStart
+                  - scheduledLocalTime
+                  - responsibleRole
+                  - equipment
+                  - parameters
+                additionalProperties: false
+          required:
+            - id
+            - code
+            - name
+            - piscoType
+            - validFrom
+            - validTo
+            - isActive
+            - createdBy
+            - items
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    InspectionTemplateListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+              name:
+                type: string
+              piscoType:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                  name:
+                    type: string
+                required:
+                  - id
+                  - code
+                  - name
+                additionalProperties: false
+              validFrom:
+                type: string
+                format: date
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+              validTo:
+                anyOf:
+                  - type: string
+                    format: date
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                  - type: 'null'
+              isActive:
+                type: boolean
+              createdBy:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                required:
+                  - id
+                  - firstName
+                  - lastName
+                additionalProperties: false
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    stage:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                        code:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                        - id
+                        - code
+                        - name
+                      additionalProperties: false
+                    type:
+                      type: string
+                      enum:
+                        - FISICOQUIMICO
+                        - ORGANOLEPTICO
+                    offsetDaysFromBatchStart:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                    scheduledLocalTime:
+                      type: string
+                      pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+                    responsibleRole:
+                      type: string
+                      enum:
+                        - ADMIN
+                        - JEFE_CALIDAD
+                        - ANALISTA
+                        - OPERARIO
+                    equipment:
+                      anyOf:
+                        - type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                            code:
+                              type: string
+                            name:
+                              type: string
+                            status:
+                              type: string
+                              enum:
+                                - OPERATIVO
+                                - EN_MANTENIMIENTO
+                                - FUERA_DE_SERVICIO
+                          required:
+                            - id
+                            - code
+                            - name
+                            - status
+                          additionalProperties: false
+                        - type: 'null'
+                    parameters:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                          code:
+                            type: string
+                          name:
+                            type: string
+                          type:
+                            type: string
+                            enum:
+                              - FISICOQUIMICO
+                              - SENSORIAL
+                          unit:
+                            anyOf:
+                              - type: string
+                              - type: 'null'
+                        required:
+                          - id
+                          - code
+                          - name
+                          - type
+                          - unit
+                        additionalProperties: false
+                  required:
+                    - id
+                    - stage
+                    - type
+                    - offsetDaysFromBatchStart
+                    - scheduledLocalTime
+                    - responsibleRole
+                    - equipment
+                    - parameters
+                  additionalProperties: false
+            required:
+              - id
+              - code
+              - name
+              - piscoType
+              - validFrom
+              - validTo
+              - isActive
+              - createdBy
+              - items
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateInspectionRequest:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        stageId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        type:
+          type: string
+          enum:
+            - FISICOQUIMICO
+            - ORGANOLEPTICO
+        scheduledDate:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+        responsibleId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        equipmentId:
+          anyOf:
+            - type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            - type: 'null'
+        parameterIds:
+          maxItems: 100
+          type: array
+          items:
+            type: string
+            format: uuid
+            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        notes:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 500
+            - type: 'null'
+      required:
+        - batchId
+        - stageId
+        - type
+        - scheduledDate
+        - responsibleId
+        - parameterIds
+      additionalProperties: false
+    UpdateInspectionRequest:
+      type: object
+      properties:
+        scheduledDate:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+        responsibleId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        equipmentId:
+          anyOf:
+            - type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            - type: 'null'
+        parameterIds:
+          maxItems: 100
+          type: array
+          items:
+            type: string
+            format: uuid
+            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        notes:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 500
+            - type: 'null'
+      additionalProperties: false
+    RescheduleInspectionRequest:
+      type: object
+      properties:
+        newDate:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+        - newDate
+        - reason
+      additionalProperties: false
+    CancelInspectionRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+        - reason
+      additionalProperties: false
+    CreateInspectionPlanRequest:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        templateId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        responsibleByRole:
+          type: object
+          propertyNames:
+            type: string
+            enum:
+              - ADMIN
+              - JEFE_CALIDAD
+              - ANALISTA
+              - OPERARIO
+          additionalProperties:
+            type: string
+            format: uuid
+            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+      required:
+        - batchId
+        - templateId
+        - responsibleByRole
+      additionalProperties: false
+    InspectionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+              pattern: ^INS-\d{4}-\d{4}$
+            batch:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                code:
+                  type: string
+              required:
+                - id
+                - code
+              additionalProperties: false
+            stage:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                code:
+                  type: string
+                name:
+                  type: string
+              required:
+                - id
+                - code
+                - name
+              additionalProperties: false
+            type:
+              type: string
+              enum:
+                - FISICOQUIMICO
+                - ORGANOLEPTICO
+            status:
+              type: string
+              enum:
+                - PROGRAMADA
+                - EN_PROCESO
+                - COMPLETADA
+                - VENCIDA
+                - CANCELADA
+                - REPROGRAMADA
+            scheduledDate:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+            executedAt:
+              anyOf:
+                - type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                - type: 'null'
+            responsible:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+              required:
+                - id
+                - firstName
+                - lastName
+              additionalProperties: false
+            equipment:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                    status:
+                      type: string
+                      enum:
+                        - OPERATIVO
+                        - EN_MANTENIMIENTO
+                        - FUERA_DE_SERVICIO
+                  required:
+                    - id
+                    - code
+                    - name
+                    - status
+                  additionalProperties: false
+                - type: 'null'
+            rescheduledFromId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            rescheduledToId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            changeReason:
+              anyOf:
+                - type: string
+                - type: 'null'
+            notes:
+              anyOf:
+                - type: string
+                - type: 'null'
+            createdBy:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+              required:
+                - id
+                - firstName
+                - lastName
+              additionalProperties: false
+            dataOrigin:
+              type: string
+              enum:
+                - REAL
+                - DEMO
+            parameters:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                  name:
+                    type: string
+                  type:
+                    type: string
+                    enum:
+                      - FISICOQUIMICO
+                      - SENSORIAL
+                  unit:
+                    anyOf:
+                      - type: string
+                      - type: 'null'
+                required:
+                  - id
+                  - code
+                  - name
+                  - type
+                  - unit
+                additionalProperties: false
+            recordedParameterIds:
+              type: array
+              items:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+          required:
+            - id
+            - code
+            - batch
+            - stage
+            - type
+            - status
+            - scheduledDate
+            - executedAt
+            - responsible
+            - equipment
+            - rescheduledFromId
+            - rescheduledToId
+            - changeReason
+            - notes
+            - createdBy
+            - dataOrigin
+            - parameters
+            - recordedParameterIds
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    InspectionListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+                pattern: ^INS-\d{4}-\d{4}$
+              batch:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                required:
+                  - id
+                  - code
+                additionalProperties: false
+              stage:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                  name:
+                    type: string
+                required:
+                  - id
+                  - code
+                  - name
+                additionalProperties: false
+              type:
+                type: string
+                enum:
+                  - FISICOQUIMICO
+                  - ORGANOLEPTICO
+              status:
+                type: string
+                enum:
+                  - PROGRAMADA
+                  - EN_PROCESO
+                  - COMPLETADA
+                  - VENCIDA
+                  - CANCELADA
+                  - REPROGRAMADA
+              scheduledDate:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+              executedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                  - type: 'null'
+              responsible:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                required:
+                  - id
+                  - firstName
+                  - lastName
+                additionalProperties: false
+              equipment:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      code:
+                        type: string
+                      name:
+                        type: string
+                      status:
+                        type: string
+                        enum:
+                          - OPERATIVO
+                          - EN_MANTENIMIENTO
+                          - FUERA_DE_SERVICIO
+                    required:
+                      - id
+                      - code
+                      - name
+                      - status
+                    additionalProperties: false
+                  - type: 'null'
+              rescheduledFromId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              rescheduledToId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              changeReason:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              notes:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              createdBy:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                required:
+                  - id
+                  - firstName
+                  - lastName
+                additionalProperties: false
+              dataOrigin:
+                type: string
+                enum:
+                  - REAL
+                  - DEMO
+              parameters:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                    type:
+                      type: string
+                      enum:
+                        - FISICOQUIMICO
+                        - SENSORIAL
+                    unit:
+                      anyOf:
+                        - type: string
+                        - type: 'null'
+                  required:
+                    - id
+                    - code
+                    - name
+                    - type
+                    - unit
+                  additionalProperties: false
+              recordedParameterIds:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            required:
+              - id
+              - code
+              - batch
+              - stage
+              - type
+              - status
+              - scheduledDate
+              - executedAt
+              - responsible
+              - equipment
+              - rescheduledFromId
+              - rescheduledToId
+              - changeReason
+              - notes
+              - createdBy
+              - dataOrigin
+              - parameters
+              - recordedParameterIds
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    InspectionCoverageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            batch:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                code:
+                  type: string
+              required:
+                - id
+                - code
+              additionalProperties: false
+            coveredStages:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            totalStages:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            percentage:
+              anyOf:
+                - type: number
+                  minimum: 0
+                  maximum: 100
+                - type: 'null'
+            stages:
+              type: array
+              items:
+                type: object
+                properties:
+                  stage:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      code:
+                        type: string
+                      name:
+                        type: string
+                    required:
+                      - id
+                      - code
+                      - name
+                    additionalProperties: false
+                  hasScheduledInspection:
+                    type: boolean
+                  inspections:
+                    type: integer
+                    minimum: 0
+                    maximum: 9007199254740991
+                required:
+                  - stage
+                  - hasScheduledInspection
+                  - inspections
+                additionalProperties: false
+          required:
+            - batch
+            - coveredStages
+            - totalStages
+            - percentage
+            - stages
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    InspectionPlanResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+                pattern: ^INS-\d{4}-\d{4}$
+              batch:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                required:
+                  - id
+                  - code
+                additionalProperties: false
+              stage:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                  name:
+                    type: string
+                required:
+                  - id
+                  - code
+                  - name
+                additionalProperties: false
+              type:
+                type: string
+                enum:
+                  - FISICOQUIMICO
+                  - ORGANOLEPTICO
+              status:
+                type: string
+                enum:
+                  - PROGRAMADA
+                  - EN_PROCESO
+                  - COMPLETADA
+                  - VENCIDA
+                  - CANCELADA
+                  - REPROGRAMADA
+              scheduledDate:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+              executedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                  - type: 'null'
+              responsible:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                required:
+                  - id
+                  - firstName
+                  - lastName
+                additionalProperties: false
+              equipment:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      code:
+                        type: string
+                      name:
+                        type: string
+                      status:
+                        type: string
+                        enum:
+                          - OPERATIVO
+                          - EN_MANTENIMIENTO
+                          - FUERA_DE_SERVICIO
+                    required:
+                      - id
+                      - code
+                      - name
+                      - status
+                    additionalProperties: false
+                  - type: 'null'
+              rescheduledFromId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              rescheduledToId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              changeReason:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              notes:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              createdBy:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                required:
+                  - id
+                  - firstName
+                  - lastName
+                additionalProperties: false
+              dataOrigin:
+                type: string
+                enum:
+                  - REAL
+                  - DEMO
+              parameters:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                    type:
+                      type: string
+                      enum:
+                        - FISICOQUIMICO
+                        - SENSORIAL
+                    unit:
+                      anyOf:
+                        - type: string
+                        - type: 'null'
+                  required:
+                    - id
+                    - code
+                    - name
+                    - type
+                    - unit
+                  additionalProperties: false
+              recordedParameterIds:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            required:
+              - id
+              - code
+              - batch
+              - stage
+              - type
+              - status
+              - scheduledDate
+              - executedAt
+              - responsible
+              - equipment
+              - rescheduledFromId
+              - rescheduledToId
+              - changeReason
+              - notes
+              - createdBy
+              - dataOrigin
+              - parameters
+              - recordedParameterIds
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    ValidatePhysChemResultsRequest:
+      type: object
+      properties:
+        inspectionId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        results:
+          minItems: 1
+          maxItems: 100
+          type: array
+          items:
+            type: object
+            properties:
+              parameterId:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              value:
+                type: number
+              observation:
+                anyOf:
+                  - type: string
+                    minLength: 1
+                    maxLength: 500
+                  - type: 'null'
+            required:
+              - parameterId
+              - value
+            additionalProperties: false
+      required:
+        - inspectionId
+        - results
+      additionalProperties: false
+    CreatePhysChemResultsRequest:
+      type: object
+      properties:
+        inspectionId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        results:
+          minItems: 1
+          maxItems: 100
+          type: array
+          items:
+            type: object
+            properties:
+              parameterId:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              value:
+                type: number
+              observation:
+                anyOf:
+                  - type: string
+                    minLength: 1
+                    maxLength: 500
+                  - type: 'null'
+            required:
+              - parameterId
+              - value
+            additionalProperties: false
+      required:
+        - inspectionId
+        - results
+      additionalProperties: false
+    CorrectPhysChemResultRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+        value:
+          type: number
+        observation:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 500
+            - type: 'null'
+        equipmentId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+      required:
+        - reason
+        - value
+        - equipmentId
+      additionalProperties: false
+    PhysChemValidationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              parameterId:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              value:
+                type: number
+              status:
+                type: string
+                enum:
+                  - CONFORME
+                  - NO_CONFORME
+              standard:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  minValue:
+                    anyOf:
+                      - type: string
+                        pattern: ^-?\d+(\.\d+)?$
+                      - type: 'null'
+                  maxValue:
+                    anyOf:
+                      - type: string
+                        pattern: ^-?\d+(\.\d+)?$
+                      - type: 'null'
+                  targetValue:
+                    anyOf:
+                      - type: string
+                        pattern: ^-?\d+(\.\d+)?$
+                      - type: 'null'
+                  referenceNorm:
+                    anyOf:
+                      - type: string
+                      - type: 'null'
+                required:
+                  - id
+                  - minValue
+                  - maxValue
+                  - targetValue
+                  - referenceNorm
+                additionalProperties: false
+            required:
+              - parameterId
+              - value
+              - status
+              - standard
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    PhysChemResultListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              inspection:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                required:
+                  - id
+                  - code
+                additionalProperties: false
+              batch:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                required:
+                  - id
+                  - code
+                additionalProperties: false
+              parameter:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                  name:
+                    type: string
+                  unit:
+                    anyOf:
+                      - type: string
+                      - type: 'null'
+                required:
+                  - id
+                  - code
+                  - name
+                  - unit
+                additionalProperties: false
+              standard:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  minValue:
+                    anyOf:
+                      - type: string
+                        pattern: ^-?\d+(\.\d+)?$
+                      - type: 'null'
+                  maxValue:
+                    anyOf:
+                      - type: string
+                        pattern: ^-?\d+(\.\d+)?$
+                      - type: 'null'
+                  targetValue:
+                    anyOf:
+                      - type: string
+                        pattern: ^-?\d+(\.\d+)?$
+                      - type: 'null'
+                  referenceNorm:
+                    anyOf:
+                      - type: string
+                      - type: 'null'
+                required:
+                  - id
+                  - minValue
+                  - maxValue
+                  - targetValue
+                  - referenceNorm
+                additionalProperties: false
+              value:
+                type: string
+                pattern: ^-?\d+(\.\d+)?$
+              status:
+                type: string
+                enum:
+                  - CONFORME
+                  - NO_CONFORME
+                  - ANULADO
+              observation:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              equipment:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                  name:
+                    type: string
+                required:
+                  - id
+                  - code
+                  - name
+                additionalProperties: false
+              calibrationRef:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              recordedBy:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                required:
+                  - id
+                  - firstName
+                  - lastName
+                additionalProperties: false
+              recordedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+              dataOrigin:
+                type: string
+                enum:
+                  - REAL
+                  - DEMO
+              annulledBy:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                    required:
+                      - id
+                      - firstName
+                      - lastName
+                    additionalProperties: false
+                  - type: 'null'
+              annulledAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                  - type: 'null'
+              annulReason:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              replacesId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              replacementId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              nonConformity:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      code:
+                        type: string
+                      status:
+                        type: string
+                        enum:
+                          - ABIERTA
+                          - EN_ANALISIS
+                          - EN_TRATAMIENTO
+                          - EN_VERIFICACION
+                          - CERRADA
+                          - ANULADA
+                      severity:
+                        type: string
+                        enum:
+                          - LEVE
+                          - MODERADA
+                          - CRITICA
+                    required:
+                      - id
+                      - code
+                      - status
+                      - severity
+                    additionalProperties: false
+                  - type: 'null'
+            required:
+              - id
+              - inspection
+              - batch
+              - parameter
+              - standard
+              - value
+              - status
+              - observation
+              - equipment
+              - calibrationRef
+              - recordedBy
+              - recordedAt
+              - dataOrigin
+              - annulledBy
+              - annulledAt
+              - annulReason
+              - replacesId
+              - replacementId
+              - nonConformity
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    PhysChemCorrectionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            annulled:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                inspection:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                  required:
+                    - id
+                    - code
+                  additionalProperties: false
+                batch:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                  required:
+                    - id
+                    - code
+                  additionalProperties: false
+                parameter:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                    unit:
+                      anyOf:
+                        - type: string
+                        - type: 'null'
+                  required:
+                    - id
+                    - code
+                    - name
+                    - unit
+                  additionalProperties: false
+                standard:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    minValue:
+                      anyOf:
+                        - type: string
+                          pattern: ^-?\d+(\.\d+)?$
+                        - type: 'null'
+                    maxValue:
+                      anyOf:
+                        - type: string
+                          pattern: ^-?\d+(\.\d+)?$
+                        - type: 'null'
+                    targetValue:
+                      anyOf:
+                        - type: string
+                          pattern: ^-?\d+(\.\d+)?$
+                        - type: 'null'
+                    referenceNorm:
+                      anyOf:
+                        - type: string
+                        - type: 'null'
+                  required:
+                    - id
+                    - minValue
+                    - maxValue
+                    - targetValue
+                    - referenceNorm
+                  additionalProperties: false
+                value:
+                  type: string
+                  pattern: ^-?\d+(\.\d+)?$
+                status:
+                  type: string
+                  enum:
+                    - CONFORME
+                    - NO_CONFORME
+                    - ANULADO
+                observation:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                equipment:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                    - id
+                    - code
+                    - name
+                  additionalProperties: false
+                calibrationRef:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                recordedBy:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                recordedAt:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                dataOrigin:
+                  type: string
+                  enum:
+                    - REAL
+                    - DEMO
+                annulledBy:
+                  anyOf:
+                    - type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                        firstName:
+                          type: string
+                        lastName:
+                          type: string
+                      required:
+                        - id
+                        - firstName
+                        - lastName
+                      additionalProperties: false
+                    - type: 'null'
+                annulledAt:
+                  anyOf:
+                    - type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                    - type: 'null'
+                annulReason:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                replacesId:
+                  anyOf:
+                    - type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    - type: 'null'
+                replacementId:
+                  anyOf:
+                    - type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    - type: 'null'
+                nonConformity:
+                  anyOf:
+                    - type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                        code:
+                          type: string
+                        status:
+                          type: string
+                          enum:
+                            - ABIERTA
+                            - EN_ANALISIS
+                            - EN_TRATAMIENTO
+                            - EN_VERIFICACION
+                            - CERRADA
+                            - ANULADA
+                        severity:
+                          type: string
+                          enum:
+                            - LEVE
+                            - MODERADA
+                            - CRITICA
+                      required:
+                        - id
+                        - code
+                        - status
+                        - severity
+                      additionalProperties: false
+                    - type: 'null'
+              required:
+                - id
+                - inspection
+                - batch
+                - parameter
+                - standard
+                - value
+                - status
+                - observation
+                - equipment
+                - calibrationRef
+                - recordedBy
+                - recordedAt
+                - dataOrigin
+                - annulledBy
+                - annulledAt
+                - annulReason
+                - replacesId
+                - replacementId
+                - nonConformity
+              additionalProperties: false
+            replacement:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                inspection:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                  required:
+                    - id
+                    - code
+                  additionalProperties: false
+                batch:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                  required:
+                    - id
+                    - code
+                  additionalProperties: false
+                parameter:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                    unit:
+                      anyOf:
+                        - type: string
+                        - type: 'null'
+                  required:
+                    - id
+                    - code
+                    - name
+                    - unit
+                  additionalProperties: false
+                standard:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    minValue:
+                      anyOf:
+                        - type: string
+                          pattern: ^-?\d+(\.\d+)?$
+                        - type: 'null'
+                    maxValue:
+                      anyOf:
+                        - type: string
+                          pattern: ^-?\d+(\.\d+)?$
+                        - type: 'null'
+                    targetValue:
+                      anyOf:
+                        - type: string
+                          pattern: ^-?\d+(\.\d+)?$
+                        - type: 'null'
+                    referenceNorm:
+                      anyOf:
+                        - type: string
+                        - type: 'null'
+                  required:
+                    - id
+                    - minValue
+                    - maxValue
+                    - targetValue
+                    - referenceNorm
+                  additionalProperties: false
+                value:
+                  type: string
+                  pattern: ^-?\d+(\.\d+)?$
+                status:
+                  type: string
+                  enum:
+                    - CONFORME
+                    - NO_CONFORME
+                    - ANULADO
+                observation:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                equipment:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                    - id
+                    - code
+                    - name
+                  additionalProperties: false
+                calibrationRef:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                recordedBy:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                recordedAt:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                dataOrigin:
+                  type: string
+                  enum:
+                    - REAL
+                    - DEMO
+                annulledBy:
+                  anyOf:
+                    - type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                        firstName:
+                          type: string
+                        lastName:
+                          type: string
+                      required:
+                        - id
+                        - firstName
+                        - lastName
+                      additionalProperties: false
+                    - type: 'null'
+                annulledAt:
+                  anyOf:
+                    - type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                    - type: 'null'
+                annulReason:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                replacesId:
+                  anyOf:
+                    - type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    - type: 'null'
+                replacementId:
+                  anyOf:
+                    - type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    - type: 'null'
+                nonConformity:
+                  anyOf:
+                    - type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                        code:
+                          type: string
+                        status:
+                          type: string
+                          enum:
+                            - ABIERTA
+                            - EN_ANALISIS
+                            - EN_TRATAMIENTO
+                            - EN_VERIFICACION
+                            - CERRADA
+                            - ANULADA
+                        severity:
+                          type: string
+                          enum:
+                            - LEVE
+                            - MODERADA
+                            - CRITICA
+                      required:
+                        - id
+                        - code
+                        - status
+                        - severity
+                      additionalProperties: false
+                    - type: 'null'
+              required:
+                - id
+                - inspection
+                - batch
+                - parameter
+                - standard
+                - value
+                - status
+                - observation
+                - equipment
+                - calibrationRef
+                - recordedBy
+                - recordedAt
+                - dataOrigin
+                - annulledBy
+                - annulledAt
+                - annulReason
+                - replacesId
+                - replacementId
+                - nonConformity
+              additionalProperties: false
+            nonConformity:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    status:
+                      type: string
+                      enum:
+                        - ABIERTA
+                        - EN_ANALISIS
+                        - EN_TRATAMIENTO
+                        - EN_VERIFICACION
+                        - CERRADA
+                        - ANULADA
+                    severity:
+                      type: string
+                      enum:
+                        - LEVE
+                        - MODERADA
+                        - CRITICA
+                  required:
+                    - id
+                    - code
+                    - status
+                    - severity
+                  additionalProperties: false
+                - type: 'null'
+          required:
+            - annulled
+            - replacement
+            - nonConformity
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    PhysChemControlChartResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            points:
+              type: array
+              items:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                  value:
+                    type: number
+                  batchCode:
+                    type: string
+                  outOfControl:
+                    type: boolean
+                required:
+                  - date
+                  - value
+                  - batchCode
+                  - outOfControl
+                additionalProperties: false
+            centerLine:
+              anyOf:
+                - type: number
+                - type: 'null'
+            upperControlLimit:
+              anyOf:
+                - type: number
+                - type: 'null'
+            lowerControlLimit:
+              anyOf:
+                - type: number
+                - type: 'null'
+            sampleSize:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            sufficientData:
+              type: boolean
+            includesDemo:
+              type: boolean
+          required:
+            - points
+            - centerLine
+            - upperControlLimit
+            - lowerControlLimit
+            - sampleSize
+            - sufficientData
+            - includesDemo
           additionalProperties: false
         meta:
           type: object

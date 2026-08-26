@@ -111,24 +111,24 @@ Sprint más denso. Es el corazón funcional del sistema.
 
 El orden operativo, las comprobaciones y los criterios detallados están en `13-CHECKLIST-SPRINT-4.md`.
 
-- [ ] Programación, reprogramación y cancelación de inspecciones con motivo
-- [ ] Selección de parámetros por inspección
-- [ ] Plantillas versionadas y generación del plan de inspecciones por lote
+- [x] Programación, reprogramación y cancelación de inspecciones con motivo
+- [x] Selección de parámetros por inspección
+- [x] Plantillas versionadas y generación del plan de inspecciones por lote
 - [ ] Vistas de calendario y de listado con filtros
 - [ ] Panel "mis inspecciones pendientes"
-- [ ] Tarea programada de marcado de vencidas
-- [ ] Reporte de cobertura por etapa
-- [ ] Registro de resultados con validación contra estándar
-- [ ] Bloqueo definitivo cuando falta estándar o cuando es provisional para un lote real
-- [ ] Extremo de previsualización de conformidad sin guardar
-- [ ] Generación automática de no conformidad ante resultado no conforme
-- [ ] Inmutabilidad y anulación con reemplazo (ADR-004)
-- [ ] Anulación/reemplazo transaccional de la no conformidad automática asociada
-- [ ] Completado automático de la inspección
-- [ ] Histórico por parámetro
-- [ ] Gráfico de control con límites ±3σ
+- [x] Tarea programada de marcado de vencidas
+- [x] Reporte de cobertura por etapa
+- [x] Registro de resultados con validación contra estándar
+- [x] Bloqueo definitivo cuando falta estándar o cuando es provisional para un lote real
+- [x] Extremo de previsualización de conformidad sin guardar
+- [x] Generación automática de no conformidad ante resultado no conforme
+- [x] Inmutabilidad y anulación con reemplazo (ADR-004)
+- [x] Anulación/reemplazo transaccional de la no conformidad automática asociada
+- [x] Completado automático de la inspección
+- [x] Histórico por parámetro
+- [x] Gráfico de control con límites ±3σ
 - [ ] Pantallas: calendario, programación, ejecución de inspección, gráfico de control
-- [ ] Pruebas unitarias: conformidad en los bordes del rango, transiciones de estado, cálculo de límites de control
+- [x] Pruebas unitarias: conformidad en los bordes del rango, transiciones de estado, cálculo de límites de control
 
 **Criterio de cierre:** un valor fuera de rango genera automáticamente una no conformidad, y el resultado guardado no puede alterarse.
 

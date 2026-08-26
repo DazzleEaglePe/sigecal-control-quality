@@ -4,6 +4,8 @@ export * from './api/batches.schemas.js';
 export * from './api/admin.schemas.js';
 export * from './api/catalogs.schemas.js';
 export * from './api/health.schemas.js';
+export * from './api/inspections.schemas.js';
+export * from './api/physchem.schemas.js';
 export * from './api/standards.schemas.js';
 export * from './domain/enums.js';
 export * from './domain/permissions.js';

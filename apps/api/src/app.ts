@@ -39,6 +39,20 @@ import { BatchRepository } from './modules/batches/batches.repository.js';
 import { createBatchesRouter } from './modules/batches/batches.routes.js';
 import { BatchesService } from './modules/batches/batches.service.js';
 import type { BatchesUseCases } from './modules/batches/batches.types.js';
+import { InspectionTemplateRepository } from './modules/inspection-templates/inspection-templates.repository.js';
+import { createInspectionTemplatesRouter } from './modules/inspection-templates/inspection-templates.routes.js';
+import { InspectionTemplatesService } from './modules/inspection-templates/inspection-templates.service.js';
+import type { InspectionTemplatesUseCases } from './modules/inspection-templates/inspection-templates.types.js';
+import { InspectionMutationRepository } from './modules/inspections/inspections.mutations.js';
+import { InspectionRepository } from './modules/inspections/inspections.repository.js';
+import { createInspectionsRouter } from './modules/inspections/inspections.routes.js';
+import { InspectionsService } from './modules/inspections/inspections.service.js';
+import type { InspectionsUseCases } from './modules/inspections/inspections.types.js';
+import { PhysChemMutationRepository } from './modules/physchem/physchem.mutations.js';
+import { PhysChemRepository } from './modules/physchem/physchem.repository.js';
+import { createPhysChemRouter } from './modules/physchem/physchem.routes.js';
+import { PhysChemService } from './modules/physchem/physchem.service.js';
+import type { PhysChemUseCases } from './modules/physchem/physchem.types.js';
 
 export interface AppDependencies {
   readonly authService?: AuthUseCases;
@@ -46,6 +60,9 @@ export interface AppDependencies {
   readonly catalogsService?: CatalogsUseCases;
   readonly areasService?: AreasUseCases;
   readonly healthService?: HealthCheckUseCase;
+  readonly inspectionsService?: InspectionsUseCases;
+  readonly inspectionTemplatesService?: InspectionTemplatesUseCases;
+  readonly physChemService?: PhysChemUseCases;
   readonly standardsService?: StandardsUseCases;
   readonly usersService?: UsersUseCases;
 }
@@ -57,6 +74,21 @@ const defaultBatchesService = (): BatchesUseCases =>
   new BatchesService(
     new BatchRepository(prisma),
     new BatchMutationRepository(prisma),
+  );
+
+const defaultInspectionsService = (): InspectionsUseCases =>
+  new InspectionsService(
+    new InspectionRepository(prisma),
+    new InspectionMutationRepository(prisma),
+  );
+
+const defaultInspectionTemplatesService = (): InspectionTemplatesUseCases =>
+  new InspectionTemplatesService(new InspectionTemplateRepository(prisma));
+
+const defaultPhysChemService = (): PhysChemUseCases =>
+  new PhysChemService(
+    new PhysChemRepository(prisma),
+    new PhysChemMutationRepository(prisma),
   );
 
 const defaultAuthService = (): AuthUseCases =>
@@ -96,43 +128,69 @@ const configureMiddleware = (app: Express): void => {
   app.use(cookieParser());
 };
 
-export const createApp = (dependencies: AppDependencies = {}): Express => {
-  const app = express();
-  const authService = dependencies.authService ?? defaultAuthService();
-  const batchesService = dependencies.batchesService ?? defaultBatchesService();
-  const areasService = dependencies.areasService ?? defaultAreasService();
-  const catalogsService =
-    dependencies.catalogsService ?? defaultCatalogsService();
-  const healthService = dependencies.healthService ?? defaultHealthService();
-  const standardsService =
-    dependencies.standardsService ?? defaultStandardsService();
-  const usersService = dependencies.usersService ?? defaultUsersService();
+interface ResolvedServices {
+  readonly auth: AuthUseCases;
+  readonly batches: BatchesUseCases;
+  readonly catalogs: CatalogsUseCases;
+  readonly areas: AreasUseCases;
+  readonly health: HealthCheckUseCase;
+  readonly inspections: InspectionsUseCases;
+  readonly templates: InspectionTemplatesUseCases;
+  readonly physChem: PhysChemUseCases;
+  readonly standards: StandardsUseCases;
+  readonly users: UsersUseCases;
+}
 
-  configureMiddleware(app);
+const resolveServices = (dependencies: AppDependencies): ResolvedServices => ({
+  auth: dependencies.authService ?? defaultAuthService(),
+  batches: dependencies.batchesService ?? defaultBatchesService(),
+  catalogs: dependencies.catalogsService ?? defaultCatalogsService(),
+  areas: dependencies.areasService ?? defaultAreasService(),
+  health: dependencies.healthService ?? defaultHealthService(),
+  inspections: dependencies.inspectionsService ?? defaultInspectionsService(),
+  templates:
+    dependencies.inspectionTemplatesService ??
+    defaultInspectionTemplatesService(),
+  physChem: dependencies.physChemService ?? defaultPhysChemService(),
+  standards: dependencies.standardsService ?? defaultStandardsService(),
+  users: dependencies.usersService ?? defaultUsersService(),
+});
 
-  app.use(`${env.API_PREFIX}/health`, createHealthRouter(healthService));
-  app.use(`${env.API_PREFIX}/auth`, createAuthRouter(authService));
+const mountRoutes = (app: Express, services: ResolvedServices): void => {
+  app.use(`${env.API_PREFIX}/health`, createHealthRouter(services.health));
+  app.use(`${env.API_PREFIX}/auth`, createAuthRouter(services.auth));
   app.use(
     `${env.API_PREFIX}/batches`,
-    createBatchesRouter(authService, batchesService),
+    createBatchesRouter(services.auth, services.batches),
   );
   app.use(
     `${env.API_PREFIX}/masters/areas`,
-    createAreasRouter(authService, areasService),
+    createAreasRouter(services.auth, services.areas),
   );
   app.use(
     `${env.API_PREFIX}/masters`,
-    createStandardsRouter(authService, standardsService),
+    createStandardsRouter(services.auth, services.standards),
+    createCatalogsRouter(services.auth, services.catalogs),
+    createInspectionTemplatesRouter(services.auth, services.templates),
   );
   app.use(
-    `${env.API_PREFIX}/masters`,
-    createCatalogsRouter(authService, catalogsService),
+    `${env.API_PREFIX}/inspections`,
+    createInspectionsRouter(services.auth, services.inspections),
+  );
+  app.use(
+    `${env.API_PREFIX}/physchem`,
+    createPhysChemRouter(services.auth, services.physChem),
   );
   app.use(
     `${env.API_PREFIX}/users`,
-    createUsersRouter(authService, usersService),
+    createUsersRouter(services.auth, services.users),
   );
+};
 
+export const createApp = (dependencies: AppDependencies = {}): Express => {
+  const app = express();
+  configureMiddleware(app);
+  mountRoutes(app, resolveServices(dependencies));
   app.use(notFoundHandler);
   app.use(errorHandler);
   return app;

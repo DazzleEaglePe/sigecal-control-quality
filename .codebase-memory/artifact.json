@@ -1,11 +1,11 @@
 {
   "schema_version": 2,
-  "commit": "21ec806d464a356c2c8002e0f4f86a56bbf38187",
-  "indexed_at": "2026-08-25T05:37:33Z",
+  "commit": "4ea00fe4514fb88d95d5aa031483af5230b7bd41",
+  "indexed_at": "2026-08-26T01:48:27Z",
   "project": "agro-project",
-  "nodes": 1925,
-  "edges": 4580,
-  "original_size": 6094848,
-  "compressed_size": 1010459,
+  "nodes": 2444,
+  "edges": 6108,
+  "original_size": 5701632,
+  "compressed_size": 636179,
   "compression_level": 3
 }

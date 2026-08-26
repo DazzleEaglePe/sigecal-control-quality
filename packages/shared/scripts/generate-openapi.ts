@@ -18,6 +18,15 @@ import {
   standardsSchemas,
 } from './openapi/standards.openapi.js';
 import { catalogPaths, catalogSchemas } from './openapi/catalogs.openapi.js';
+import {
+  inspectionTemplatePaths,
+  inspectionTemplateSchemas,
+} from './openapi/inspection-templates.openapi.js';
+import {
+  inspectionPaths,
+  inspectionSchemas,
+} from './openapi/inspections.openapi.js';
+import { physChemPaths, physChemSchemas } from './openapi/physchem.openapi.js';
 
 const outputPath = fileURLToPath(
   new URL('../../../docs/openapi.yaml', import.meta.url),
@@ -57,6 +66,18 @@ const document = {
     {
       name: 'Lotes',
       description: 'Ciclo de vida y trazabilidad de lotes productivos.',
+    },
+    {
+      name: 'Plantillas',
+      description: 'Planes versionados para programar inspecciones.',
+    },
+    {
+      name: 'Inspecciones',
+      description: 'Programación, ejecución y cobertura de controles.',
+    },
+    {
+      name: 'Fisicoquímico',
+      description: 'Resultados finales, correcciones y control estadístico.',
     },
   ],
   paths: {
@@ -108,6 +129,9 @@ const document = {
     ...standardsPaths,
     ...catalogPaths,
     ...batchPaths,
+    ...inspectionTemplatePaths,
+    ...inspectionPaths,
+    ...physChemPaths,
   },
   components: {
     securitySchemes: {
@@ -129,6 +153,9 @@ const document = {
       ...standardsSchemas,
       ...catalogSchemas,
       ...batchSchemas,
+      ...inspectionTemplateSchemas,
+      ...inspectionSchemas,
+      ...physChemSchemas,
     },
   },
 };
