@@ -12,9 +12,12 @@ import './styles/dashboard-refresh.css';
 import './styles/dashboard-visual.css';
 import './styles/components-refresh.css';
 import './styles/quality-refresh.css';
+import './styles/quality-table.css';
 import './styles/quality-calendar.css';
 import './styles/quality-forms.css';
 import './styles/quality-execution.css';
+import './styles/quality-measurements.css';
+import './styles/quality-analysis.css';
 import './styles/auth-refresh.css';
 import './styles/auth-form-refresh.css';
 

@@ -228,151 +228,9 @@
   color: #6f7c75;
 }
 
-.quality-filters {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr)) auto;
-  gap: 0.65rem;
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  border: 1px solid #e5eae6;
-  border-radius: 0.82rem;
-  background: #f8faf8;
-}
-
-.quality-filters label,
-.quality-form label,
-.transition-form label {
-  display: grid;
-  gap: 0.32rem;
-  color: #66736c;
-  font-size: 0.62rem;
-  font-weight: 700;
-}
-
-.quality-filters input,
-.quality-filters select,
-.quality-form input,
-.quality-form select,
-.quality-form textarea,
-.transition-form input,
-.transition-form textarea {
-  width: 100%;
-  min-height: 2.45rem;
-  padding: 0.55rem 0.62rem;
-  border: 1px solid #dfe6e1;
-  border-radius: 0.64rem;
-  color: #26362f;
-  background: white;
-  font-size: 0.7rem;
-}
-
-.quality-table-wrap {
-  border-radius: 0.8rem;
-  box-shadow: none;
-}
-
-.quality-table {
-  width: 100%;
-  min-width: 62rem;
-}
-
-.quality-table th,
-.quality-table td {
-  padding: 0.72rem;
-  border-bottom: 1px solid #edf0ed;
-  text-align: left;
-  vertical-align: middle;
-}
-
-.quality-table td {
-  color: #526059;
-  font-size: 0.67rem;
-}
-
-.quality-table td strong {
-  color: #25372f;
-}
-
-.quality-type {
-  gap: 0.35rem;
-}
-
-.quality-type svg {
-  width: 0.9rem;
-  color: #0d7a54;
-}
-
-.quality-row-action {
-  width: 2rem;
-  height: 2rem;
-  justify-content: center;
-  border: 1px solid #e0e6e2;
-  border-radius: 0.55rem;
-  color: #0b7550;
-}
-
-.quality-row-action svg {
-  width: 0.9rem;
-}
-
-.quality-status,
-.measurement-status,
-.result-pill,
-.nc-reference {
-  display: inline-flex;
-  width: fit-content;
-  align-items: center;
-  padding: 0.3rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.56rem;
-  font-style: normal;
-  font-weight: 750;
-  white-space: nowrap;
-}
-
-.status-programada {
-  color: #285f8f;
-  background: #e9f2f9;
-}
-.status-en_proceso {
-  color: #08714d;
-  background: #e4f5eb;
-}
-.status-completada {
-  color: #52625b;
-  background: #edf1ee;
-}
-.status-vencida {
-  color: #aa6810;
-  background: #fff1d8;
-}
-.status-cancelada {
-  color: #9a4141;
-  background: #fbe8e8;
-}
-.status-reprogramada {
-  color: #6d579a;
-  background: #f0ebf8;
-}
-
-.pagination {
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.6rem;
-  margin-top: 0.9rem;
-}
-
-.pagination span {
-  color: #75817b;
-  font-size: 0.63rem;
-}
-
 @media (max-width: 1180px) {
   .quality-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .quality-filters {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .pending-list {
     grid-template-columns: 1fr;
@@ -384,8 +242,7 @@
     width: 100%;
     flex-wrap: wrap;
   }
-  .quality-stats,
-  .quality-filters {
+  .quality-stats {
     grid-template-columns: 1fr;
   }
   .pending-list > a {

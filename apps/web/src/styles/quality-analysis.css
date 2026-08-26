@@ -1,0 +1,104 @@
+.analysis-filters {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto auto;
+}
+.demo-check {
+  display: flex !important;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: end;
+  min-height: 2.45rem;
+}
+.demo-check input {
+  width: 1rem;
+  min-height: auto;
+  accent-color: #087550;
+}
+.chart-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 0.8rem;
+}
+.chart-metrics span {
+  padding: 0.65rem;
+  border: 1px solid #e5eae6;
+  border-radius: 0.65rem;
+  background: #fafbfa;
+}
+.chart-metrics small,
+.chart-metrics strong {
+  display: block;
+}
+.chart-metrics small {
+  color: #839089;
+  font-size: 0.54rem;
+}
+.chart-metrics strong {
+  margin-top: 0.15rem;
+  font-size: 0.82rem;
+}
+.control-chart {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #e4e9e6;
+  border-radius: 0.8rem;
+  background: linear-gradient(#fbfcfb, #f5faf7);
+}
+.control-chart svg {
+  display: block;
+  width: 100%;
+  min-width: 34rem;
+}
+.control-series {
+  fill: none;
+  stroke: #0a7a53;
+  stroke-width: 2.5;
+}
+.control-chart circle {
+  fill: white;
+  stroke: #0a7a53;
+  stroke-width: 2;
+}
+.control-chart circle.is-alert {
+  fill: #d96754;
+  stroke: #a83f30;
+}
+.control-limit line {
+  stroke: #a6b4ad;
+  stroke-dasharray: 5 5;
+  stroke-width: 1;
+}
+.control-limit text {
+  fill: #75817b;
+  font-size: 9px;
+  text-anchor: end;
+}
+.control-chart figcaption {
+  padding: 0.65rem;
+  border-top: 1px solid #e5eae6;
+  color: #6e7c75;
+  font-size: 0.62rem;
+}
+.result-pill {
+  gap: 0.3rem;
+}
+.result-pill svg {
+  width: 0.72rem;
+}
+.physchem-results-table {
+  min-width: 68rem;
+}
+
+@media (max-width: 980px) {
+  .chart-metrics,
+  .analysis-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .chart-metrics,
+  .analysis-filters {
+    grid-template-columns: 1fr;
+  }
+}

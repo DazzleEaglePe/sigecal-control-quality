@@ -1,11 +1,11 @@
 {
   "schema_version": 2,
-  "commit": "62fa3c1e777600814f994b0578ce79af24f2309d",
-  "indexed_at": "2026-08-26T04:46:53Z",
+  "commit": "ae8b380eac5b91437aecbbb7e8b558ac6e953822",
+  "indexed_at": "2026-08-26T04:51:52Z",
   "project": "sigecal",
-  "nodes": 2750,
-  "edges": 6858,
-  "original_size": 5701632,
-  "compressed_size": 1143741,
-  "compression_level": 9
+  "nodes": 2756,
+  "edges": 6864,
+  "original_size": 7602176,
+  "compressed_size": 1469546,
+  "compression_level": 3
 }
