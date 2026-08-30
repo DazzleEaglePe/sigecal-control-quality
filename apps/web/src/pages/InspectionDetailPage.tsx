@@ -1,10 +1,15 @@
 import { ArrowLeft, FlaskConical, History } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Permission, type InspectionItem } from '@sigecal/shared';
+import {
+  Permission,
+  type InspectionDetail,
+  type InspectionItem,
+} from '@sigecal/shared';
 
 import { useAuth } from '../features/auth/useAuth.js';
 import { InspectionActions } from '../features/inspections/InspectionActions.js';
 import { InspectionOverview } from '../features/inspections/InspectionOverview.js';
+import { InspectionParameterTraceability } from '../features/inspections/InspectionParameterTraceability.js';
 import { useInspectionDetail } from '../features/inspections/useInspections.js';
 import { PhysChemExecutionForm } from '../features/physchem/PhysChemExecutionForm.js';
 import type { AuthorizedRequest } from '../features/auth/auth-context.js';
@@ -47,7 +52,7 @@ const LockedExecution = ({
 
 interface DetailContentProps {
   readonly request: AuthorizedRequest;
-  readonly inspection: InspectionItem;
+  readonly inspection: InspectionDetail;
   readonly canManage: boolean;
   readonly canRecord: boolean;
   readonly changed: (inspection: InspectionItem) => void;
@@ -75,6 +80,7 @@ const DetailContent = (props: DetailContentProps): React.JSX.Element => (
   <div className="page-stack quality-page">
     <DetailHeader id={props.inspection.id} />
     <InspectionOverview inspection={props.inspection} />
+    <InspectionParameterTraceability inspection={props.inspection} />
     <InspectionActions
       request={props.request}
       inspection={props.inspection}
@@ -109,7 +115,7 @@ export const InspectionDetailPage = (): React.JSX.Element => {
   );
   const changed = (inspection: InspectionItem): void => {
     if (inspection.id !== id) void navigate(`/inspecciones/${inspection.id}`);
-    else detail.setInspection(inspection);
+    else void detail.reload();
   };
   if (detail.loading)
     return (

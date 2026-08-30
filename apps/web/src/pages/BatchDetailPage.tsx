@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   Permission,
   type BatchItem,
@@ -24,6 +24,8 @@ const tabs: readonly { readonly id: DetailTab; readonly label: string }[] = [
   { id: 'inspections', label: 'Inspecciones' },
   { id: 'nonconformities', label: 'No conformidades' },
 ];
+const isDetailTab = (value: string | null): value is DetailTab =>
+  tabs.some((item) => item.id === value);
 const DetailHeader = ({ batch }: { readonly batch: BatchItem }) => (
   <header className="page-heading batch-heading">
     <div>
@@ -87,12 +89,14 @@ const TabContent = ({
   timeline,
   canEdit,
   changed,
+  focusId,
 }: {
   readonly tab: DetailTab;
   readonly batch: BatchItem;
   readonly timeline: readonly BatchTimelineEntry[];
   readonly canEdit: boolean;
   readonly changed: (item: BatchItem) => void;
+  readonly focusId: string | null;
 }) => {
   if (tab === 'data')
     return <BatchOverview batch={batch} canEdit={canEdit} changed={changed} />;
@@ -110,7 +114,7 @@ const TabContent = ({
     );
   return (
     <TablePanel title="No conformidades del lote">
-      <BatchNonConformities entries={timeline} />
+      <BatchNonConformities entries={timeline} focusId={focusId} />
     </TablePanel>
   );
 };
@@ -124,11 +128,34 @@ const DetailError = ({ message }: { readonly message: string }) => (
   </div>
 );
 
+/** Mantiene la pestaña en la URL para que los enlaces a una no conformidad
+ * generada abran la pestaña correcta y desplacen hasta el registro. */
+const useDetailTab = (loading: boolean) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const focusId = searchParams.get('focus');
+  const [tab, setTab] = useState<DetailTab>(
+    isDetailTab(requestedTab) ? requestedTab : 'data',
+  );
+  const changeTab = (next: DetailTab): void => {
+    setTab(next);
+    setSearchParams(next === 'data' ? {} : { tab: next });
+  };
+  useEffect(() => {
+    if (tab !== 'nonconformities' || !focusId || loading) return;
+    document.getElementById(`nc-${focusId}`)?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    });
+  }, [focusId, loading, tab]);
+  return { changeTab, focusId, tab };
+};
+
 export const BatchDetailPage = (): React.JSX.Element => {
   const id = useParams().id ?? '';
   const { request, user } = useAuth();
   const detail = useBatchDetail(request, id);
-  const [tab, setTab] = useState<DetailTab>('data');
+  const { changeTab, focusId, tab } = useDetailTab(detail.loading);
   if (detail.loading && !detail.batch) return <p>Cargando lote…</p>;
   if (detail.error || !detail.batch)
     return (
@@ -140,7 +167,7 @@ export const BatchDetailPage = (): React.JSX.Element => {
     <div className="page-stack">
       <DetailHeader batch={detail.batch} />
       <BatchLifecycleActions batch={detail.batch} completed={detail.reload} />
-      <DetailTabs selected={tab} change={setTab} />
+      <DetailTabs selected={tab} change={changeTab} />
       <TabContent
         tab={tab}
         batch={detail.batch}
@@ -149,6 +176,7 @@ export const BatchDetailPage = (): React.JSX.Element => {
           user?.permissions.includes(Permission.BATCHES_OPERATE),
         )}
         changed={detail.setBatch}
+        focusId={focusId}
       />
     </div>
   );

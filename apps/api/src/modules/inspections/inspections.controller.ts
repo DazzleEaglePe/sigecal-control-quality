@@ -89,7 +89,7 @@ export class InspectionsController {
 
   public readonly get: RequestHandler = async (request, response, next) => {
     try {
-      const data = await this.inspections.get(
+      const data = await this.inspections.detail(
         entityId(request),
         actorFrom(request),
       );

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type {
   BatchItem,
   EquipmentItem,
+  InspectionDetail,
   InspectionItem,
   InspectionListQuery,
   InspectionTemplateItem,
@@ -97,7 +98,7 @@ export const useInspectionCalendar = (
 };
 
 export const useInspectionDetail = (request: AuthorizedRequest, id: string) => {
-  const [inspection, setInspection] = useState<InspectionItem>();
+  const [inspection, setInspection] = useState<InspectionDetail>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
   const reload = useCallback(async () => {

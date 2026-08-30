@@ -6,6 +6,7 @@ import type {
   EquipmentStatus,
   InspectionCalendarQuery,
   InspectionCoverage,
+  InspectionDetail,
   InspectionItem,
   InspectionListQuery,
   InspectionStatus,
@@ -16,6 +17,9 @@ import type {
   Role,
   UpdateInspectionRequest,
 } from '@sigecal/shared';
+
+import type { PhysChemResultRecord } from '../physchem/physchem.types.js';
+import type { StandardRecord } from '../standards/standards.types.js';
 
 export interface InspectionActor {
   readonly userId: string;
@@ -71,6 +75,12 @@ export interface InspectionRecord {
     readonly parameter: ParameterRecord;
   }[];
   readonly results: readonly { readonly parameterId: string }[];
+}
+
+export interface InspectionDetailRecord {
+  readonly inspection: InspectionRecord;
+  readonly standards: readonly StandardRecord[];
+  readonly results: readonly PhysChemResultRecord[];
 }
 
 export interface InspectionBatchContext extends BatchReferenceRecord {
@@ -143,6 +153,10 @@ export interface InspectionReadRepositoryPort {
     id: string,
     actor: InspectionActor,
   ): Promise<InspectionRecord | null>;
+  findDetailById(
+    id: string,
+    actor: InspectionActor,
+  ): Promise<InspectionDetailRecord | null>;
   findReferences(input: CreateInspectionRequest): Promise<InspectionReferences>;
   findPlanContext(
     input: CreateInspectionPlanRequest,
@@ -199,6 +213,7 @@ export interface InspectionsUseCases {
     actor: InspectionActor,
   ): Promise<ListResult>;
   get(id: string, actor: InspectionActor): Promise<InspectionItem>;
+  detail(id: string, actor: InspectionActor): Promise<InspectionDetail>;
   create(
     input: CreateInspectionRequest,
     actor: InspectionActor,

@@ -11,6 +11,7 @@ import type {
   PhysChemReadRepositoryPort,
 } from './physchem.types.js';
 import {
+  applicableStandardsWhere,
   controlChartWhere,
   inspectionAccessWhere,
   resultAccessWhere,
@@ -31,7 +32,7 @@ const parameterSelection = {
   unit: true,
   type: true,
 } as const;
-const standardSelection = {
+export const standardSelection = {
   id: true,
   parameterId: true,
   piscoTypeId: true,
@@ -106,6 +107,19 @@ export const physChemResultSelection = {
   nonConformity: { select: ncSelection },
 } as const;
 
+type SelectedPhysChemResult = Prisma.PhysChemResultGetPayload<{
+  select: typeof physChemResultSelection;
+}>;
+
+export const mapSelectedPhysChemResult = ({
+  inspection,
+  ...item
+}: SelectedPhysChemResult) => ({
+  ...item,
+  inspection: { id: inspection.id, code: inspection.code },
+  batch: inspection.batch,
+});
+
 export class PhysChemRepository implements PhysChemReadRepositoryPort {
   public constructor(private readonly client: PrismaClient) {}
 
@@ -122,11 +136,7 @@ export class PhysChemRepository implements PhysChemReadRepositoryPort {
       take: pageSize,
       orderBy: { recordedAt: 'desc' },
     });
-    const items = rawItems.map(({ inspection, ...item }) => ({
-      ...item,
-      inspection: { id: inspection.id, code: inspection.code },
-      batch: inspection.batch,
-    }));
+    const items = rawItems.map(mapSelectedPhysChemResult);
     return { items, total };
   }
 
@@ -154,21 +164,12 @@ export class PhysChemRepository implements PhysChemReadRepositoryPort {
   ) {
     const date = inspection.scheduledDate;
     return this.client.standard.findMany({
-      where: {
-        parameterId: { in: [...parameterIds] },
-        isActive: true,
-        validFrom: { lte: date },
-        AND: [
-          { OR: [{ validTo: null }, { validTo: { gte: date } }] },
-          {
-            OR: [
-              { piscoTypeId: null },
-              { piscoTypeId: inspection.batch.piscoTypeId },
-            ],
-          },
-          { OR: [{ stageId: null }, { stageId: inspection.stageId }] },
-        ],
-      },
+      where: applicableStandardsWhere(
+        parameterIds,
+        date,
+        inspection.batch.piscoTypeId,
+        inspection.stageId,
+      ),
       select: standardSelection,
       orderBy: { validFrom: 'desc' },
     });
@@ -212,11 +213,7 @@ export class PhysChemRepository implements PhysChemReadRepositoryPort {
       select: physChemResultSelection,
       orderBy: { recordedAt: 'asc' },
     });
-    return raw.map(({ inspection, ...item }) => ({
-      ...item,
-      inspection: { id: inspection.id, code: inspection.code },
-      batch: inspection.batch,
-    }));
+    return raw.map(mapSelectedPhysChemResult);
   }
 
   public history(query: PhysChemHistoryQuery, actor: PhysChemActor) {

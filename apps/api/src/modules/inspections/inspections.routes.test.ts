@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ApiErrorSchema,
   InspectionListResponseSchema,
+  InspectionDetailResponseSchema,
   InspectionResponseSchema,
   type ChangePasswordRequest,
   type LoginRequest,
@@ -79,6 +80,24 @@ describe('rutas de inspecciones', () => {
     expect(body.meta).toMatchObject({ page: 1, pageSize: 20, total: 1 });
   });
 
+  it('consolida el detalle de parámetros y trazabilidad', async () => {
+    const response = await request(appFor('JEFE_CALIDAD'))
+      .get(`${env.API_PREFIX}/inspections/${IDS.inspection}`)
+      .set(bearer)
+      .expect(200);
+
+    const detail = InspectionDetailResponseSchema.parse(response.body).data;
+    expect(detail.parameterDetails).toEqual([
+      expect.objectContaining({
+        applicableStandard: null,
+        currentResult: null,
+        history: [],
+      }),
+    ]);
+  });
+});
+
+describe('permisos y transiciones de inspecciones', () => {
   it('impide programar a ANALISTA y rechaza metadatos manipulables', async () => {
     await request(appFor('ANALISTA'))
       .post(`${env.API_PREFIX}/inspections`)

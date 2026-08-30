@@ -7,6 +7,22 @@ import type {
 import type { Prisma } from '../../generated/prisma/client.js';
 import type { PhysChemActor } from './physchem.types.js';
 
+export const applicableStandardsWhere = (
+  parameterIds: readonly string[],
+  scheduledDate: Date,
+  piscoTypeId: string,
+  stageId: string,
+): Prisma.StandardWhereInput => ({
+  parameterId: { in: [...parameterIds] },
+  isActive: true,
+  validFrom: { lte: scheduledDate },
+  AND: [
+    { OR: [{ validTo: null }, { validTo: { gte: scheduledDate } }] },
+    { OR: [{ piscoTypeId: null }, { piscoTypeId }] },
+    { OR: [{ stageId: null }, { stageId }] },
+  ],
+});
+
 export const resultAccessWhere = (
   actor: PhysChemActor,
 ): Prisma.PhysChemResultWhereInput =>

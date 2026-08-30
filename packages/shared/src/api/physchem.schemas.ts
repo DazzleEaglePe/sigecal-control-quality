@@ -87,7 +87,7 @@ const BatchReferenceSchema = z
 const PersonSchema = z
   .object({ id: IdSchema, firstName: z.string(), lastName: z.string() })
   .strict();
-const StandardAppliedSchema = z
+export const StandardAppliedSchema = z
   .object({
     id: IdSchema,
     minValue: DecimalSchema.nullable(),

@@ -5,7 +5,9 @@ import type {
   PhysChemResultRecord,
 } from './physchem.types.js';
 
-const standardItem = (record: EvaluatedMeasurement['standard']) => ({
+export const toAppliedStandard = (
+  record: EvaluatedMeasurement['standard'],
+) => ({
   id: record.id,
   minValue: record.minValue?.toString() ?? null,
   maxValue: record.maxValue?.toString() ?? null,
@@ -19,7 +21,7 @@ export const toValidation = (
   parameterId: measurement.parameterId,
   value: measurement.value,
   status: measurement.status,
-  standard: standardItem(measurement.standard),
+  standard: toAppliedStandard(measurement.standard),
 });
 
 export const toPhysChemResult = (
@@ -34,7 +36,7 @@ export const toPhysChemResult = (
     name: record.parameter.name,
     unit: record.parameter.unit,
   },
-  standard: standardItem(record.standard),
+  standard: toAppliedStandard(record.standard),
   value: record.value.toString(),
   status: record.status,
   observation: record.observation,

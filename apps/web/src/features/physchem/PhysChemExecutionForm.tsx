@@ -4,6 +4,7 @@ import {
   FlaskConical,
   ShieldCheck,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type {
   InspectionItem,
   PhysChemResultItem,
@@ -15,15 +16,12 @@ import {
   type ExecutionState,
   type PhysChemExecutionProps,
 } from './usePhysChemExecution.js';
+import { formatStandardRange } from './physchem-labels.js';
+import { PhysChemReviewSummary } from './PhysChemReviewSummary.js';
 
 const rangeLabel = (validation: PhysChemValidation | undefined): string => {
   if (!validation) return 'Se validará con el estándar vigente';
-  const { minValue, maxValue } = validation.standard;
-  if (minValue !== null && maxValue !== null)
-    return `${minValue} — ${maxValue}`;
-  if (minValue !== null) return `Desde ${minValue}`;
-  if (maxValue !== null) return `Hasta ${maxValue}`;
-  return 'Sin límites configurados';
+  return formatStandardRange(validation.standard);
 };
 
 const ResultSummary = ({
@@ -44,9 +42,18 @@ const ResultSummary = ({
         </p>
       </div>
       <div>
-        {nonConformities.map((item) => (
-          <span key={item.id}>{item.nonConformity?.code}</span>
-        ))}
+        {nonConformities.map((item) => {
+          const nonConformity = item.nonConformity;
+          return nonConformity ? (
+            <Link
+              className="nc-reference"
+              key={item.id}
+              to={`/lotes/${item.batch.id}?tab=nonconformities&focus=${nonConformity.id}`}
+            >
+              {nonConformity.code}
+            </Link>
+          ) : null;
+        })}
       </div>
     </div>
   );
@@ -205,6 +212,7 @@ export const PhysChemExecutionForm = (
         <MeasurementRows inspection={props.inspection} state={state} />
         <ExecutionFooter inspection={props.inspection} state={state} />
       </form>
+      <PhysChemReviewSummary inspection={props.inspection} state={state} />
       <ResultSummary items={state.saved} />
     </section>
   );

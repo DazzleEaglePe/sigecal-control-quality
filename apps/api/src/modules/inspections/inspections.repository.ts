@@ -9,6 +9,7 @@ import type {
   InspectionActor,
   InspectionReadRepositoryPort,
 } from './inspections.types.js';
+import { loadInspectionDetail } from './inspections.detail.repository.js';
 
 const referenceSelection = { id: true, code: true, name: true } as const;
 const batchSelection = { id: true, code: true } as const;
@@ -208,6 +209,11 @@ export class InspectionRepository implements InspectionReadRepositoryPort {
       where: { id, ...accessWhere(actor) },
       select: inspectionSelection,
     });
+  }
+
+  public async findDetailById(id: string, actor: InspectionActor) {
+    const inspection = await this.findAccessibleById(id, actor);
+    return inspection ? loadInspectionDetail(this.client, inspection) : null;
   }
 
   public async findReferences(input: CreateInspectionRequest) {

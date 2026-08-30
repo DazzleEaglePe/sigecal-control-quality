@@ -15,6 +15,7 @@ import {
   NotFoundError,
 } from '../../errors/app-error.js';
 import { toInspectionItem } from './inspections.mapper.js';
+import { toInspectionDetail } from './inspections.detail.js';
 import {
   ensureInspectionManager,
   ensureInspectionReferences,
@@ -62,6 +63,16 @@ export class InspectionsService implements InspectionsUseCases {
   public async get(id: string, actor: InspectionActor) {
     await this.mutations.markOverdue(new Date());
     return toInspectionItem(await this.existing(id, actor));
+  }
+
+  public async detail(id: string, actor: InspectionActor) {
+    await this.mutations.markOverdue(new Date());
+    const detail = await this.inspections.findDetailById(id, actor);
+    if (!detail)
+      throw new NotFoundError(
+        'La inspección no existe o no está a su alcance.',
+      );
+    return toInspectionDetail(detail);
   }
 
   public async create(

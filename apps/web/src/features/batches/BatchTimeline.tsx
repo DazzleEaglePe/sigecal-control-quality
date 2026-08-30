@@ -97,10 +97,37 @@ export const BatchInspections = ({
   );
 };
 
+type NonConformityRowData = BatchTimelineEntry['nonConformities'][number] & {
+  readonly stage: string;
+};
+
+const NonConformityRow = ({
+  focusId,
+  item,
+}: {
+  readonly focusId: string | null | undefined;
+  readonly item: NonConformityRowData;
+}): React.JSX.Element => (
+  <tr
+    className={item.id === focusId ? 'is-focused-record' : ''}
+    id={`nc-${item.id}`}
+  >
+    <td>
+      <strong>{item.code}</strong>
+    </td>
+    <td>{item.stage}</td>
+    <td>{severityLabel[item.severity]}</td>
+    <td>{ncStatusLabel[item.status]}</td>
+    <td>{item.description}</td>
+  </tr>
+);
+
 export const BatchNonConformities = ({
   entries,
+  focusId,
 }: {
   readonly entries: readonly BatchTimelineEntry[];
+  readonly focusId?: string | null;
 }): React.JSX.Element => {
   const items = entries.flatMap((entry) =>
     entry.nonConformities.map((item) => ({ ...item, stage: entry.stage.name })),
@@ -121,15 +148,7 @@ export const BatchNonConformities = ({
         </thead>
         <tbody>
           {items.map((item) => (
-            <tr key={item.id}>
-              <td>
-                <strong>{item.code}</strong>
-              </td>
-              <td>{item.stage}</td>
-              <td>{severityLabel[item.severity]}</td>
-              <td>{ncStatusLabel[item.status]}</td>
-              <td>{item.description}</td>
-            </tr>
+            <NonConformityRow focusId={focusId} item={item} key={item.id} />
           ))}
         </tbody>
       </table>

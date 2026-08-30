@@ -1,5 +1,6 @@
 import {
   InspectionCoverageResponseSchema,
+  InspectionDetailResponseSchema,
   InspectionListResponseSchema,
   InspectionPlanResponseSchema,
   InspectionResponseSchema,
@@ -8,6 +9,7 @@ import {
   type CreateInspectionPlanRequest,
   type CreateInspectionRequest,
   type InspectionCalendarQuery,
+  type InspectionDetail,
   type InspectionItem,
   type InspectionListQuery,
   type InspectionTemplateListQuery,
@@ -70,9 +72,10 @@ export const listInspectionCalendar = async (
 export const getInspection = async (
   request: AuthorizedRequest,
   id: string,
-): Promise<InspectionItem> =>
-  InspectionResponseSchema.parse(await request<unknown>(`/inspections/${id}`))
-    .data;
+): Promise<InspectionDetail> =>
+  InspectionDetailResponseSchema.parse(
+    await request<unknown>(`/inspections/${id}`),
+  ).data;
 
 export const createInspection = async (
   request: AuthorizedRequest,

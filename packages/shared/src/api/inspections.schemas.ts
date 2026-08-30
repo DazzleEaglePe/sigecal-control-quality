@@ -31,7 +31,7 @@ const PersonSchema = z
 const EquipmentSchema = ReferenceSchema.extend({
   status: EquipmentStatusSchema,
 }).strict();
-const ParameterSchema = ReferenceSchema.extend({
+export const InspectionParameterSchema = ReferenceSchema.extend({
   type: ParameterTypeSchema,
   unit: z.string().nullable(),
 }).strict();
@@ -206,7 +206,7 @@ export const InspectionSchema = z
     notes: z.string().nullable(),
     createdBy: PersonSchema,
     dataOrigin: DataOriginSchema,
-    parameters: z.array(ParameterSchema),
+    parameters: z.array(InspectionParameterSchema),
     recordedParameterIds: z.array(IdSchema),
   })
   .strict();
@@ -220,7 +220,7 @@ export const InspectionTemplateItemSchema = z
     scheduledLocalTime: TimeSchema,
     responsibleRole: RoleSchema,
     equipment: EquipmentSchema.nullable(),
-    parameters: z.array(ParameterSchema),
+    parameters: z.array(InspectionParameterSchema),
   })
   .strict();
 export const InspectionTemplateSchema = z

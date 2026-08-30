@@ -11,6 +11,9 @@ import type {
   UpdateInspectionRequest,
 } from '@sigecal/shared';
 
+import type { PhysChemResultRecord } from '../physchem/physchem.types.js';
+import type { StandardRecord } from '../standards/standards.types.js';
+
 import type {
   InspectionActor,
   InspectionMutationRepositoryPort,
@@ -94,6 +97,8 @@ const batchContext = {
 
 export class MemoryInspectionReadRepository implements InspectionReadRepositoryPort {
   public record: InspectionRecord | null = inspectionRecord();
+  public standards: readonly StandardRecord[] = [];
+  public results: readonly PhysChemResultRecord[] = [];
   public references = {
     batch: batchContext,
     stage: { ...inspectionRecord().stage, isActive: true },
@@ -157,6 +162,17 @@ export class MemoryInspectionReadRepository implements InspectionReadRepositoryP
   }
   public findAccessibleById() {
     return Promise.resolve(this.record);
+  }
+  public findDetailById() {
+    return Promise.resolve(
+      this.record
+        ? {
+            inspection: this.record,
+            standards: this.standards,
+            results: this.results,
+          }
+        : null,
+    );
   }
   public findReferences(_input: CreateInspectionRequest) {
     void _input;

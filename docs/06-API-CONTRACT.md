@@ -206,7 +206,7 @@ POST /batches/:id/close
 | GET    | `/inspections`                     | Lista. Filtros: `batchId`, `status`, `type`, `responsibleId`, `stageId`, `dateFrom`, `dateTo` | todos       |
 | GET    | `/inspections/calendar`            | Vista de calendario. Query: `month`, `year` o `dateFrom`/`dateTo`                             | todos       |
 | GET    | `/inspections/my-pending`          | Inspecciones pendientes del usuario en sesión                                                 | autenticado |
-| GET    | `/inspections/:id`                 | Detalle con sus parámetros y resultados                                                       | todos       |
+| GET    | `/inspections/:id`                 | Detalle consolidado con parámetros, estándar aplicable, resultado vigente e historial         | todos       |
 | POST   | `/inspections`                     | Programa inspección                                                                           | A J         |
 | PATCH  | `/inspections/:id`                 | Actualiza datos previos a la ejecución                                                        | A J         |
 | POST   | `/inspections/:id/reschedule`      | Reprograma. Requiere `newDate` y `reason`                                                     | A J         |
@@ -227,6 +227,14 @@ POST /inspections
 Reprogramar no sobrescribe la fecha original: marca la inspección como `REPROGRAMADA` y crea otra `PROGRAMADA`, enlazada mediante `rescheduledFromId`.
 
 `POST /inspections/:id/start` responde 422 `EQUIPMENT_NOT_OPERATIONAL` si una inspección fisicoquímica no tiene equipo o este no está operativo.
+
+El detalle de una inspección fisicoquímica agrega `parameterDetails`. Cada
+elemento contiene el parámetro esperado, el estándar aplicable resuelto con la
+fecha programada, el resultado final vigente y el historial completo de
+versiones —incluidos los anulados— ordenado del más reciente al más antiguo. Si
+no existe un estándar definitivo aplicable, `applicableStandard` es `null`; la
+consulta del detalle sigue disponible, pero el guardado definitivo permanece
+bloqueado por `NO_EFFECTIVE_STANDARD`.
 
 ```json
 POST /inspections/plans/from-template

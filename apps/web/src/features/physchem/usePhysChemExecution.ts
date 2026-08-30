@@ -35,7 +35,10 @@ const measurements = (drafts: Drafts): Results =>
 
 interface ExecutionContext extends PhysChemExecutionProps {
   readonly drafts: Drafts;
+  readonly review: readonly PhysChemValidation[];
+  readonly setDrafts: Setter<Drafts>;
   readonly setValidations: Setter<Validations>;
+  readonly setReview: Setter<readonly PhysChemValidation[]>;
   readonly setSaved: Setter<readonly PhysChemResultItem[]>;
   readonly setError: Setter<string | undefined>;
   readonly setSaving: Setter<boolean>;
@@ -63,43 +66,51 @@ const runPreview = async (
   }
 };
 
-const confirmed = async (
-  context: ExecutionContext,
-  results: Results,
-): Promise<boolean> => {
-  const previewed = await validatePhysChemResults(context.request, {
-    inspectionId: context.inspection.id,
-    results,
-  });
-  const count = previewed.filter(
-    (item) => item.status === 'NO_CONFORME',
-  ).length;
-  return window.confirm(
-    `Se guardarán ${String(results.length)} resultado(s) definitivos y se generarán ${String(count)} NC. ¿Continuar?`,
+const pendingMeasurements = (context: ExecutionContext): Results =>
+  measurements(context.drafts).filter(
+    (item) =>
+      !context.inspection.recordedParameterIds.includes(item.parameterId),
   );
-};
 
-const runSave = async (
+const runReview = async (
   context: ExecutionContext,
   event: SyntheticEvent<HTMLFormElement>,
 ): Promise<void> => {
   event.preventDefault();
-  const results = measurements(context.drafts).filter(
-    (item) =>
-      !context.inspection.recordedParameterIds.includes(item.parameterId),
-  );
+  const results = pendingMeasurements(context);
   if (results.length === 0) {
     context.setError('Ingrese al menos una medición pendiente.');
     return;
   }
   try {
-    if (!(await confirmed(context, results))) return;
-    context.setSaving(true);
-    const saved = await createPhysChemResults(context.request, {
+    const review = await validatePhysChemResults(context.request, {
       inspectionId: context.inspection.id,
       results,
     });
+    context.setReview(review);
+    context.setValidations(
+      Object.fromEntries(review.map((item) => [item.parameterId, item])),
+    );
+    context.setError(undefined);
+  } catch (cause) {
+    context.setError(errorMessage(cause));
+  }
+};
+
+const runSave = async (context: ExecutionContext): Promise<void> => {
+  if (context.review.length === 0) return;
+  try {
+    context.setSaving(true);
+    const saved = await createPhysChemResults(context.request, {
+      inspectionId: context.inspection.id,
+      results: context.review.map(({ parameterId, value }) => ({
+        parameterId,
+        value,
+      })),
+    });
     context.setSaved(saved);
+    context.setDrafts({});
+    context.setReview([]);
     context.setError(undefined);
     await context.completed();
   } catch (cause) {
@@ -113,11 +124,14 @@ export interface ExecutionState {
   readonly drafts: Drafts;
   readonly validations: Validations;
   readonly saved: readonly PhysChemResultItem[];
+  readonly review: readonly PhysChemValidation[];
   readonly error: string | undefined;
   readonly saving: boolean;
   readonly change: (id: string, value: string) => void;
   readonly preview: (id: string) => Promise<void>;
   readonly submit: (event: SyntheticEvent<HTMLFormElement>) => Promise<void>;
+  readonly save: () => Promise<void>;
+  readonly cancelReview: () => void;
 }
 
 export const usePhysChemExecution = (
@@ -126,12 +140,16 @@ export const usePhysChemExecution = (
   const [drafts, setDrafts] = useState<Drafts>({});
   const [validations, setValidations] = useState<Validations>({});
   const [saved, setSaved] = useState<readonly PhysChemResultItem[]>([]);
+  const [review, setReview] = useState<readonly PhysChemValidation[]>([]);
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
   const context = {
     ...props,
     drafts,
+    review,
+    setDrafts,
     setValidations,
+    setReview,
     setSaved,
     setError,
     setSaving,
@@ -140,12 +158,18 @@ export const usePhysChemExecution = (
     drafts,
     validations,
     saved,
+    review,
     error,
     saving,
     change: (id, value) => {
       setDrafts((current) => ({ ...current, [id]: value }));
+      setReview([]);
     },
     preview: (id) => runPreview(context, id),
-    submit: (event) => runSave(context, event),
+    submit: (event) => runReview(context, event),
+    save: () => runSave(context),
+    cancelReview: () => {
+      setReview([]);
+    },
   };
 };

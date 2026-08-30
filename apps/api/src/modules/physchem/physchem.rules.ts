@@ -78,26 +78,40 @@ export const ensureExpectedParameters = (
     );
 };
 
-const selectStandard = (
+export const selectApplicableStandard = (
   parameterId: string,
   standards: readonly StandardRecord[],
-  inspection: PhysChemInspectionContext,
-): StandardRecord => {
+  dataOrigin: PhysChemInspectionContext['batch']['dataOrigin'],
+): StandardRecord | null => {
   const candidates = standards.filter(
     (standard) => standard.parameterId === parameterId,
   );
   const available =
-    inspection.batch.dataOrigin === 'REAL'
+    dataOrigin === 'REAL'
       ? candidates.filter((standard) => !standard.isProvisional)
       : candidates;
-  const selected = [...available].sort((left, right) => {
-    const score = (item: StandardRecord) =>
-      (item.piscoTypeId ? 2 : 0) + (item.stageId ? 1 : 0);
-    return (
-      score(right) - score(left) ||
-      right.validFrom.getTime() - left.validFrom.getTime()
-    );
-  })[0];
+  return (
+    [...available].sort((left, right) => {
+      const score = (item: StandardRecord) =>
+        (item.piscoTypeId ? 2 : 0) + (item.stageId ? 1 : 0);
+      return (
+        score(right) - score(left) ||
+        right.validFrom.getTime() - left.validFrom.getTime()
+      );
+    })[0] ?? null
+  );
+};
+
+const requiredStandard = (
+  parameterId: string,
+  standards: readonly StandardRecord[],
+  inspection: PhysChemInspectionContext,
+): StandardRecord => {
+  const selected = selectApplicableStandard(
+    parameterId,
+    standards,
+    inspection.batch.dataOrigin,
+  );
   if (!selected)
     throw new UnprocessableEntityError(
       `No existe un estándar definitivo vigente para el parámetro ${parameterId}.`,
@@ -116,7 +130,7 @@ export const evaluateMeasurements = (
   inspection: PhysChemInspectionContext,
 ): readonly EvaluatedMeasurement[] =>
   values.map((measurement) => {
-    const standard = selectStandard(
+    const standard = requiredStandard(
       measurement.parameterId,
       standards,
       inspection,

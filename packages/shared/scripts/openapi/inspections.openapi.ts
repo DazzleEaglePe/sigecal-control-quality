@@ -5,6 +5,7 @@ import {
   CreateInspectionPlanRequestSchema,
   CreateInspectionRequestSchema,
   InspectionCoverageResponseSchema,
+  InspectionDetailResponseSchema,
   InspectionListResponseSchema,
   InspectionPlanResponseSchema,
   InspectionResponseSchema,
@@ -203,7 +204,7 @@ export const inspectionPaths = {
       responses: {
         '200': {
           description: 'Inspección encontrada.',
-          content: json('InspectionResponse'),
+          content: json('InspectionDetailResponse'),
         },
         '404': errorResponse('Inspección inexistente o fuera de alcance.'),
       },
@@ -286,5 +287,6 @@ export const inspectionSchemas = {
   InspectionResponse: schema(InspectionResponseSchema),
   InspectionListResponse: schema(InspectionListResponseSchema),
   InspectionCoverageResponse: schema(InspectionCoverageResponseSchema),
+  InspectionDetailResponse: schema(InspectionDetailResponseSchema),
   InspectionPlanResponse: schema(InspectionPlanResponseSchema),
 };

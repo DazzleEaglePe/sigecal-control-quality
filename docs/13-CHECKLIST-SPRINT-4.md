@@ -47,7 +47,7 @@
 - [x] Proteger cada ruta con autenticación, RBAC, alcance y validación Zod.
 - [x] Mantener transaccionales alta de plan, reprogramación, resultados, NC automática y corrección.
 - [x] Auditar creación, cambios de estado, reprogramación, cancelación, registro y corrección.
-- [ ] Consolidar en el detalle parámetros esperados, estándar aplicable, resultados vigentes e historial.
+- [x] Consolidar en el detalle parámetros esperados, estándar aplicable, resultados vigentes e historial.
 - [x] Exponer listados paginados y consultas de calendario acotadas por rango.
 
 ## 5. Interfaz
@@ -57,7 +57,7 @@
 - [x] Crear formularios de programación, reprogramación, cancelación y plan desde plantilla.
 - [x] Crear detalle y ejecución optimizados para tableta, con unidad y rango visible por parámetro.
 - [x] Previsualizar conforme/no conforme al salir del campo y conservar el borrador si falta estándar.
-- [ ] Mostrar resumen antes de guardar y enlaces a las no conformidades generadas.
+- [x] Mostrar resumen antes de guardar y enlaces a las no conformidades generadas.
 - [x] Crear histórico por parámetro y gráfico de control con aviso de muestra insuficiente.
 - [x] Confirmar explícitamente toda transición o guardado definitivo.
 
@@ -69,13 +69,36 @@
 - [x] Probar corrección inmutable y reemplazo/anulación transaccional de la NC asociada.
 - [x] Probar completado por cobertura exacta de parámetros y alcance de `OPERARIO`.
 - [x] Probar media, desviación estándar, ±3σ, muestra menor de ocho y exclusión de `DEMO`/anulados.
-- [ ] Verificar recorridos HTTP y de navegador sin alterar los cinco lotes `DEMO` del seed.
+- [x] Verificar recorridos HTTP y de navegador sin alterar los cinco lotes `DEMO` del seed.
 - [x] Ejecutar formato, lint, tipos, pruebas, builds, Prisma, OpenAPI y verificación del seed.
 - [x] Actualizar plan, contrato y estado documental.
 
 **Criterio de cierre:** una inspección puede programarse, iniciarse y completarse con todos sus parámetros; cada resultado queda ligado al estándar vigente de la fecha de inspección, un valor no conforme crea su NC y ninguna corrección destruye el historial.
 
-> Estado de validación visual: login verificado en escritorio, tableta y móvil. El recorrido autenticado de inspecciones queda pendiente de una sesión iniciada por el usuario; no se marca como completado para evitar declarar una evidencia no ejecutada.
+## Evidencia de validación
+
+**Recorrido HTTP autenticado** (rol `ANALISTA`, 8 comprobaciones, todas correctas):
+listado paginado, calendario por mes y por rango, rechazo de rango mayor a 93 días
+(`CALENDAR_RANGE_TOO_LARGE`), rechazo de mes y rango simultáneos, `my-pending`,
+`coverage` denegado a `ANALISTA` (403), alta de inspección denegada a `ANALISTA` (403),
+acceso sin token rechazado (401), detalle consolidado con parámetro, estándar aplicable,
+resultado vigente e historial, previsualización bloqueada fuera de `EN_PROCESO`
+(`INSPECTION_NOT_IN_PROGRESS`) y sin efectos secundarios, histórico que excluye `DEMO`
+por defecto, y ausencia de `PATCH` sobre resultados finales (404).
+
+**Recorrido de navegador**: sesión autenticada en escritorio (1440), tableta (1024) y
+móvil (390). El listado muestra las 8 inspecciones en los tres tamaños y el detalle
+renderiza el panel «Estándares, resultados e historial» con el estándar aplicable, el
+resultado vigente, el conteo de versiones conservadas y el rótulo de dato `DEMO`.
+
+**Integridad del seed**: `{"users":4,"demoBatches":5,"demoResults":8,"demoNC":2}` antes y
+después del recorrido, sin variación.
+
+> El resumen previo al guardado y el enlace a la no conformidad generada quedan cubiertos
+> por prueba de componente (`PhysChemExecutionForm.test.tsx`), que verifica el paso de
+> confirmación y el destino del enlace. No se ejercitaron en navegador porque las ocho
+> inspecciones del seed están `COMPLETADA` y no hay ninguna `EN_PROCESO`; ejecutarlo en
+> vivo exigiría iniciar una inspección y alterar el estado de los datos de demostración.
 
 ## Orden de ejecución aprobado
 
