@@ -1,5 +1,86 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:is(.dark *));
+
+/* Tokens de shadcn/ui. Neutros limpios con un único acento verde SIGECAL,
+   en la línea de la referencia clara. El modo oscuro solo reasigna tokens. */
+:root {
+  --radius: 0.7rem;
+  --background: #f7f8f7;
+  --foreground: #0d1411;
+  --card: #ffffff;
+  --card-foreground: #0d1411;
+  --popover: #ffffff;
+  --popover-foreground: #0d1411;
+  --primary: #0d704d;
+  --primary-foreground: #ffffff;
+  --secondary: #eef1ef;
+  --secondary-foreground: #1c2923;
+  --muted: #f1f3f2;
+  --muted-foreground: #5b6a63;
+  --accent: #e9f5ef;
+  --accent-foreground: #0b5c40;
+  --destructive: #c2453a;
+  --destructive-foreground: #ffffff;
+  --success: #0d704d;
+  --warning: #7a5b12;
+  --border: #e2e6e4;
+  --input: #d4dbd8;
+  --ring: #0d704d;
+}
+
+.dark {
+  --background: #0b100e;
+  --card: #131a17;
+  --card-foreground: #eef3f0;
+  --foreground: #eef3f0;
+  --popover: #131a17;
+  --popover-foreground: #eef3f0;
+  --primary: #4ade9f;
+  --primary-foreground: #06231a;
+  --secondary: #1b2420;
+  --secondary-foreground: #dbe6e1;
+  --muted: #1b2420;
+  --muted-foreground: #9aaaa3;
+  --accent: #163025;
+  --accent-foreground: #8af0bb;
+  --destructive: #f0796c;
+  --destructive-foreground: #2a0d0a;
+  --success: #4ade9f;
+  --warning: #e0b65c;
+  --border: #232e29;
+  --input: #2c3833;
+  --ring: #4ade9f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
 :root {
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   color: #18332c;

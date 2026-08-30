@@ -309,3 +309,15 @@ El mínimo de 8 observaciones es una regla operativa de SIGECAL, no una afirmaci
 **Decisión.** El modo offline de consulta funciona solo durante una sesión previamente iniciada. Las respuestas de API se segmentan por usuario y se eliminan al cerrar sesión. No se almacenan tokens en Cache Storage, IndexedDB ni `localStorage`.
 
 **Consecuencia.** Al abrir la aplicación sin conexión y sin una sesión en memoria, se muestra el shell y un mensaje de conexión requerida, pero no datos operativos.
+
+---
+
+## ADR-012 · shadcn/ui como capa de componentes
+
+**Estado:** Aceptada
+
+**Decisión.** La interfaz adopta shadcn/ui sobre Tailwind CSS 4, ya presente en el stack aprobado. Los componentes se copian al repositorio en `apps/web/src/components/ui` en lugar de instalarse como librería, de modo que su código queda versionado y auditable. Se incorporan cuatro dependencias de tiempo de ejecución: `clsx`, `tailwind-merge`, `class-variance-authority` y `@radix-ui/react-slot`. El tema se define con variables CSS en `styles.css` y se expone a Tailwind mediante `@theme inline`, con un único acento verde institucional y modo oscuro por reasignación de tokens.
+
+Las variantes creadas con `cva` viven en módulos aparte (`*-variants.ts`) porque la regla `react-refresh/only-export-components` prohíbe exportar funciones junto a componentes.
+
+**Consecuencia.** Los estilos manuscritos previos siguen funcionando y se migran por pantalla, sin una reescritura global. La accesibilidad de foco y contraste queda centralizada en los tokens, en lugar de repetirse en cada hoja de estilo.
