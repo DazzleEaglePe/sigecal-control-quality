@@ -91,7 +91,12 @@ const usePasswordSubmission = () => {
     setBusy(true);
     setError(undefined);
     try {
-      await auth.updatePassword(input);
+      // El servidor rechaza cualquier campo fuera de ChangePasswordRequest;
+      // `confirmation` es solo para la validación en el cliente.
+      await auth.updatePassword({
+        currentPassword: input.currentPassword,
+        newPassword: input.newPassword,
+      });
     } catch (cause) {
       setError(messageFrom(cause));
     } finally {
