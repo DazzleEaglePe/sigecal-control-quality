@@ -1,4 +1,4 @@
-import { useState, type SyntheticEvent } from 'react';
+import { useState, type KeyboardEvent, type SyntheticEvent } from 'react';
 import {
   ArrowRight,
   Eye,
@@ -11,84 +11,190 @@ import { Navigate } from 'react-router-dom';
 
 import type { LoginRequest } from '@sigecal/shared';
 
+import { AuthField } from '../components/AuthField.js';
 import { AuthLayout } from '../components/AuthLayout.js';
 import { useAuth } from '../features/auth/useAuth.js';
 import { ApiClientError } from '../lib/api-client.js';
+import { fieldAria } from '../lib/field-aria.js';
 
-const credentialsFrom = (form: HTMLFormElement): LoginRequest => {
-  const email = form.elements.namedItem('email');
-  const password = form.elements.namedItem('password');
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
+const CAPS_LOCK_NOTE = 'Bloq Mayús está activado.';
+
+const emailIssue = (value: string): string | undefined => {
+  const email = value.trim();
+  if (!email) return 'Ingrese el correo institucional asignado.';
+  if (!EMAIL_PATTERN.test(email))
+    return 'Escriba el correo con el formato nombre@empresa.com.';
+  return undefined;
+};
+
+const passwordIssue = (value: string): string | undefined =>
+  value ? undefined : 'Ingrese la contraseña asignada.';
+
+interface FieldState {
+  readonly issue: string | undefined;
+  readonly reveal: () => void;
+  readonly setValue: (value: string) => void;
+  readonly value: string;
+  readonly visibleIssue: string | undefined;
+}
+
+/** El error solo se muestra al salir del campo o al intentar enviar, para no
+ * marcar en rojo un correo que el usuario todavía está escribiendo. */
+const useField = (
+  validate: (value: string) => string | undefined,
+): FieldState => {
+  const [value, setValue] = useState('');
+  const [revealed, setRevealed] = useState(false);
+  const issue = validate(value);
   return {
-    email: email instanceof HTMLInputElement ? email.value : '',
-    password: password instanceof HTMLInputElement ? password.value : '',
+    issue,
+    reveal: () => {
+      setRevealed(true);
+    },
+    setValue,
+    value,
+    visibleIssue: revealed ? issue : undefined,
   };
+};
+
+interface FieldProps {
+  readonly busy: boolean;
+  readonly field: FieldState;
+}
+
+const EmailField = ({ busy, field }: FieldProps): React.JSX.Element => {
+  const issue = field.visibleIssue;
+  return (
+    <AuthField
+      icon={<Mail aria-hidden="true" />}
+      id="email"
+      issue={issue}
+      label="Correo institucional"
+    >
+      <input
+        {...fieldAria('email', issue)}
+        id="email"
+        name="email"
+        type="email"
+        inputMode="email"
+        autoComplete="username"
+        autoCapitalize="none"
+        autoFocus
+        spellCheck={false}
+        placeholder="nombre@empresa.com"
+        required
+        disabled={busy}
+        value={field.value}
+        onBlur={field.reveal}
+        onChange={(event) => {
+          field.setValue(event.target.value);
+        }}
+      />
+    </AuthField>
+  );
 };
 
 const PasswordVisibility = ({
   action,
+  busy,
   visible,
 }: {
   readonly action: () => void;
+  readonly busy: boolean;
   readonly visible: boolean;
 }): React.JSX.Element => (
   <button
     className="password-visibility"
     type="button"
+    disabled={busy}
     aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+    aria-pressed={visible}
     onClick={action}
   >
-    {visible ? <EyeOff /> : <Eye />}
+    {visible ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
   </button>
 );
 
-const LoginFields = (): React.JSX.Element => {
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const togglePassword = (): void => {
-    setPasswordVisible((visible) => !visible);
+const usePasswordExtras = (field: FieldState) => {
+  const [visible, setVisible] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
+  return {
+    leaveField: () => {
+      field.reveal();
+      setCapsLock(false);
+    },
+    note: capsLock ? CAPS_LOCK_NOTE : undefined,
+    toggle: () => {
+      setVisible((current) => !current);
+    },
+    trackCapsLock: (event: KeyboardEvent<HTMLInputElement>) => {
+      setCapsLock(event.getModifierState('CapsLock'));
+    },
+    visible,
   };
+};
+
+const PasswordField = ({ busy, field }: FieldProps): React.JSX.Element => {
+  const extras = usePasswordExtras(field);
+  const issue = field.visibleIssue;
   return (
-    <>
-      <label htmlFor="email">Correo institucional</label>
-      <div className="auth-input-shell">
-        <Mail aria-hidden="true" />
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="username"
-          placeholder="nombre@empresa.com"
-          required
-        />
-      </div>
-      <label htmlFor="password">Contraseña</label>
-      <div className="auth-input-shell">
-        <LockKeyhole aria-hidden="true" />
-        <input
-          id="password"
-          name="password"
-          type={passwordVisible ? 'text' : 'password'}
-          autoComplete="current-password"
-          placeholder="Ingrese su contraseña"
-          required
-        />
-        <PasswordVisibility action={togglePassword} visible={passwordVisible} />
-      </div>
-    </>
+    <AuthField
+      icon={<LockKeyhole aria-hidden="true" />}
+      id="password"
+      issue={issue}
+      label="Contraseña"
+      note={extras.note}
+    >
+      <input
+        {...fieldAria('password', issue, extras.note)}
+        id="password"
+        name="password"
+        type={extras.visible ? 'text' : 'password'}
+        autoComplete="current-password"
+        placeholder="Ingrese su contraseña"
+        required
+        disabled={busy}
+        value={field.value}
+        onBlur={extras.leaveField}
+        onChange={(event) => {
+          field.setValue(event.target.value);
+        }}
+        onKeyDown={extras.trackCapsLock}
+        onKeyUp={extras.trackCapsLock}
+      />
+      <PasswordVisibility
+        action={extras.toggle}
+        busy={busy}
+        visible={extras.visible}
+      />
+    </AuthField>
   );
 };
 
-const useLoginSubmission = () => {
+const SubmitButton = ({
+  busy,
+}: {
+  readonly busy: boolean;
+}): React.JSX.Element => (
+  <button className="primary-button auth-submit" type="submit" disabled={busy}>
+    {busy ? (
+      <LoaderCircle className="auth-button-spinner" aria-hidden="true" />
+    ) : null}
+    <span>{busy ? 'Verificando…' : 'Ingresar a SIGECAL'}</span>
+    {busy ? null : <ArrowRight aria-hidden="true" />}
+  </button>
+);
+
+const useSignIn = () => {
   const auth = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
-  const submit = async (
-    event: SyntheticEvent<HTMLFormElement>,
-  ): Promise<void> => {
-    event.preventDefault();
+  const run = async (credentials: LoginRequest): Promise<void> => {
     setBusy(true);
     setError(undefined);
     try {
-      await auth.signIn(credentialsFrom(event.currentTarget));
+      await auth.signIn(credentials);
     } catch (cause) {
       setError(
         cause instanceof ApiClientError
@@ -99,29 +205,41 @@ const useLoginSubmission = () => {
       setBusy(false);
     }
   };
-  return { auth, busy, error, submit };
+  return { auth, busy, error, run };
 };
 
 const LoginForm = (): React.JSX.Element => {
-  const { auth, busy, error, submit } = useLoginSubmission();
+  const email = useField(emailIssue);
+  const password = useField(passwordIssue);
+  const { auth, busy, error, run } = useSignIn();
+  const submit = (event: SyntheticEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    email.reveal();
+    password.reveal();
+    const invalid = email.issue ? 'email' : password.issue ? 'password' : '';
+    if (invalid) {
+      document.querySelector<HTMLInputElement>(`#${invalid}`)?.focus();
+      return;
+    }
+    // El servicio compara el correo en minúsculas, pero rechaza los espacios
+    // que arrastra un pegado desde el correo institucional.
+    void run({ email: email.value.trim(), password: password.value });
+  };
   return (
-    <form className="auth-form" onSubmit={(event) => void submit(event)}>
-      {auth.notice ? <p className="form-notice">{auth.notice}</p> : null}
+    <form className="auth-form" noValidate aria-busy={busy} onSubmit={submit}>
+      {auth.notice ? (
+        <p className="form-notice" role="status">
+          {auth.notice}
+        </p>
+      ) : null}
       {error ? (
         <p className="form-error" role="alert">
           {error}
         </p>
       ) : null}
-      <LoginFields />
-      <button
-        className="primary-button auth-submit"
-        type="submit"
-        disabled={busy}
-      >
-        {busy ? <LoaderCircle className="auth-button-spinner" /> : null}
-        <span>{busy ? 'Verificando…' : 'Ingresar a SIGECAL'}</span>
-        {busy ? null : <ArrowRight aria-hidden="true" />}
-      </button>
+      <EmailField busy={busy} field={email} />
+      <PasswordField busy={busy} field={password} />
+      <SubmitButton busy={busy} />
     </form>
   );
 };

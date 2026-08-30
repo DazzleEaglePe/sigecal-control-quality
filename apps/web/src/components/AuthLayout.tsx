@@ -81,8 +81,10 @@ export const AuthLayout = ({
 }: AuthLayoutProps): React.JSX.Element => (
   <main className="auth-screen">
     <AuthVisual />
-    <section className="auth-panel">
-      <div className="auth-card" aria-labelledby={titleId}>
+    <div className="auth-panel">
+      {/* Es <section> y no <div> para que aria-labelledby exponga el título
+          como nombre accesible de la región del formulario. */}
+      <section className="auth-card" aria-labelledby={titleId}>
         <div className="auth-card-brand" aria-hidden="true">
           <ShieldCheck />
           <span>SIGECAL</span>
@@ -92,7 +94,7 @@ export const AuthLayout = ({
         <p className="auth-intro">{intro}</p>
         {children}
         <small className="auth-footnote">{footnote}</small>
-      </div>
-    </section>
+      </section>
+    </div>
   </main>
 );
