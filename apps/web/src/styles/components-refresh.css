@@ -22,15 +22,15 @@
 }
 
 .eyebrow {
-  color: #78847e;
+  color: var(--muted-foreground);
   font-size: 0.62rem;
   letter-spacing: 0.12em;
 }
 
 .phase-badge {
-  border-color: #e0e6e1;
-  color: #53615a;
-  background: white;
+  border-color: var(--border);
+  color: var(--foreground);
+  background: var(--card);
   box-shadow: 0 4px 14px rgb(26 42 34 / 4%);
 }
 
@@ -54,7 +54,7 @@
 
 .admin-form label,
 .batch-filters label {
-  color: #66736c;
+  color: var(--foreground);
   font-size: 0.68rem;
   font-weight: 680;
 }
@@ -65,10 +65,10 @@
 .batch-filters input,
 .batch-filters select {
   min-height: 2.65rem;
-  border-color: #e0e6e2;
+  border-color: var(--border);
   border-radius: 0.72rem;
-  color: #26332d;
-  background: #fafbfa;
+  color: var(--foreground);
+  background: var(--card);
 }
 
 .admin-form input:focus,
@@ -76,7 +76,7 @@
 .admin-form textarea:focus,
 .batch-filters input:focus,
 .batch-filters select:focus {
-  border-color: #42a77e;
+  border-color: var(--border);
   outline: 3px solid rgb(36 151 105 / 10%);
 }
 
@@ -93,7 +93,7 @@
 
 .primary-button,
 .auth-submit {
-  background: linear-gradient(135deg, #10875d, #086446);
+  background: linear-gradient(135deg, var(--secondary), var(--secondary));
   box-shadow: 0 8px 18px rgb(15 124 84 / 18%);
 }
 
@@ -104,9 +104,9 @@
 }
 
 .secondary-button {
-  border-color: #dce3de;
-  color: #334b40;
-  background: #fff;
+  border-color: var(--border);
+  color: var(--foreground);
+  background: var(--card);
 }
 
 .table-scroll {
@@ -120,8 +120,8 @@ table {
 }
 
 thead th {
-  color: #8a948f;
-  background: #f7f8f7;
+  color: var(--muted-foreground);
+  background: var(--card);
   font-size: 0.59rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -132,7 +132,7 @@ tbody tr {
 }
 
 tbody tr:hover {
-  background: #fafcfb;
+  background: var(--card);
 }
 
 .state-pill {
@@ -144,12 +144,12 @@ tbody tr:hover {
 .state-pill.is-active,
 .batch-status-en_proceso,
 .origin-real {
-  color: #08714d;
-  background: #e7f5ed;
+  color: var(--foreground);
+  background: var(--muted);
 }
 
 .table-action {
-  color: #08704c;
+  color: var(--foreground);
   font-weight: 720;
 }
 
@@ -158,7 +158,7 @@ tbody tr:hover {
   padding: 0.3rem;
   border: 1px solid var(--ui-line);
   border-radius: 0.82rem;
-  background: #f6f8f6;
+  background: var(--card);
 }
 
 .catalog-tabs button {
@@ -166,8 +166,8 @@ tbody tr:hover {
 }
 
 .catalog-tabs button.is-selected {
-  color: #fff;
-  background: #16231d;
+  color: var(--foreground);
+  background: var(--background);
   box-shadow: 0 5px 14px rgb(17 30 23 / 12%);
 }
 
@@ -178,17 +178,17 @@ tbody tr:hover {
       rgb(72 177 132 / 20%),
       transparent 24rem
     ),
-    linear-gradient(145deg, #edf3ef, #f7f8f6);
+    linear-gradient(145deg, var(--muted), var(--card));
 }
 
 .auth-card {
-  border-color: #e2e8e4;
+  border-color: var(--border);
   border-radius: 1.15rem;
   box-shadow: 0 24px 70px rgb(22 45 33 / 12%);
 }
 
 .auth-brand {
-  color: #08714d;
+  color: var(--foreground);
 }
 
 @media (prefers-reduced-motion: reduce) {

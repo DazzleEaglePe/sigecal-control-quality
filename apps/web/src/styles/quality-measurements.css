@@ -4,7 +4,7 @@
 }
 .measurement-table {
   overflow: hidden;
-  border: 1px solid #e3e9e5;
+  border: 1px solid var(--border);
   border-radius: 0.82rem;
 }
 .measurement-row {
@@ -15,13 +15,13 @@
   align-items: center;
   gap: 0.7rem;
   padding: 0.75rem;
-  border-bottom: 1px solid #e8ece9;
+  border-bottom: 1px solid var(--border);
 }
 .measurement-row:last-child {
   border-bottom: 0;
 }
 .measurement-row.is-recorded {
-  background: #f5f8f6;
+  background: var(--card);
 }
 .measurement-row strong,
 .measurement-row small {
@@ -32,36 +32,36 @@
 }
 .measurement-row small {
   margin-top: 0.12rem;
-  color: #849089;
+  color: var(--muted-foreground);
   font-size: 0.55rem;
 }
 .measurement-row input {
   width: 100%;
   min-height: 2.55rem;
   padding: 0.55rem;
-  border: 1px solid #dbe3dd;
+  border: 1px solid var(--border);
   border-radius: 0.65rem;
-  color: #24372e;
-  background: white;
+  color: var(--foreground);
+  background: var(--card);
   font-size: 0.75rem;
 }
 .measurement-status.status-conforme,
 .result-conforme {
-  color: #08714d;
-  background: #e3f5eb;
+  color: var(--foreground);
+  background: var(--muted);
 }
 .measurement-status.status-no_conforme,
 .result-no_conforme {
-  color: #a35120;
-  background: #fcebdc;
+  color: var(--warning);
+  background: color-mix(in oklab, var(--warning) 16%, var(--card));
 }
 .measurement-status.status-pending {
-  color: #707d76;
-  background: #edf1ee;
+  color: var(--muted-foreground);
+  background: var(--muted);
 }
 .result-anulado {
-  color: #925050;
-  background: #f5e8e8;
+  color: var(--foreground);
+  background: var(--muted);
 }
 .execution-footer {
   display: flex;
@@ -70,7 +70,7 @@
   gap: 1rem;
 }
 .execution-footer p {
-  color: #6d7b74;
+  color: var(--muted-foreground);
   font-size: 0.65rem;
 }
 .result-save-summary {
@@ -80,10 +80,10 @@
   gap: 0.7rem;
   margin-top: 0.9rem;
   padding: 0.8rem;
-  border: 1px solid #bde0cc;
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
-  color: #255541;
-  background: #eaf7f0;
+  color: var(--foreground);
+  background: var(--muted);
 }
 .result-save-summary > svg {
   width: 1.2rem;
@@ -101,8 +101,8 @@
 }
 .result-save-summary > div:last-child span,
 .nc-reference {
-  color: #8b5417;
-  background: #fff0d5;
+  color: var(--warning);
+  background: color-mix(in oklab, var(--warning) 16%, var(--card));
 }
 .quality-locked {
   display: flex;
@@ -115,8 +115,8 @@
   height: 2.5rem;
   place-items: center;
   border-radius: 0.7rem;
-  color: #7a867f;
-  background: #edf1ee;
+  color: var(--muted-foreground);
+  background: var(--muted);
 }
 .quality-lock-icon svg {
   width: 1.1rem;
@@ -127,7 +127,7 @@
 }
 .quality-locked p {
   margin: 0.2rem 0 0;
-  color: #7a867f;
+  color: var(--muted-foreground);
   font-size: 0.65rem;
 }
 

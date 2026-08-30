@@ -3,9 +3,9 @@
   gap: 0.75rem;
   margin-top: 0.9rem;
   padding: 0.9rem;
-  border: 1px solid #c8d8ce;
+  border: 1px solid var(--border);
   border-radius: 0.85rem;
-  background: #f8fbf9;
+  background: var(--card);
 }
 
 .result-review > header,
@@ -22,15 +22,15 @@
 }
 
 .result-review > header > strong {
-  color: #8b5417;
+  color: var(--warning);
   font-size: 0.65rem;
 }
 
 .result-review-list {
   overflow: hidden;
-  border: 1px solid #e0e7e2;
+  border: 1px solid var(--border);
   border-radius: 0.65rem;
-  background: white;
+  background: var(--card);
 }
 
 .result-review-list > div {
@@ -39,7 +39,7 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.6rem;
-  border-bottom: 1px solid #e8ece9;
+  border-bottom: 1px solid var(--border);
   font-size: 0.62rem;
 }
 
@@ -49,7 +49,7 @@
 
 .result-review > p {
   margin: 0;
-  color: #69776f;
+  color: var(--foreground);
   font-size: 0.6rem;
 }
 

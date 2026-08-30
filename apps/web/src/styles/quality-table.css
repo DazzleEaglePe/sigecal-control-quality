@@ -4,9 +4,9 @@
   gap: 0.65rem;
   margin-bottom: 1rem;
   padding: 0.75rem;
-  border: 1px solid #e5eae6;
+  border: 1px solid var(--border);
   border-radius: 0.82rem;
-  background: #f8faf8;
+  background: var(--card);
 }
 
 .quality-filters label,
@@ -14,7 +14,7 @@
 .transition-form label {
   display: grid;
   gap: 0.32rem;
-  color: #66736c;
+  color: var(--foreground);
   font-size: 0.62rem;
   font-weight: 700;
 }
@@ -29,10 +29,10 @@
   width: 100%;
   min-height: 2.45rem;
   padding: 0.55rem 0.62rem;
-  border: 1px solid #dfe6e1;
+  border: 1px solid var(--border);
   border-radius: 0.64rem;
-  color: #26362f;
-  background: white;
+  color: var(--foreground);
+  background: var(--card);
   font-size: 0.7rem;
 }
 
@@ -47,31 +47,31 @@
 .quality-table th,
 .quality-table td {
   padding: 0.72rem;
-  border-bottom: 1px solid #edf0ed;
+  border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: middle;
 }
 .quality-table td {
-  color: #526059;
+  color: var(--foreground);
   font-size: 0.67rem;
 }
 .quality-table td strong {
-  color: #25372f;
+  color: var(--foreground);
 }
 .quality-type {
   gap: 0.35rem;
 }
 .quality-type svg {
   width: 0.9rem;
-  color: #0d7a54;
+  color: var(--foreground);
 }
 .quality-row-action {
   width: 2rem;
   height: 2rem;
   justify-content: center;
-  border: 1px solid #e0e6e2;
+  border: 1px solid var(--border);
   border-radius: 0.55rem;
-  color: #0b7550;
+  color: var(--foreground);
 }
 .quality-row-action svg {
   width: 0.9rem;
@@ -93,28 +93,28 @@
 }
 
 .status-programada {
-  color: #285f8f;
-  background: #e9f2f9;
+  color: var(--foreground);
+  background: var(--muted);
 }
 .status-en_proceso {
-  color: #08714d;
-  background: #e4f5eb;
+  color: var(--foreground);
+  background: var(--muted);
 }
 .status-completada {
-  color: #52625b;
-  background: #edf1ee;
+  color: var(--foreground);
+  background: var(--muted);
 }
 .status-vencida {
-  color: #aa6810;
-  background: #fff1d8;
+  color: var(--warning);
+  background: color-mix(in oklab, var(--warning) 16%, var(--card));
 }
 .status-cancelada {
-  color: #9a4141;
-  background: #fbe8e8;
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--destructive) 16%, var(--card));
 }
 .status-reprogramada {
-  color: #6d579a;
-  background: #f0ebf8;
+  color: var(--muted-foreground);
+  background: var(--muted);
 }
 
 .pagination {
@@ -124,7 +124,7 @@
   margin-top: 0.9rem;
 }
 .pagination span {
-  color: #75817b;
+  color: var(--muted-foreground);
   font-size: 0.63rem;
 }
 

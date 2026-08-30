@@ -15,9 +15,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.42rem;
-  border-color: #cae8d8;
-  color: #08704c;
-  background: #eaf7f0;
+  border-color: var(--border);
+  color: var(--foreground);
+  background: var(--muted);
 }
 
 .dashboard-heading .phase-badge svg {
@@ -58,9 +58,9 @@
 }
 
 .module-card.is-featured {
-  border-color: #177a58;
-  color: white;
-  background: linear-gradient(145deg, #12845d, #075c40);
+  border-color: var(--border);
+  color: var(--foreground);
+  background: linear-gradient(145deg, var(--secondary), var(--background));
 }
 
 .module-card-top,
@@ -78,10 +78,10 @@
   width: 2.35rem;
   height: 2.35rem;
   place-items: center;
-  border: 1px solid #e3e9e5;
+  border: 1px solid var(--border);
   border-radius: 0.7rem;
-  color: #0c7d55;
-  background: #f6faf7;
+  color: var(--foreground);
+  background: var(--card);
 }
 
 .module-icon svg,
@@ -92,7 +92,7 @@
 
 .module-card.is-featured .module-icon {
   border-color: rgb(255 255 255 / 20%);
-  color: white;
+  color: var(--foreground);
   background: rgb(255 255 255 / 13%);
 }
 
@@ -100,7 +100,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: #7a8780;
+  color: var(--muted-foreground);
   font-size: 0.61rem;
   font-weight: 720;
 }
@@ -109,19 +109,19 @@
   width: 0.38rem;
   height: 0.38rem;
   border-radius: 50%;
-  background: #d2a34c;
+  background: var(--warning);
 }
 
 .module-card.is-available .module-status > span {
-  background: #28bf82;
+  background: var(--secondary);
 }
 
 .module-card.is-featured .module-status {
-  color: #d7f4e5;
+  color: var(--foreground);
 }
 
 .module-card.is-featured .module-status > span {
-  background: #77efb6;
+  background: var(--secondary);
 }
 
 .module-card h2 {
@@ -130,19 +130,19 @@
 }
 
 .module-card.is-featured h2 {
-  color: white;
+  color: var(--foreground);
 }
 
 .module-card p {
   max-width: 22rem;
   margin: 0;
-  color: #748079;
+  color: var(--muted-foreground);
   font-size: 0.76rem;
   line-height: 1.55;
 }
 
 .module-card.is-featured p {
-  color: #cfebde;
+  color: var(--muted-foreground);
 }
 
 .module-card a {
@@ -155,8 +155,8 @@
   align-items: center;
   justify-content: space-between;
   padding-top: 0.72rem;
-  border-top: 1px solid #edf0ed;
-  color: #37604f;
+  border-top: 1px solid var(--border);
+  color: var(--foreground);
   font-size: 0.68rem;
   font-weight: 750;
   text-decoration: none;
@@ -164,7 +164,7 @@
 
 .module-card.is-featured a {
   border-top-color: rgb(255 255 255 / 17%);
-  color: white;
+  color: var(--foreground);
 }
 
 .module-card a svg {
@@ -173,16 +173,16 @@
 
 .dashboard-page .status-card {
   min-height: 4.6rem;
-  border-color: #d9eadf;
-  background: #fbfdfb;
+  border-color: var(--border);
+  background: var(--card);
   box-shadow: none;
 }
 
 .dashboard-page .status-indicator {
   width: 2.25rem;
   height: 2.25rem;
-  color: #08724d;
-  background: #e1f3e9;
+  color: var(--foreground);
+  background: var(--muted);
 }
 
 .status-indicator svg {
@@ -216,8 +216,8 @@
 .soft-badge {
   padding: 0.38rem 0.58rem;
   border-radius: 999px;
-  color: #7c7564;
-  background: #f4f1e8;
+  color: var(--foreground);
+  background: var(--muted);
   font-size: 0.58rem;
   font-weight: 700;
 }
@@ -231,8 +231,8 @@
 }
 
 .module-icon.is-dark {
-  color: white;
-  background: #16231d;
+  color: var(--foreground);
+  background: var(--background);
 }
 
 .focus-panel ul {
@@ -247,7 +247,7 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  color: #53615a;
+  color: var(--foreground);
   font-size: 0.7rem;
 }
 
@@ -255,6 +255,6 @@
   width: 1rem;
   padding: 0.15rem;
   border-radius: 50%;
-  color: #0a744f;
-  background: #e2f2e9;
+  color: var(--foreground);
+  background: var(--muted);
 }

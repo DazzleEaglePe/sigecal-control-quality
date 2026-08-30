@@ -11,7 +11,7 @@
 .demo-check input {
   width: 1rem;
   min-height: auto;
-  accent-color: #087550;
+  accent-color: var(--foreground);
 }
 .chart-metrics {
   display: grid;
@@ -21,16 +21,16 @@
 }
 .chart-metrics span {
   padding: 0.65rem;
-  border: 1px solid #e5eae6;
+  border: 1px solid var(--border);
   border-radius: 0.65rem;
-  background: #fafbfa;
+  background: var(--card);
 }
 .chart-metrics small,
 .chart-metrics strong {
   display: block;
 }
 .chart-metrics small {
-  color: #839089;
+  color: var(--muted-foreground);
   font-size: 0.54rem;
 }
 .chart-metrics strong {
@@ -40,9 +40,9 @@
 .control-chart {
   margin: 0;
   overflow: hidden;
-  border: 1px solid #e4e9e6;
+  border: 1px solid var(--border);
   border-radius: 0.8rem;
-  background: linear-gradient(#fbfcfb, #f5faf7);
+  background: linear-gradient(var(--card), var(--card));
 }
 .control-chart svg {
   display: block;
@@ -51,32 +51,32 @@
 }
 .control-series {
   fill: none;
-  stroke: #0a7a53;
+  stroke: var(--foreground);
   stroke-width: 2.5;
 }
 .control-chart circle {
-  fill: white;
-  stroke: #0a7a53;
+  fill: var(--foreground);
+  stroke: var(--foreground);
   stroke-width: 2;
 }
 .control-chart circle.is-alert {
-  fill: #d96754;
-  stroke: #a83f30;
+  fill: var(--destructive);
+  stroke: var(--destructive);
 }
 .control-limit line {
-  stroke: #a6b4ad;
+  stroke: var(--muted-foreground);
   stroke-dasharray: 5 5;
   stroke-width: 1;
 }
 .control-limit text {
-  fill: #75817b;
+  fill: var(--muted-foreground);
   font-size: 9px;
   text-anchor: end;
 }
 .control-chart figcaption {
   padding: 0.65rem;
-  border-top: 1px solid #e5eae6;
-  color: #6e7c75;
+  border-top: 1px solid var(--border);
+  color: var(--muted-foreground);
   font-size: 0.62rem;
 }
 .result-pill {

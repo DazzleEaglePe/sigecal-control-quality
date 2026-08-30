@@ -1,0 +1,47 @@
+/* Restituye el color en lo que comunica estado técnico. El resto de la
+   interfaz es monocroma, así que estos son los únicos acentos cromáticos y
+   por eso resultan legibles de un vistazo. */
+
+.result-conforme,
+.status-conforme,
+.measurement-status.status-conforme,
+.state-pill.is-active,
+.batch-status-en_proceso,
+.origin-real {
+  color: var(--success);
+  background: color-mix(in oklab, var(--success) 14%, var(--card));
+}
+
+.result-no_conforme,
+.status-no_conforme,
+.measurement-status.status-no_conforme,
+.status-vencida,
+.error-number {
+  color: var(--destructive);
+  background: color-mix(in oklab, var(--destructive) 14%, var(--card));
+}
+
+.form-error,
+.inline-error,
+.field-issue {
+  color: var(--destructive);
+}
+
+.field-note {
+  color: var(--warning);
+}
+
+.status-card.is-success .status-indicator {
+  color: var(--success);
+}
+
+.status-card.is-error .status-indicator {
+  color: var(--destructive);
+}
+
+/* El verde institucional se conserva únicamente en la marca. */
+.brand-mark,
+.auth-brand-mark,
+.sidebar-brand span:first-child {
+  color: var(--success);
+}

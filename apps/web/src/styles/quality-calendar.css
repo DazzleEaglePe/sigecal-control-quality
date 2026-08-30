@@ -21,10 +21,10 @@
   width: 2.1rem;
   height: 2.1rem;
   place-items: center;
-  border: 1px solid #dfe5e1;
+  border: 1px solid var(--border);
   border-radius: 0.55rem;
-  color: #405149;
-  background: white;
+  color: var(--foreground);
+  background: var(--card);
   cursor: pointer;
 }
 
@@ -36,15 +36,15 @@
   display: grid;
   grid-template-columns: repeat(7, minmax(6rem, 1fr));
   overflow: auto;
-  border: 1px solid #e6ebe7;
+  border: 1px solid var(--border);
   border-radius: 0.8rem;
 }
 
 .calendar-weekday {
   padding: 0.58rem;
-  border-bottom: 1px solid #e6ebe7;
-  color: #839089;
-  background: #f6f8f6;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+  background: var(--card);
   font-size: 0.58rem;
   font-weight: 760;
   text-align: center;
@@ -54,13 +54,13 @@
 .calendar-cell {
   min-height: 8rem;
   padding: 0.5rem;
-  border-right: 1px solid #edf0ee;
-  border-bottom: 1px solid #edf0ee;
-  background: white;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
 }
 
 .calendar-cell.is-empty {
-  background: #f9faf9;
+  background: var(--card);
 }
 
 .calendar-day {
@@ -70,7 +70,7 @@
   margin-bottom: 0.3rem;
   place-items: center;
   border-radius: 50%;
-  color: #506059;
+  color: var(--foreground);
   font-size: 0.62rem;
   font-weight: 750;
 }
@@ -115,7 +115,7 @@
 
 .week-group h3 {
   margin: 0.65rem 0 0.15rem;
-  color: #527066;
+  color: var(--foreground);
   font-size: 0.66rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -127,14 +127,14 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  border: 1px solid #e5eae6;
+  border: 1px solid var(--border);
   border-radius: 0.7rem;
-  color: #2a3b33;
+  color: var(--foreground);
   text-decoration: none;
 }
 
 .week-agenda time {
-  color: #6f7d76;
+  color: var(--muted-foreground);
   font-size: 0.62rem;
   font-weight: 700;
 }
@@ -149,7 +149,7 @@
 }
 .week-agenda small {
   margin-top: 0.15rem;
-  color: #7d8983;
+  color: var(--muted-foreground);
   font-size: 0.6rem;
 }
 

@@ -6,9 +6,9 @@
 
 .parameter-trace-card {
   padding: 0.8rem;
-  border: 1px solid #e0e8e3;
+  border: 1px solid var(--border);
   border-radius: 0.8rem;
-  background: #fbfcfb;
+  background: var(--card);
 }
 
 .parameter-trace-card header,
@@ -30,7 +30,7 @@
 
 .parameter-trace-card header small,
 .parameter-trace-card footer {
-  color: #7b8981;
+  color: var(--muted-foreground);
   font-size: 0.55rem;
 }
 
@@ -53,17 +53,17 @@
 .parameter-trace-card dl div {
   padding: 0.55rem;
   border-radius: 0.6rem;
-  background: #f1f6f3;
+  background: var(--muted);
 }
 
 .parameter-trace-card dt {
-  color: #7b8981;
+  color: var(--muted-foreground);
   font-size: 0.52rem;
 }
 
 .parameter-trace-card dd {
   margin: 0.15rem 0 0;
-  color: #30443a;
+  color: var(--foreground);
   font-size: 0.63rem;
   font-weight: 700;
 }
@@ -79,14 +79,14 @@
 }
 
 .quality-callout.is-warning {
-  color: #86581f;
-  background: #fff6e7;
+  color: var(--warning);
+  background: color-mix(in oklab, var(--warning) 16%, var(--card));
 }
 
 .is-focused-record {
-  outline: 2px solid #c79337;
+  outline: 2px solid color-mix(in oklab, var(--warning) 40%, var(--border));
   outline-offset: -2px;
-  background: #fff8e9;
+  background: color-mix(in oklab, var(--warning) 16%, var(--card));
 }
 
 @media (max-width: 760px) {

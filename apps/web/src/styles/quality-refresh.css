@@ -42,9 +42,9 @@
 .view-switch {
   gap: 0.2rem;
   padding: 0.25rem;
-  border: 1px solid #dfe6e1;
+  border: 1px solid var(--border);
   border-radius: 0.72rem;
-  background: #f5f7f5;
+  background: var(--muted);
 }
 
 .view-switch button {
@@ -55,7 +55,7 @@
   padding: 0.42rem 0.62rem;
   border: 0;
   border-radius: 0.52rem;
-  color: #64716b;
+  color: var(--foreground);
   background: transparent;
   font-size: 0.68rem;
   font-weight: 720;
@@ -67,8 +67,8 @@
 }
 
 .view-switch button.is-active {
-  color: white;
-  background: #17251e;
+  color: var(--foreground);
+  background: var(--background);
   box-shadow: 0 4px 12px rgb(23 37 30 / 14%);
 }
 
@@ -86,7 +86,7 @@
   padding: 1rem;
   border: 1px solid var(--ui-line);
   border-radius: 0.95rem;
-  background: white;
+  background: var(--card);
   box-shadow: var(--ui-shadow);
 }
 
@@ -97,8 +97,8 @@
   flex: 0 0 auto;
   place-items: center;
   border-radius: 0.72rem;
-  color: #0a7a52;
-  background: #e8f5ee;
+  color: var(--foreground);
+  background: var(--muted);
 }
 
 .quality-stats svg {
@@ -111,13 +111,13 @@
 }
 
 .quality-stats small {
-  color: #7a8780;
+  color: var(--muted-foreground);
   font-size: 0.63rem;
 }
 
 .quality-stats strong {
   margin-top: 0.2rem;
-  color: #17251f;
+  color: var(--foreground);
   font-size: 1.45rem;
 }
 
@@ -126,7 +126,7 @@
   padding: 1.15rem;
   border: 1px solid var(--ui-line);
   border-radius: 1rem;
-  background: white;
+  background: var(--card);
   box-shadow: var(--ui-shadow);
 }
 
@@ -143,11 +143,11 @@
 
 .quality-panel-heading > svg {
   width: 1.15rem;
-  color: #0d7b55;
+  color: var(--foreground);
 }
 
 .quality-kicker {
-  color: #75827c;
+  color: var(--muted-foreground);
   font-size: 0.58rem;
   font-weight: 760;
   letter-spacing: 0.1em;
@@ -156,7 +156,7 @@
 
 .quality-empty,
 .quality-empty-inline {
-  color: #74817a;
+  color: var(--muted-foreground);
   font-size: 0.75rem;
 }
 
@@ -171,12 +171,12 @@
   gap: 0.5rem;
   padding: 0.85rem;
   border-radius: 0.7rem;
-  background: #f4f8f5;
+  background: var(--muted);
 }
 
 .quality-empty-inline svg {
   width: 1rem;
-  color: #0a7b53;
+  color: var(--foreground);
 }
 
 .pending-list {
@@ -191,9 +191,9 @@
   align-items: center;
   gap: 0.7rem;
   padding: 0.72rem;
-  border: 1px solid #e6ebe7;
+  border: 1px solid var(--border);
   border-radius: 0.72rem;
-  color: #263a31;
+  color: var(--foreground);
   text-decoration: none;
   transition:
     border-color 140ms ease,
@@ -202,7 +202,7 @@
 
 .pending-list > a:hover {
   transform: translateY(-1px);
-  border-color: #a9d5bf;
+  border-color: var(--border);
 }
 
 .pending-list strong,
@@ -219,13 +219,13 @@
 .pending-list small,
 .quality-table td small {
   margin-top: 0.16rem;
-  color: #849089;
+  color: var(--muted-foreground);
   font-size: 0.59rem;
 }
 
 .pending-list > a > svg {
   width: 0.9rem;
-  color: #6f7c75;
+  color: var(--muted-foreground);
 }
 
 @media (max-width: 1180px) {

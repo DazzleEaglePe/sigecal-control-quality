@@ -22,6 +22,7 @@ import './styles/quality-traceability.css';
 import './styles/quality-analysis.css';
 import './styles/auth-refresh.css';
 import './styles/auth-form-refresh.css';
+import './styles/state-colors.css';
 
 const rootElement = document.querySelector('#root');
 
