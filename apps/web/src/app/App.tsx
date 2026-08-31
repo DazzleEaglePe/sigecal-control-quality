@@ -66,6 +66,10 @@ const PhysChemAnalysisPage = lazy(async () => {
   const module = await import('../pages/PhysChemAnalysisPage.js');
   return { default: module.PhysChemAnalysisPage };
 });
+const SettingsPage = lazy(async () => {
+  const module = await import('../pages/SettingsPage.js');
+  return { default: module.SettingsPage };
+});
 
 const deferred = (element: React.JSX.Element): React.JSX.Element => (
   <Suspense fallback={<p>Cargando módulo…</p>}>{element}</Suspense>
@@ -97,6 +101,7 @@ export const App = (): React.JSX.Element => (
       <Route path="password" element={deferred(<ChangePasswordPage />)} />
       <Route element={<AppShell />}>
         <Route index element={<HomePage />} />
+        <Route path="ajustes" element={deferred(<SettingsPage />)} />
         <Route path="lotes" element={deferred(<BatchesPage />)} />
         <Route path="lotes/:id" element={deferred(<BatchDetailPage />)} />
         {qualityRoutes}

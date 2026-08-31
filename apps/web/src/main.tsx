@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './app/App.js';
 import { AuthProvider } from './features/auth/AuthProvider.js';
+import { applyStoredTheme } from './features/shell/useTheme.js';
 import './styles.css';
 import './styles/shell-refresh.css';
 import './styles/shell-responsive.css';
@@ -29,6 +30,10 @@ const rootElement = document.querySelector('#root');
 
 if (!rootElement)
   throw new Error('No se encontró el contenedor de la aplicación.');
+
+// Antes de montar React, para que cualquier ruta cargue con el tema
+// guardado y no parpadee al oscuro por defecto.
+applyStoredTheme();
 
 createRoot(rootElement).render(
   <StrictMode>

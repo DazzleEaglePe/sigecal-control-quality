@@ -14,8 +14,7 @@
 
 @media (max-width: 700px) {
   .topbar-actions,
-  .session-chevron,
-  .logout-button span {
+  .session-chevron {
     display: none;
   }
 

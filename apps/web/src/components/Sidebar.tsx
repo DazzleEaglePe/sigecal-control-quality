@@ -9,6 +9,7 @@ import {
   LibraryBig,
   PackageSearch,
   Settings2,
+  SlidersHorizontal,
   ShieldCheck,
   TriangleAlert,
   UsersRound,
@@ -250,11 +251,12 @@ export const Sidebar = ({
         <ConfigurationNavigation action={action} />
       </nav>
       <div className="sidebar-footer">
-        <span className="environment-dot" aria-hidden="true" />
-        <span>
-          <small>Entorno</small>
-          <strong>Desarrollo</strong>
-        </span>
+        <NavigationLink
+          action={action}
+          icon={SlidersHorizontal}
+          label="Ajustes"
+          to="/ajustes"
+        />
       </div>
     </aside>
   </CollapsedContext>

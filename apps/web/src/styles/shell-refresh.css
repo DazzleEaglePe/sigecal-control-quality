@@ -154,27 +154,6 @@ body {
   color: var(--foreground);
 }
 
-.sidebar-footer small,
-.sidebar-footer strong {
-  display: block;
-}
-
-.sidebar-footer small {
-  color: var(--muted-foreground);
-  font-size: 0.57rem;
-  text-transform: uppercase;
-}
-
-.sidebar-footer strong {
-  margin-top: 0.08rem;
-  font-size: 0.7rem;
-}
-
-.environment-dot {
-  background: var(--secondary);
-  box-shadow: 0 0 0 4px rgb(34 173 119 / 12%);
-}
-
 .workspace {
   margin-left: 16.5rem;
 }
@@ -260,19 +239,6 @@ body {
 .session-chevron {
   width: 0.85rem;
   color: var(--muted-foreground);
-}
-
-.logout-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.48rem 0.62rem;
-  border-color: var(--border);
-  border-radius: 0.68rem;
-}
-
-.logout-button svg {
-  width: 0.85rem;
 }
 
 .main-content {

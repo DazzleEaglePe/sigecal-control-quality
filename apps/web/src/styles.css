@@ -227,13 +227,6 @@ a:focus-visible,
   color: var(--muted-foreground);
   font-size: 0.72rem;
 }
-.environment-dot {
-  width: 0.48rem;
-  height: 0.48rem;
-  border-radius: 50%;
-  background: var(--warning);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--warning) 40%, var(--border));
-}
 .workspace {
   min-height: 100vh;
   margin-left: 17rem;
@@ -287,22 +280,17 @@ a:focus-visible,
   align-items: center;
   gap: 0.65rem;
   margin-left: auto;
+  padding: 0;
+  border: 0;
   color: var(--foreground);
+  background: transparent;
   font-size: 0.77rem;
+  text-align: left;
+  cursor: pointer;
 }
 .session-placeholder small {
   color: var(--muted-foreground);
   font-size: 0.67rem;
-}
-.logout-button {
-  padding: 0.45rem 0.62rem;
-  border: 1px solid var(--border);
-  border-radius: 0.55rem;
-  color: var(--foreground);
-  background: var(--card);
-  font-size: 0.7rem;
-  font-weight: 750;
-  cursor: pointer;
 }
 .avatar {
   display: grid;
