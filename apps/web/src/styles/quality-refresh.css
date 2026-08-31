@@ -69,7 +69,7 @@
 .view-switch button.is-active {
   color: var(--foreground);
   background: var(--background);
-  box-shadow: 0 4px 12px rgb(23 37 30 / 14%);
+  box-shadow: none;
 }
 
 .quality-stats {
@@ -87,7 +87,7 @@
   border: 1px solid var(--ui-line);
   border-radius: 0.95rem;
   background: var(--card);
-  box-shadow: var(--ui-shadow);
+  box-shadow: none;
 }
 
 .quality-stats article > span {
@@ -127,7 +127,7 @@
   border: 1px solid var(--ui-line);
   border-radius: 1rem;
   background: var(--card);
-  box-shadow: var(--ui-shadow);
+  box-shadow: none;
 }
 
 .quality-panel-heading {

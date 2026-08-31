@@ -87,8 +87,8 @@ export const AuthLayout = ({
           como nombre accesible de la región del formulario. */}
       <section className="auth-card" aria-labelledby={titleId}>
         <div className="auth-card-brand" aria-hidden="true">
-          <ShieldCheck />
-          <span>SIGECAL</span>
+          {/* <ShieldCheck />
+          <span>SIGECAL</span> */}
         </div>
         <p className="eyebrow">{eyebrow}</p>
         <h1 id={titleId}>{title}</h1>

@@ -39,7 +39,7 @@ body {
   border-right: 1px solid var(--ui-line);
   color: var(--ui-ink);
   background: var(--background);
-  box-shadow: 8px 0 32px rgb(26 43 35 / 3%);
+  box-shadow: none;
 }
 
 .brand {
@@ -55,8 +55,8 @@ body {
   border: 0;
   border-radius: 0.72rem;
   color: var(--foreground);
-  background: linear-gradient(145deg, var(--secondary), var(--secondary));
-  box-shadow: 0 8px 18px rgb(17 135 93 / 22%);
+  background: var(--secondary);
+  box-shadow: none;
 }
 
 .brand-mark svg {
@@ -119,7 +119,7 @@ body {
 .nav-item.active {
   color: var(--foreground);
   background: linear-gradient(135deg, var(--background), var(--background));
-  box-shadow: 0 8px 20px rgb(19 30 24 / 14%);
+  box-shadow: none;
 }
 
 .nav-item.is-disabled {
@@ -185,7 +185,6 @@ body {
   padding: 0 2rem;
   border-bottom-color: var(--ui-line);
   background: var(--background);
-  backdrop-filter: blur(18px);
 }
 
 .icon-button {

@@ -190,7 +190,7 @@
   border: 1px solid var(--border);
   border-radius: 0.8rem;
   background: var(--card);
-  box-shadow: 0 16px 36px rgb(27 45 36 / 16%);
+  box-shadow: none;
 }
 
 @media (max-width: 980px) {

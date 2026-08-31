@@ -31,7 +31,7 @@
   border-color: var(--border);
   color: var(--foreground);
   background: var(--card);
-  box-shadow: 0 4px 14px rgb(26 42 34 / 4%);
+  box-shadow: none;
 }
 
 .admin-panel,
@@ -41,7 +41,7 @@
   border-color: var(--ui-line);
   border-radius: 1rem;
   background: var(--ui-surface);
-  box-shadow: var(--ui-shadow);
+  box-shadow: none;
 }
 
 .admin-panel {
@@ -94,7 +94,7 @@
 .primary-button,
 .auth-submit {
   background: linear-gradient(135deg, var(--secondary), var(--secondary));
-  box-shadow: 0 8px 18px rgb(15 124 84 / 18%);
+  box-shadow: none;
 }
 
 .primary-button:hover,
@@ -168,7 +168,7 @@ tbody tr:hover {
 .catalog-tabs button.is-selected {
   color: var(--foreground);
   background: var(--background);
-  box-shadow: 0 5px 14px rgb(17 30 23 / 12%);
+  box-shadow: none;
 }
 
 .auth-screen {
@@ -184,7 +184,7 @@ tbody tr:hover {
 .auth-card {
   border-color: var(--border);
   border-radius: 1.15rem;
-  box-shadow: 0 24px 70px rgb(22 45 33 / 12%);
+  box-shadow: none;
 }
 
 .auth-brand {

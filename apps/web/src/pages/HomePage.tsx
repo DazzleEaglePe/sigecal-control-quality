@@ -112,8 +112,11 @@ const StatRow = ({ state }: { readonly state: DashboardState }) => {
 /** RF-M8-15 exige que los datos de demostración se declaren de forma visible
  * cuando se incluyen en un recuento. */
 const DemoNotice = (): React.JSX.Element => (
-  <div className="flex items-center gap-2.5 rounded-lg border border-border bg-muted/50 px-4 py-3">
-    <Info className="size-4 shrink-0 text-warning" aria-hidden="true" />
+  <div className="flex items-center gap-2.5 px-1">
+    <Info
+      className="size-3.5 shrink-0 text-muted-foreground"
+      aria-hidden="true"
+    />
     <p className="text-xs text-muted-foreground">
       Los recuentos incluyen lotes e inspecciones de demostración. Los
       indicadores del periodo los excluirán por defecto.
@@ -127,7 +130,7 @@ const RecentRow = ({
   readonly item: InspectionItem;
 }): React.JSX.Element => (
   <Link
-    className="flex items-center justify-between gap-3 rounded-lg border border-border px-4 py-3 transition-colors hover:bg-muted/60"
+    className="flex items-center justify-between gap-3 border-b border-border py-3 last:border-b-0 hover:text-foreground"
     to={`/inspecciones/${item.id}`}
   >
     <span className="min-w-0">
@@ -139,9 +142,11 @@ const RecentRow = ({
       </small>
     </span>
     <span className="flex shrink-0 items-center gap-2">
-      <Badge variant="secondary">{statusLabel[item.status]}</Badge>
+      <span className="text-xs text-muted-foreground">
+        {statusLabel[item.status]}
+      </span>
       <ArrowUpRight
-        className="size-4 text-muted-foreground"
+        className="size-3.5 text-muted-foreground"
         aria-hidden="true"
       />
     </span>
@@ -158,7 +163,7 @@ const RecentPanel = ({
       <CardTitle className="text-base">Actividad reciente</CardTitle>
       <CardDescription>Últimas inspecciones registradas.</CardDescription>
     </CardHeader>
-    <CardContent className="space-y-2">
+    <CardContent className="pt-0">
       {state.error ? (
         <p className="text-sm text-destructive" role="alert">
           {state.error}
@@ -190,12 +195,10 @@ const ModuleRow = ({
   to,
 }: ModuleDefinition): React.JSX.Element => (
   <div className="flex items-center gap-3 border-b border-border py-3 last:border-b-0">
-    <span
-      className="grid size-9 shrink-0 place-items-center rounded-md border border-border bg-muted text-muted-foreground"
+    <Icon
+      className="size-4 shrink-0 text-muted-foreground"
       aria-hidden="true"
-    >
-      <Icon className="size-4" />
-    </span>
+    />
     <span className="min-w-0 flex-1">
       <strong className="block text-sm font-semibold">{title}</strong>
       <small className="block text-xs text-muted-foreground">{copy}</small>

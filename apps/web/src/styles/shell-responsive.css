@@ -1,6 +1,6 @@
 @media (max-width: 850px) {
   .sidebar {
-    box-shadow: 18px 0 48px rgb(17 31 24 / 18%);
+    box-shadow: none;
   }
 
   .workspace {

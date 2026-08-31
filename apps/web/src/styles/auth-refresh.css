@@ -200,7 +200,7 @@
     var(--secondary),
     transparent
   );
-  box-shadow: 0 0 18px var(--border);
+  box-shadow: none;
 }
 
 .quality-signal-axis.is-horizontal {
@@ -230,7 +230,7 @@
   border-radius: 0.65rem;
   color: var(--muted-foreground);
   background: var(--background);
-  box-shadow: 0 0 28px rgb(93 235 164 / 40%);
+  box-shadow: none;
 }
 
 .quality-signal-core svg {

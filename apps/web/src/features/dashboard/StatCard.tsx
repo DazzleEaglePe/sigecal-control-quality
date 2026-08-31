@@ -18,26 +18,24 @@ export const StatCard = ({
   value,
 }: StatCardProps): React.JSX.Element => (
   <Card className="gap-0 py-5">
-    <div className="flex items-start justify-between gap-3 px-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+    <div className="flex items-center justify-between gap-3 px-5">
+      <p className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
         {label}
       </p>
-      <span
-        className="grid size-8 place-items-center rounded-md border border-border bg-muted text-muted-foreground"
+      <Icon
+        className="size-4 shrink-0 text-muted-foreground"
         aria-hidden="true"
-      >
-        <Icon className="size-4" />
-      </span>
+      />
     </div>
-    <div className="px-5 pt-3">
+    <div className="px-5 pt-4">
       {loading ? (
-        <span className="block h-9 w-20 animate-pulse rounded bg-muted" />
+        <span className="block h-9 w-16 animate-pulse rounded bg-muted" />
       ) : (
-        <strong className="block text-4xl font-semibold tracking-tight tabular-nums">
+        <strong className="block text-4xl font-medium tracking-tight tabular-nums">
           {value}
         </strong>
       )}
-      <p className="pt-1 text-xs text-muted-foreground">{hint}</p>
+      <p className="pt-1.5 text-xs text-muted-foreground">{hint}</p>
     </div>
   </Card>
 );
