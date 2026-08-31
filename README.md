@@ -35,11 +35,21 @@ La contraseña inicial se toma exclusivamente de `SEED_DEFAULT_PASSWORD`; los us
 
 ## Estado funcional
 
-Los Sprints 1, 2 y 3 están implementados. Además de autenticación, RBAC, usuarios y maestros, SIGECAL ya registra lotes `REAL`, aplica las reglas de composición Puro/Acholado, recorre en orden las seis etapas y ofrece listado, filtros, detalle, QR y ficha de trazabilidad consolidada.
+Los Sprints 1, 2, 3 y 4 están implementados. Además de autenticación, RBAC,
+usuarios y maestros, SIGECAL registra lotes, aplica las reglas de composición
+Puro/Acholado, recorre en orden las seis etapas y ofrece QR y trazabilidad
+consolidada. También permite programar inspecciones, previsualizar y registrar
+resultados fisicoquímicos inmutables, aplicar el estándar vigente y generar una
+no conformidad automática ante un resultado fuera de rango.
 
 Las mutaciones se autorizan nuevamente en la API, el alcance de `OPERARIO` se aplica antes de paginar y cerrar o rechazar requiere el permiso correspondiente. El tipo, las variedades y la fecha inicial se congelan al avanzar o programar la primera inspección.
 
 Los catálogos se desactivan mediante baja lógica y la API rechaza la operación si el elemento ya tiene dependencias. Hasta recibir los rangos confirmados de la empresa, los valores normativos existentes permanecen marcados como provisionales y no pueden aplicarse a datos `REAL`.
+
+Esta es una entrega funcional de avance. Los Sprints 5 a 8 —evaluación
+organoléptica, ciclo completo de no conformidades, reportes, PWA, despliegue y
+entrega formal— continúan pendientes. El estado verificable para revisión con la
+tesista está en `docs/14-CHECKLIST-ENTREGA-NICOLLE.md`.
 
 ## Comandos principales
 
