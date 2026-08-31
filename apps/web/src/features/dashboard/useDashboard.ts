@@ -1,24 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { InspectionItem } from '@sigecal/shared';
-
 import type { AuthorizedRequest } from '../auth/auth-context.js';
 import { listBatches } from '../batches/batches-api.js';
 import {
   listInspections,
   listPendingInspections,
 } from '../inspections/inspections-api.js';
+import {
+  loadAllPages,
+  summarizeDashboard,
+  type DashboardData,
+} from './dashboard-data.js';
 
-const PAGE_SIZE = 50;
-
-export interface DashboardData {
-  readonly batches: number;
-  readonly completed: number;
-  readonly demo: boolean;
-  readonly inspections: number;
-  readonly pending: number;
-  readonly recent: readonly InspectionItem[];
-  readonly scheduled: number;
-}
+export type { DashboardData } from './dashboard-data.js';
 
 export interface DashboardState {
   readonly data: DashboardData | undefined;
@@ -27,20 +20,18 @@ export interface DashboardState {
   readonly reload: () => void;
 }
 
-const summarize = (
-  items: readonly InspectionItem[],
-  total: number,
-  batches: number,
-  pending: number,
-): DashboardData => ({
-  batches,
-  completed: items.filter((item) => item.status === 'COMPLETADA').length,
-  demo: items.some((item) => item.dataOrigin === 'DEMO'),
-  inspections: total,
-  pending,
-  recent: items.slice(0, 5),
-  scheduled: items.filter((item) => item.status === 'PROGRAMADA').length,
-});
+const loadDashboard = async (
+  request: AuthorizedRequest,
+): Promise<DashboardData> => {
+  const [inspections, batches, pending] = await Promise.all([
+    loadAllPages((page, pageSize) =>
+      listInspections(request, { page, pageSize }),
+    ),
+    loadAllPages((page, pageSize) => listBatches(request, { page, pageSize })),
+    listPendingInspections(request, { page: 1, pageSize: 1 }),
+  ]);
+  return summarizeDashboard(inspections, batches, pending.total);
+};
 
 export const useDashboard = (request: AuthorizedRequest): DashboardState => {
   const [data, setData] = useState<DashboardData>();
@@ -50,21 +41,10 @@ export const useDashboard = (request: AuthorizedRequest): DashboardState => {
 
   useEffect(() => {
     let active = true;
-    void Promise.all([
-      listInspections(request, { page: 1, pageSize: PAGE_SIZE }),
-      listBatches(request, { page: 1, pageSize: PAGE_SIZE }),
-      listPendingInspections(request, { page: 1, pageSize: PAGE_SIZE }),
-    ])
-      .then(([inspections, batches, pending]) => {
+    void loadDashboard(request)
+      .then((summary) => {
         if (!active) return;
-        setData(
-          summarize(
-            inspections.data,
-            inspections.total,
-            batches.total,
-            pending.data.length,
-          ),
-        );
+        setData(summary);
         setError(undefined);
       })
       .catch(() => {

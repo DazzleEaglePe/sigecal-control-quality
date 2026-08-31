@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import {
   ArrowUpRight,
   CalendarClock,
@@ -28,6 +29,11 @@ import {
   type DashboardState,
 } from '../features/dashboard/useDashboard.js';
 import { useAuth } from '../features/auth/useAuth.js';
+
+const DashboardCharts = lazy(async () => {
+  const module = await import('../features/dashboard/DashboardCharts.js');
+  return { default: module.DashboardCharts };
+});
 
 const DATE_FORMAT: Intl.DateTimeFormatOptions = {
   day: 'numeric',
@@ -121,6 +127,21 @@ const DemoNotice = (): React.JSX.Element => (
       Los recuentos incluyen lotes e inspecciones de demostración. Los
       indicadores del periodo los excluirán por defecto.
     </p>
+  </div>
+);
+
+const ChartsLoading = (): React.JSX.Element => (
+  <div
+    className="dashboard-chart-grid"
+    aria-label="Cargando indicadores visuales"
+  >
+    {[0, 1].map((item) => (
+      <Card className="dashboard-chart-card" key={item}>
+        <CardContent>
+          <div className="dashboard-chart-skeleton" />
+        </CardContent>
+      </Card>
+    ))}
   </div>
 );
 
@@ -266,6 +287,13 @@ export const HomePage = (): React.JSX.Element => {
       <DashboardHeader name={user?.firstName ?? 'equipo'} state={state} />
       <StatRow state={state} />
       {state.data?.demo ? <DemoNotice /> : null}
+      {state.data ? (
+        <Suspense fallback={<ChartsLoading />}>
+          <DashboardCharts data={state.data} />
+        </Suspense>
+      ) : state.loading ? (
+        <ChartsLoading />
+      ) : null}
       <div className="grid gap-4 lg:grid-cols-2">
         <RecentPanel state={state} />
         <ModulePanel

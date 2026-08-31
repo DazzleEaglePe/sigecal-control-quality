@@ -88,8 +88,8 @@ definitivos deben ser entregados y aprobados por la empresa.
 | Formato Prettier       | ✅ Sin diferencias                                          |
 | ESLint                 | ✅ API, web y shared sin errores ni advertencias            |
 | TypeScript estricto    | ✅ Tres workspaces aprobados                                |
-| Pruebas automatizadas  | ✅ 149/149: API 98, web 24, shared 27                       |
-| Archivos de prueba     | ✅ 53/53 aprobados                                          |
+| Pruebas automatizadas  | ✅ 151/151: API 98, web 26, shared 27                       |
+| Archivos de prueba     | ✅ 54/54 aprobados                                          |
 | Builds de producción   | ✅ API, web y shared generados                              |
 | Modelo Prisma          | ✅ Formateado y válido                                      |
 | Contrato OpenAPI       | ✅ Válido                                                   |
@@ -126,6 +126,8 @@ de `.env.example`.
 - [x] Avisos breves de éxito, advertencia y error con Sonner.
 - [x] Campos, selectores y tablas reutilizables con foco visible.
 - [x] Estados vacíos explicativos en listados de lotes e inspecciones.
+- [x] Gráficos responsivos de lotes activos por etapa e inspecciones por estado.
+- [x] Agregación paginada completa para que los gráficos no se limiten a los primeros 50 registros.
 - [x] Tema monocromo oscuro con contraste y estados textuales.
 - [x] Barra lateral colapsable y ajustable.
 - [x] Menú de sesión funcional.
