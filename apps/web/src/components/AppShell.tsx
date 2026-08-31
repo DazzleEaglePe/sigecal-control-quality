@@ -1,202 +1,29 @@
 import { useState } from 'react';
 import {
   Bell,
-  Building2,
-  ChartNoAxesCombined,
   ChevronDown,
   CircleHelp,
-  ClipboardCheck,
-  FlaskConical,
-  LayoutDashboard,
-  LibraryBig,
   LogOut,
   Menu,
-  PackageSearch,
   Search,
-  Settings2,
-  ShieldCheck,
-  TriangleAlert,
-  UsersRound,
-  Wine,
-  type LucideIcon,
 } from 'lucide-react';
-import { NavLink, Outlet, type NavLinkRenderProps } from 'react-router-dom';
-
-import { Permission, type Permission as PermissionName } from '@sigecal/shared';
+import { Outlet } from 'react-router-dom';
 
 import { useAuth } from '../features/auth/useAuth.js';
+import { Sidebar } from './Sidebar.js';
 
-interface NavigationItem {
-  readonly name: string;
-  readonly icon: LucideIcon;
-  readonly permission: PermissionName;
-}
-interface LinkProps {
-  readonly action: () => void;
-  readonly icon: LucideIcon;
-  readonly label: string;
-  readonly to: string;
-}
 interface MenuProps {
   readonly open: boolean;
   readonly action: () => void;
 }
 
-const pendingModules: readonly NavigationItem[] = [
-  { name: 'Organoléptico', icon: Wine, permission: Permission.SENSORY_RECORD },
-  {
-    name: 'No conformidades',
-    icon: TriangleAlert,
-    permission: Permission.NONCONFORMITIES_RECORD,
-  },
-  {
-    name: 'Reportes',
-    icon: ChartNoAxesCombined,
-    permission: Permission.REPORTS_EXPORT,
-  },
-];
 const roleLabels = {
   ADMIN: 'Administrador',
   JEFE_CALIDAD: 'Jefe de calidad',
   ANALISTA: 'Analista',
   OPERARIO: 'Operario',
 } as const;
-const navClass = ({ isActive }: NavLinkRenderProps): string =>
-  `nav-item${isActive ? ' active' : ''}`;
-
-const NavigationLink = ({ action, icon: Icon, label, to }: LinkProps) => (
-  <NavLink className={navClass} to={to} onClick={action}>
-    <Icon className="nav-symbol" aria-hidden="true" />
-    <span>{label}</span>
-  </NavLink>
-);
-
-const PendingNavigation = (): React.JSX.Element => {
-  const { user } = useAuth();
-  return (
-    <>
-      {pendingModules
-        .filter((module) => user?.permissions.includes(module.permission))
-        .map(({ icon: Icon, name }) => (
-          <span
-            className="nav-item is-disabled"
-            key={name}
-            aria-disabled="true"
-          >
-            <Icon className="nav-symbol" aria-hidden="true" />
-            <span>{name}</span>
-            <small>Pronto</small>
-          </span>
-        ))}
-    </>
-  );
-};
-
-const QualityNavigation = ({ action }: { readonly action: () => void }) => (
-  <>
-    <NavigationLink
-      action={action}
-      icon={ClipboardCheck}
-      label="Inspecciones"
-      to="/inspecciones"
-    />
-    <NavigationLink
-      action={action}
-      icon={FlaskConical}
-      label="Análisis"
-      to="/analisis"
-    />
-    <PendingNavigation />
-  </>
-);
-
-const PrimaryNavigation = ({ action }: { readonly action: () => void }) => {
-  const { user } = useAuth();
-  return (
-    <>
-      <NavigationLink
-        action={action}
-        icon={LayoutDashboard}
-        label="Tablero"
-        to="/"
-      />
-      <NavigationLink
-        action={action}
-        icon={PackageSearch}
-        label="Lotes"
-        to="/lotes"
-      />
-      {user?.permissions.includes(Permission.USERS_MANAGE) ? (
-        <NavigationLink
-          action={action}
-          icon={UsersRound}
-          label="Usuarios"
-          to="/usuarios"
-        />
-      ) : null}
-    </>
-  );
-};
-
-const ConfigurationNavigation = ({
-  action,
-}: {
-  readonly action: () => void;
-}) => {
-  const { user } = useAuth();
-  if (!user?.permissions.includes(Permission.MASTERS_MANAGE)) return null;
-  return (
-    <>
-      <p className="nav-label nav-label-spaced">Configuración</p>
-      <NavigationLink
-        action={action}
-        icon={Building2}
-        label="Áreas"
-        to="/configuracion/areas"
-      />
-      <NavigationLink
-        action={action}
-        icon={LibraryBig}
-        label="Catálogos"
-        to="/configuracion/maestros"
-      />
-      <NavigationLink
-        action={action}
-        icon={Settings2}
-        label="Estándares"
-        to="/configuracion/estandares"
-      />
-    </>
-  );
-};
-
-const Sidebar = ({ open, action }: MenuProps): React.JSX.Element => (
-  <aside className={`sidebar ${open ? 'is-open' : ''}`}>
-    <div className="brand">
-      <span className="brand-mark" aria-hidden="true">
-        <ShieldCheck />
-      </span>
-      <span>
-        <strong>SIGECAL</strong>
-        <small>Control de calidad</small>
-      </span>
-    </div>
-    <nav aria-label="Navegación principal">
-      <p className="nav-label">Principal</p>
-      <PrimaryNavigation action={action} />
-      <p className="nav-label nav-label-spaced">Control de calidad</p>
-      <QualityNavigation action={action} />
-      <ConfigurationNavigation action={action} />
-    </nav>
-    <div className="sidebar-footer">
-      <span className="environment-dot" aria-hidden="true" />
-      <span>
-        <small>Entorno</small>
-        <strong>Desarrollo</strong>
-      </span>
-    </div>
-  </aside>
-);
+import { useSidebarCollapsed } from '../features/shell/useSidebarCollapsed.js';
 
 const Session = (): React.JSX.Element => {
   const { user, signOut } = useAuth();
@@ -269,6 +96,7 @@ const Topbar = ({ open, action }: MenuProps): React.JSX.Element => (
 
 export const AppShell = (): React.JSX.Element => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { collapsed, toggle: toggleCollapsed } = useSidebarCollapsed();
   const closeMenu = (): void => {
     setMenuOpen(false);
   };
@@ -276,7 +104,7 @@ export const AppShell = (): React.JSX.Element => {
     setMenuOpen((open) => !open);
   };
   return (
-    <div className="app-shell">
+    <div className={`app-shell${collapsed ? ' is-collapsed' : ''}`}>
       <a className="skip-link" href="#contenido-principal">
         Saltar al contenido
       </a>
@@ -285,7 +113,12 @@ export const AppShell = (): React.JSX.Element => {
         onClick={closeMenu}
         aria-hidden="true"
       />
-      <Sidebar open={menuOpen} action={closeMenu} />
+      <Sidebar
+        open={menuOpen}
+        action={closeMenu}
+        collapsed={collapsed}
+        toggleCollapsed={toggleCollapsed}
+      />
       <div className="workspace">
         <Topbar open={menuOpen} action={toggleMenu} />
         <main id="contenido-principal" className="main-content" tabIndex={-1}>

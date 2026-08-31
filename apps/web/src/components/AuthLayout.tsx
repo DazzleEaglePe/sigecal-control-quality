@@ -17,15 +17,16 @@ const assurances = [
 ] as const;
 
 const AuthBrand = (): React.JSX.Element => (
-  <div className="auth-visual-brand">
-    <span className="auth-brand-mark" aria-hidden="true">
-      <ShieldCheck />
-    </span>
-    <span>
-      <strong>SIGECAL</strong>
-      <small>Control de calidad</small>
-    </span>
-  </div>
+  // <div className="auth-visual-brand">
+  //   <span className="auth-brand-mark" aria-hidden="true">
+  //     <ShieldCheck />
+  //   </span>
+  //   <span>
+  //     <strong>SIGECAL</strong>
+  //     <small>Control de calidad</small>
+  //   </span>
+  // </div>
+  <></>
 );
 
 const QualitySignal = (): React.JSX.Element => (
@@ -51,7 +52,7 @@ const AuthVisual = (): React.JSX.Element => (
     <AuthBrand />
     <div className="auth-visual-copy">
       <p className="auth-kicker">
-        <span aria-hidden="true" /> Evidencia confiable
+        {/* <span aria-hidden="true" /> Evidencia confiable */}
       </p>
       <h2>Control de calidad desde el origen hasta el resultado.</h2>
       <p>

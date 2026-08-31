@@ -1,12 +1,5 @@
 import { useState, type KeyboardEvent, type SyntheticEvent } from 'react';
-import {
-  ArrowRight,
-  Eye,
-  EyeOff,
-  LoaderCircle,
-  LockKeyhole,
-  Mail,
-} from 'lucide-react';
+import { Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 import type { LoginRequest } from '@sigecal/shared';
@@ -182,7 +175,7 @@ const SubmitButton = ({
       <LoaderCircle className="auth-button-spinner" aria-hidden="true" />
     ) : null}
     <span>{busy ? 'Verificando…' : 'Ingresar a SIGECAL'}</span>
-    {busy ? null : <ArrowRight aria-hidden="true" />}
+    {/* {busy ? null : <ArrowRight aria-hidden="true" />} */}
   </button>
 );
 

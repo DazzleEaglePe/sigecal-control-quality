@@ -1,0 +1,100 @@
+/* El ancho se gobierna desde una variable para que el contenido se reajuste
+   sin duplicar el valor en cada regla. */
+.app-shell {
+  --sidebar-w: 16.5rem;
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  transition: width 160ms ease;
+}
+
+.workspace {
+  margin-left: var(--sidebar-w);
+  transition: margin-left 160ms ease;
+}
+
+.sidebar nav {
+  /* overflow-y en un eje convierte el otro en `auto`; sin esto aparece una
+     barra horizontal por los pocos píxeles que sobresalen las insignias. */
+  overflow-x: hidden;
+}
+
+.sidebar-toggle {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  color: var(--muted-foreground);
+  background: transparent;
+  cursor: pointer;
+  transition: color 120ms ease;
+}
+
+.sidebar-toggle:hover {
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.sidebar-toggle svg {
+  width: 1rem;
+  transition: transform 160ms ease;
+}
+
+/* El cajón móvil ya ocupa el ancho completo, así que el colapso solo aplica
+   a partir del escritorio. */
+@media (min-width: 851px) {
+  .app-shell.is-collapsed {
+    --sidebar-w: 4.75rem;
+  }
+
+  .app-shell.is-collapsed .sidebar {
+    padding-inline: 0.6rem;
+  }
+
+  .app-shell.is-collapsed .brand,
+  .app-shell.is-collapsed .sidebar-footer {
+    justify-content: center;
+    gap: 0;
+  }
+
+  .app-shell.is-collapsed .brand > span:not(.brand-mark),
+  .app-shell.is-collapsed .sidebar-footer > span,
+  .app-shell.is-collapsed .nav-item > span,
+  .app-shell.is-collapsed .nav-item > small {
+    display: none;
+  }
+
+  .app-shell.is-collapsed .sidebar-toggle svg {
+    transform: rotate(180deg);
+  }
+
+  .app-shell.is-collapsed .nav-item {
+    position: relative;
+    justify-content: center;
+    padding-inline: 0;
+    gap: 0;
+  }
+
+  /* La etiqueta de sección se convierte en un separador para no perder la
+     agrupación al ocultar su texto. */
+  .app-shell.is-collapsed .nav-label {
+    height: 1px;
+    margin: 0.8rem 0.5rem;
+    padding: 0;
+    overflow: hidden;
+    background: var(--border);
+    text-indent: -999em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .workspace,
+  .sidebar-toggle svg {
+    transition: none;
+  }
+}

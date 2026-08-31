@@ -23,6 +23,7 @@ import './styles/quality-analysis.css';
 import './styles/auth-refresh.css';
 import './styles/auth-form-refresh.css';
 import './styles/state-colors.css';
+import './styles/sidebar-collapse.css';
 
 const rootElement = document.querySelector('#root');
 
