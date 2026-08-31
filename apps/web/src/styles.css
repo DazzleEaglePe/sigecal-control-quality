@@ -615,8 +615,10 @@ h3 {
   outline: 3px solid var(--border);
 }
 .auth-submit {
-  width: 100%;
+  margin-inline: auto;
+  width: 50%;
   min-height: 2.9rem;
+  text-align: center;
 }
 .auth-submit:disabled {
   cursor: wait;

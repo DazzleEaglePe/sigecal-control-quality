@@ -10,6 +10,8 @@ import {
 import { Outlet } from 'react-router-dom';
 
 import { useAuth } from '../features/auth/useAuth.js';
+import { useSidebarCollapsed } from '../features/shell/useSidebarCollapsed.js';
+import { useSidebarWidth } from '../features/shell/useSidebarWidth.js';
 import { Sidebar } from './Sidebar.js';
 
 interface MenuProps {
@@ -23,8 +25,6 @@ const roleLabels = {
   ANALISTA: 'Analista',
   OPERARIO: 'Operario',
 } as const;
-import { useSidebarCollapsed } from '../features/shell/useSidebarCollapsed.js';
-
 const Session = (): React.JSX.Element => {
   const { user, signOut } = useAuth();
   const initials = `${user?.firstName[0] ?? ''}${user?.lastName[0] ?? ''}`;
@@ -94,9 +94,21 @@ const Topbar = ({ open, action }: MenuProps): React.JSX.Element => (
   </header>
 );
 
+const shellClassName = (collapsed: boolean, dragging: boolean): string =>
+  `app-shell${collapsed ? ' is-collapsed' : ''}${dragging ? ' is-resizing' : ''}`;
+
+const shellStyle = (
+  collapsed: boolean,
+  widthRem: number,
+): React.CSSProperties | undefined =>
+  collapsed
+    ? undefined
+    : ({ '--sidebar-w': `${widthRem.toString()}rem` } as React.CSSProperties);
+
 export const AppShell = (): React.JSX.Element => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { collapsed, toggle: toggleCollapsed } = useSidebarCollapsed();
+  const { dragging, startDrag, widthRem } = useSidebarWidth();
   const closeMenu = (): void => {
     setMenuOpen(false);
   };
@@ -104,7 +116,10 @@ export const AppShell = (): React.JSX.Element => {
     setMenuOpen((open) => !open);
   };
   return (
-    <div className={`app-shell${collapsed ? ' is-collapsed' : ''}`}>
+    <div
+      className={shellClassName(collapsed, dragging)}
+      style={shellStyle(collapsed, widthRem)}
+    >
       <a className="skip-link" href="#contenido-principal">
         Saltar al contenido
       </a>
@@ -118,6 +133,7 @@ export const AppShell = (): React.JSX.Element => {
         action={closeMenu}
         collapsed={collapsed}
         toggleCollapsed={toggleCollapsed}
+        startResize={startDrag}
       />
       <div className="workspace">
         <Topbar open={menuOpen} action={toggleMenu} />

@@ -1,7 +1,8 @@
 import {
   Building2,
   ChartNoAxesCombined,
-  ChevronsLeft,
+  PanelLeftClose,
+  PanelLeftOpen,
   ClipboardCheck,
   FlaskConical,
   LayoutDashboard,
@@ -36,6 +37,7 @@ interface SidebarProps {
   readonly action: () => void;
   readonly collapsed: boolean;
   readonly open: boolean;
+  readonly startResize: (event: React.PointerEvent) => void;
   readonly toggleCollapsed: () => void;
 }
 
@@ -185,10 +187,7 @@ const ConfigurationNavigation = ({
   );
 };
 
-const SidebarBrand = ({
-  collapsed,
-  toggleCollapsed,
-}: Pick<SidebarProps, 'collapsed' | 'toggleCollapsed'>): React.JSX.Element => (
+const SidebarBrand = (): React.JSX.Element => (
   <div className="brand">
     <span className="brand-mark" aria-hidden="true">
       <ShieldCheck />
@@ -197,27 +196,52 @@ const SidebarBrand = ({
       <strong>SIGECAL</strong>
       <small>Control de calidad</small>
     </span>
-    <button
-      className="sidebar-toggle"
-      type="button"
-      aria-expanded={!collapsed}
-      aria-label={collapsed ? 'Expandir el menú' : 'Contraer el menú'}
-      onClick={toggleCollapsed}
-    >
-      <ChevronsLeft aria-hidden="true" />
-    </button>
   </div>
+);
+
+const SidebarToggle = ({
+  collapsed,
+  toggleCollapsed,
+}: Pick<SidebarProps, 'collapsed' | 'toggleCollapsed'>): React.JSX.Element => (
+  <button
+    className="sidebar-toggle"
+    type="button"
+    aria-expanded={!collapsed}
+    aria-label={collapsed ? 'Expandir el menú' : 'Contraer el menú'}
+    onClick={toggleCollapsed}
+  >
+    {collapsed ? (
+      <PanelLeftOpen aria-hidden="true" />
+    ) : (
+      <PanelLeftClose aria-hidden="true" />
+    )}
+  </button>
+);
+
+const SidebarResizeHandle = ({
+  startResize,
+}: Pick<SidebarProps, 'startResize'>): React.JSX.Element => (
+  <div
+    className="sidebar-resize-handle"
+    role="separator"
+    aria-orientation="vertical"
+    aria-label="Ajustar el ancho del menú"
+    onPointerDown={startResize}
+  />
 );
 
 export const Sidebar = ({
   open,
   action,
   collapsed,
+  startResize,
   toggleCollapsed,
 }: SidebarProps): React.JSX.Element => (
   <CollapsedContext value={collapsed}>
     <aside className={`sidebar ${open ? 'is-open' : ''}`}>
-      <SidebarBrand collapsed={collapsed} toggleCollapsed={toggleCollapsed} />
+      <SidebarBrand />
+      <SidebarToggle collapsed={collapsed} toggleCollapsed={toggleCollapsed} />
+      {collapsed ? null : <SidebarResizeHandle startResize={startResize} />}
       <nav aria-label="Navegación principal">
         <p className="nav-label">Principal</p>
         <PrimaryNavigation action={action} />

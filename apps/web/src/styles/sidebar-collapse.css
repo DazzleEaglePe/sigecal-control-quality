@@ -1,5 +1,6 @@
 /* El ancho se gobierna desde una variable para que el contenido se reajuste
-   sin duplicar el valor en cada regla. */
+   sin duplicar el valor en cada regla. La marca de 16.5rem es el valor por
+   defecto antes de que se lea la preferencia guardada. */
 .app-shell {
   --sidebar-w: 16.5rem;
 }
@@ -14,52 +15,82 @@
   transition: margin-left 160ms ease;
 }
 
+.app-shell.is-resizing .sidebar,
+.app-shell.is-resizing .workspace {
+  transition: none;
+}
+
+.app-shell.is-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
 .sidebar nav {
   /* overflow-y en un eje convierte el otro en `auto`; sin esto aparece una
      barra horizontal por los pocos píxeles que sobresalen las insignias. */
   overflow-x: hidden;
 }
 
-/* El interruptor comparte fila con la marca; sin estos ajustes el subtítulo
-   se parte en dos líneas. */
-.brand {
-  gap: 0.55rem;
+/* Asa de arrastre, al estilo del borde entre panel y contenido en apps de
+   escritorio: invisible hasta que se sostiene o se arrastra. */
+.sidebar-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -0.2rem;
+  bottom: 0;
+  z-index: 35;
+  width: 0.4rem;
+  cursor: col-resize;
+  touch-action: none;
 }
 
-.brand > span:not(.brand-mark) {
-  min-width: 0;
+.sidebar-resize-handle::after {
+  display: block;
+  width: 2px;
+  height: 100%;
+  margin-inline: auto;
+  background: transparent;
+  content: '';
+  transition: background-color 120ms ease;
 }
 
-.brand small {
-  white-space: nowrap;
+.sidebar-resize-handle:hover::after,
+.app-shell.is-resizing .sidebar-resize-handle::after {
+  background: var(--ring);
 }
 
+/* Interruptor: círculo flotante sobre el borde del panel, a la altura de la
+   marca. No compite por espacio con el nombre ni se recorta al colapsar. */
 .sidebar-toggle {
+  position: absolute;
+  top: 1.85rem;
+  right: -0.85rem;
+  z-index: 36;
   display: grid;
-  width: 1.8rem;
-  height: 1.8rem;
-  flex: none;
+  width: 1.7rem;
+  height: 1.7rem;
   place-items: center;
   border: 1px solid var(--border);
-  border-radius: 0.55rem;
+  border-radius: 999px;
   color: var(--muted-foreground);
-  background: transparent;
+  background: var(--card);
   cursor: pointer;
-  transition: color 120ms ease;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
 }
 
 .sidebar-toggle:hover {
   color: var(--foreground);
-  background: var(--secondary);
+  border-color: var(--ring);
 }
 
 .sidebar-toggle svg {
-  width: 1rem;
-  transition: transform 160ms ease;
+  width: 0.95rem;
 }
 
-/* El cajón móvil ya ocupa el ancho completo, así que el colapso solo aplica
-   a partir del escritorio. */
+/* El cajón móvil ya ocupa el ancho completo, así que el colapso y el
+   redimensionado solo aplican a partir del escritorio. */
 @media (min-width: 851px) {
   .app-shell.is-collapsed {
     --sidebar-w: 4.75rem;
@@ -69,7 +100,11 @@
     padding-inline: 0.6rem;
   }
 
-  .app-shell.is-collapsed .brand,
+  .app-shell.is-collapsed .brand {
+    justify-content: center;
+    gap: 0;
+  }
+
   .app-shell.is-collapsed .sidebar-footer {
     justify-content: center;
     gap: 0;
@@ -82,12 +117,7 @@
     display: none;
   }
 
-  .app-shell.is-collapsed .sidebar-toggle svg {
-    transform: rotate(180deg);
-  }
-
   .app-shell.is-collapsed .nav-item {
-    position: relative;
     justify-content: center;
     padding-inline: 0;
     gap: 0;
@@ -105,10 +135,30 @@
   }
 }
 
+@media (max-width: 850px) {
+  .sidebar-toggle,
+  .sidebar-resize-handle {
+    display: none;
+  }
+}
+
+/* El interruptor comparte fila con la marca; sin estos ajustes el subtítulo
+   se parte en dos líneas. */
+.brand {
+  gap: 0.55rem;
+}
+
+.brand > span:not(.brand-mark) {
+  min-width: 0;
+}
+
+.brand small {
+  white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sidebar,
-  .workspace,
-  .sidebar-toggle svg {
+  .workspace {
     transition: none;
   }
 }
