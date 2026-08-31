@@ -1,9 +1,9 @@
-import { Check, FlaskConical, ShieldCheck } from 'lucide-react';
+import { Check, FlaskConical } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 interface AuthLayoutProps {
   readonly children: ReactNode;
-  readonly eyebrow: string;
+  readonly eyebrow?: string | undefined;
   readonly footnote: string;
   readonly intro: string;
   readonly title: string;
@@ -90,7 +90,7 @@ export const AuthLayout = ({
           {/* <ShieldCheck />
           <span>SIGECAL</span> */}
         </div>
-        <p className="eyebrow">{eyebrow}</p>
+        {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
         <h1 id={titleId}>{title}</h1>
         <p className="auth-intro">{intro}</p>
         {children}

@@ -249,7 +249,6 @@ export const LoginPage = (): React.JSX.Element => {
   }
   return (
     <AuthLayout
-      eyebrow="Acceso seguro"
       title="Bienvenido a SIGECAL"
       titleId="login-title"
       intro="Ingrese con las credenciales asignadas por el administrador del sistema."
