@@ -1,6 +1,15 @@
 import { Link } from 'react-router-dom';
 import type { BatchItem } from '@sigecal/shared';
 
+import { EmptyState } from '../../components/ui/empty-state.js';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/table.js';
 import { batchStatusLabel, localDate, originLabel } from './batches-labels.js';
 
 const BatchRow = ({
@@ -8,36 +17,38 @@ const BatchRow = ({
 }: {
   readonly batch: BatchItem;
 }): React.JSX.Element => (
-  <tr>
-    <td>
+  <TableRow>
+    <TableCell>
       <strong>{batch.code}</strong>
       <small>{batch.harvestOrigin ?? 'Sin origen'}</small>
-    </td>
-    <td>
+    </TableCell>
+    <TableCell>
       <strong>{batch.piscoType.name}</strong>
       <small>
         {batch.varieties.map((item) => item.variety.name).join(', ')}
       </small>
-    </td>
-    <td>{batch.currentStage.name}</td>
-    <td>
+    </TableCell>
+    <TableCell>{batch.currentStage.name}</TableCell>
+    <TableCell>
       <span className={`state-pill batch-status-${batch.status.toLowerCase()}`}>
         {batchStatusLabel[batch.status]}
       </span>
-    </td>
-    <td>{localDate(batch.startDate)}</td>
-    <td>{Number(batch.volumeLiters).toLocaleString('es-PE')} L</td>
-    <td>
+    </TableCell>
+    <TableCell>{localDate(batch.startDate)}</TableCell>
+    <TableCell>
+      {Number(batch.volumeLiters).toLocaleString('es-PE')} L
+    </TableCell>
+    <TableCell>
       <span className={`state-pill origin-${batch.dataOrigin.toLowerCase()}`}>
         {originLabel[batch.dataOrigin]}
       </span>
-    </td>
-    <td>
+    </TableCell>
+    <TableCell>
       <Link className="table-action" to={`/lotes/${batch.id}`}>
         Ver detalle
       </Link>
-    </td>
-  </tr>
+    </TableCell>
+  </TableRow>
 );
 
 export const BatchTable = ({
@@ -47,29 +58,32 @@ export const BatchTable = ({
 }): React.JSX.Element => {
   if (items.length === 0)
     return (
-      <p className="empty-copy">No hay lotes para los filtros aplicados.</p>
+      <EmptyState
+        title="No encontramos lotes"
+        description="Ajuste o limpie los filtros para consultar otros registros."
+      />
     );
   return (
     <div className="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Lote</th>
-            <th>Producto</th>
-            <th>Etapa</th>
-            <th>Estado</th>
-            <th>Inicio</th>
-            <th>Volumen</th>
-            <th>Origen</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Lote</TableHead>
+            <TableHead>Producto</TableHead>
+            <TableHead>Etapa</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead>Inicio</TableHead>
+            <TableHead>Volumen</TableHead>
+            <TableHead>Origen</TableHead>
+            <TableHead aria-label="Acciones" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {items.map((batch) => (
             <BatchRow key={batch.id} batch={batch} />
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 };

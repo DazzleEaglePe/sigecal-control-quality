@@ -1,13 +1,19 @@
 import { useState, type SyntheticEvent } from 'react';
-import { CalendarPlus, Check, FlaskConical, Info, Wine } from 'lucide-react';
+import { CalendarPlus, Check } from 'lucide-react';
 import {
   CreateInspectionRequestSchema,
   type CreateInspectionRequest,
 } from '@sigecal/shared';
+import { toast } from 'sonner';
 
+import { useConfirm } from '../../components/ui/use-confirm.js';
+import { Input } from '../../components/ui/input.js';
+import { NativeSelect } from '../../components/ui/native-select.js';
+import { Textarea } from '../../components/ui/textarea.js';
 import { errorMessage } from '../admin/admin-ui.js';
 import type { AuthorizedRequest } from '../auth/auth-context.js';
 import { createInspection } from './inspections-api.js';
+import { InspectionFormAside } from './InspectionFormAside.js';
 import type { InspectionMasters } from './useInspections.js';
 
 interface Props {
@@ -48,18 +54,18 @@ const LotAndStageFields = ({
   <>
     <label>
       Lote
-      <select name="batchId" required>
+      <NativeSelect name="batchId" required defaultValue="">
         <option value="">Seleccione un lote</option>
         {masters.batches.map((batch) => (
           <option key={batch.id} value={batch.id}>
             {batch.code}
           </option>
         ))}
-      </select>
+      </NativeSelect>
     </label>
     <label>
       Etapa
-      <select name="stageId" required>
+      <NativeSelect name="stageId" required defaultValue="">
         <option value="">Seleccione una etapa</option>
         {masters.stages
           .filter((stage) => stage.isActive)
@@ -68,7 +74,7 @@ const LotAndStageFields = ({
               {stage.name}
             </option>
           ))}
-      </select>
+      </NativeSelect>
     </label>
   </>
 );
@@ -80,7 +86,7 @@ const TypeAndDateFields = ({
   <>
     <label>
       Tipo de inspección
-      <select
+      <NativeSelect
         name="type"
         value={type}
         onChange={(event) => {
@@ -89,11 +95,11 @@ const TypeAndDateFields = ({
       >
         <option value="FISICOQUIMICO">Fisicoquímico</option>
         <option value="ORGANOLEPTICO">Organoléptico</option>
-      </select>
+      </NativeSelect>
     </label>
     <label>
       Fecha y hora
-      <input name="scheduledDate" type="datetime-local" required />
+      <Input name="scheduledDate" type="datetime-local" required />
     </label>
   </>
 );
@@ -112,7 +118,7 @@ const ResourceFields = ({
   <>
     <label>
       Responsable
-      <select name="responsibleId" required>
+      <NativeSelect name="responsibleId" required defaultValue="">
         <option value="">Seleccione una persona</option>
         {masters.users
           .filter((user) => user.isActive)
@@ -121,12 +127,12 @@ const ResourceFields = ({
               {user.firstName} {user.lastName} · {user.role}
             </option>
           ))}
-      </select>
+      </NativeSelect>
     </label>
     <label>
       Equipo{' '}
       {type === 'FISICOQUIMICO' ? '(requerido para iniciar)' : '(opcional)'}
-      <select name="equipmentId">
+      <NativeSelect name="equipmentId" defaultValue="">
         <option value="">Sin equipo</option>
         {masters.equipment
           .filter((item) => item.isActive)
@@ -135,7 +141,7 @@ const ResourceFields = ({
               {item.name} · {item.status}
             </option>
           ))}
-      </select>
+      </NativeSelect>
     </label>
   </>
 );
@@ -180,36 +186,23 @@ const ParameterPicker = ({
   );
 };
 
-const FormAside = ({ type }: { readonly type: InspectionType }) => {
-  const Icon = type === 'FISICOQUIMICO' ? FlaskConical : Wine;
-  return (
-    <aside className="quality-form-aside">
-      <span>
-        <Icon aria-hidden="true" />
-      </span>
-      <p className="quality-kicker">Antes de confirmar</p>
-      <h2>
-        {type === 'FISICOQUIMICO'
-          ? 'Control fisicoquímico'
-          : 'Evaluación organoléptica'}
-      </h2>
-      <p>
-        Revise la fecha, el responsable, el equipo y cada parámetro esperado. La
-        programación quedará auditada.
-      </p>
-      <ul>
-        <li>
-          <Info /> El origen de datos se hereda del lote.
-        </li>
-        <li>
-          <Info /> Los estándares se resuelven en el servidor.
-        </li>
-        <li>
-          <Info /> El equipo debe estar operativo al iniciar.
-        </li>
-      </ul>
-    </aside>
-  );
+const createAfterConfirmation = async (
+  request: AuthorizedRequest,
+  input: CreateInspectionRequest,
+  confirm: ReturnType<typeof useConfirm>,
+): Promise<string | undefined> => {
+  const accepted = await confirm({
+    title: 'Programar inspección',
+    description:
+      'Revise que el lote, la fecha, el responsable y los parámetros sean correctos. La programación quedará auditada.',
+    confirmLabel: 'Programar inspección',
+  });
+  if (!accepted) return undefined;
+  const result = await createInspection(request, input);
+  toast.success('Inspección programada correctamente', {
+    description: 'Ya está disponible en el calendario y el listado.',
+  });
+  return result.id;
 };
 
 export const InspectionForm = ({
@@ -220,21 +213,20 @@ export const InspectionForm = ({
   const [type, setType] = useState<InspectionType>('FISICOQUIMICO');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
+  const confirm = useConfirm();
   const submit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       const input = inputFrom(new FormData(event.currentTarget));
-      if (
-        !window.confirm(
-          '¿Confirma la programación definitiva de esta inspección?',
-        )
-      )
-        return;
       setSaving(true);
-      const result = await createInspection(request, input);
-      completed(result.id);
+      const id = await createAfterConfirmation(request, input, confirm);
+      if (id) completed(id);
     } catch (cause) {
-      setError(errorMessage(cause));
+      const message = errorMessage(cause);
+      setError(message);
+      toast.error('No se pudo programar la inspección', {
+        description: message,
+      });
     } finally {
       setSaving(false);
     }
@@ -274,7 +266,7 @@ const InspectionFormBody = (props: FormViewProps): React.JSX.Element => (
     <ParameterPicker masters={props.masters} type={props.type} />
     <label>
       Notas operativas
-      <textarea
+      <Textarea
         name="notes"
         rows={3}
         placeholder="Información útil para la ejecución"
@@ -302,7 +294,7 @@ const InspectionFormView = (props: FormViewProps): React.JSX.Element => {
       >
         <InspectionFormBody {...props} />
       </form>
-      <FormAside type={props.type} />
+      <InspectionFormAside type={props.type} />
     </div>
   );
 };

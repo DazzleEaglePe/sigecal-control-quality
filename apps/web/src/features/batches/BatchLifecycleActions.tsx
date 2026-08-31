@@ -1,11 +1,12 @@
 import { useState, type SyntheticEvent } from 'react';
 import { Permission, type BatchItem } from '@sigecal/shared';
+import { toast } from 'sonner';
 
+import { useConfirm } from '../../components/ui/use-confirm.js';
+import { Input } from '../../components/ui/input.js';
 import { errorMessage } from '../admin/admin-ui.js';
 import { useAuth } from '../auth/useAuth.js';
 import { advanceBatch, closeBatch, rejectBatch } from './batches-api.js';
-
-const confirmAction = (message: string): boolean => globalThis.confirm(message);
 
 const warningNotice = (warnings: readonly string[]): string | undefined => {
   const labels = warnings.map((warning) =>
@@ -21,15 +22,21 @@ const useLifecycle = (batch: BatchItem, completed: () => Promise<void>) => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
-  const run = async (operation: () => Promise<unknown>): Promise<void> => {
+  const run = async (
+    operation: () => Promise<unknown>,
+    successMessage: string,
+  ): Promise<void> => {
     setBusy(true);
     setError(undefined);
     setNotice(undefined);
     try {
       await operation();
       await completed();
+      toast.success(successMessage);
     } catch (cause) {
-      setError(errorMessage(cause));
+      const message = errorMessage(cause);
+      setError(message);
+      toast.error('No se pudo completar la acción', { description: message });
     } finally {
       setBusy(false);
     }
@@ -41,26 +48,44 @@ const useLifecycle = (batch: BatchItem, completed: () => Promise<void>) => {
         responsibleId: user.id,
         ...(observations ? { observations } : {}),
       });
-      setNotice(warningNotice(result.warnings));
-    });
+      const warning = warningNotice(result.warnings);
+      setNotice(warning);
+      if (warning)
+        toast.warning('El lote avanzó con observaciones', {
+          description: warning,
+        });
+    }, 'Lote avanzado a la etapa siguiente');
   return { busy, error, notice, advance, run, request };
 };
 
 type Lifecycle = ReturnType<typeof useLifecycle>;
 const AdvanceAction = ({ lifecycle }: { readonly lifecycle: Lifecycle }) => {
-  const submit = (event: SyntheticEvent<HTMLFormElement>): void => {
+  const confirm = useConfirm();
+  const submit = async (
+    event: SyntheticEvent<HTMLFormElement>,
+  ): Promise<void> => {
     event.preventDefault();
     const value = new FormData(event.currentTarget).get('observations');
-    if (confirmAction('¿Confirmas el avance? La etapa actual quedará cerrada.'))
-      void lifecycle.advance(
+    const accepted = await confirm({
+      title: 'Avanzar el lote',
+      description:
+        'La etapa actual quedará cerrada y el cambio se registrará en la bitácora.',
+      confirmLabel: 'Avanzar etapa',
+    });
+    if (accepted)
+      await lifecycle.advance(
         typeof value === 'string' ? value.trim() : undefined,
       );
   };
   return (
-    <form onSubmit={submit}>
+    <form
+      onSubmit={(event) => {
+        void submit(event);
+      }}
+    >
       <label>
         Observación del cambio
-        <input name="observations" maxLength={500} placeholder="Opcional" />
+        <Input name="observations" maxLength={500} placeholder="Opcional" />
       </label>
       <button
         className="primary-button"
@@ -78,26 +103,59 @@ const CloseAction = ({
 }: {
   readonly batch: BatchItem;
   readonly lifecycle: Lifecycle;
-}) => (
-  <div className="decision-action">
-    <p>Cierre definitivo, permitido solo sin no conformidades abiertas.</p>
-    <button
-      className="secondary-button"
-      type="button"
-      disabled={lifecycle.busy}
-      onClick={() => {
-        if (
-          confirmAction(
-            `¿Confirmas el cierre definitivo del lote ${batch.code}?`,
-          )
-        )
-          void lifecycle.run(() => closeBatch(lifecycle.request, batch.id));
-      }}
-    >
-      Cerrar lote
+}) => {
+  const confirm = useConfirm();
+  return (
+    <div className="decision-action">
+      <p>Cierre definitivo, permitido solo sin no conformidades abiertas.</p>
+      <button
+        className="secondary-button"
+        type="button"
+        disabled={lifecycle.busy}
+        onClick={() => {
+          void confirm({
+            title: `Cerrar el lote ${batch.code}`,
+            description:
+              'El cierre es definitivo y solo continuará si no existen no conformidades abiertas.',
+            confirmLabel: 'Cerrar lote',
+            destructive: true,
+          }).then((accepted) => {
+            if (accepted)
+              void lifecycle.run(
+                () => closeBatch(lifecycle.request, batch.id),
+                'Lote cerrado correctamente',
+              );
+          });
+        }}
+      >
+        Cerrar lote
+      </button>
+    </div>
+  );
+};
+
+const RejectForm = ({
+  busy,
+  submit,
+}: {
+  readonly busy: boolean;
+  readonly submit: (event: SyntheticEvent<HTMLFormElement>) => Promise<void>;
+}): React.JSX.Element => (
+  <form
+    onSubmit={(event) => {
+      void submit(event);
+    }}
+  >
+    <label>
+      Motivo del rechazo
+      <Input name="reason" required maxLength={500} />
+    </label>
+    <button className="danger-button" type="submit" disabled={busy}>
+      Rechazar lote
     </button>
-  </div>
+  </form>
 );
+
 const RejectAction = ({
   batch,
   lifecycle,
@@ -105,29 +163,28 @@ const RejectAction = ({
   readonly batch: BatchItem;
   readonly lifecycle: Lifecycle;
 }) => {
-  const submit = (event: SyntheticEvent<HTMLFormElement>): void => {
+  const confirm = useConfirm();
+  const submit = async (
+    event: SyntheticEvent<HTMLFormElement>,
+  ): Promise<void> => {
     event.preventDefault();
     const value = new FormData(event.currentTarget).get('reason');
-    if (
-      typeof value === 'string' &&
-      value.trim() &&
-      confirmAction(`¿Confirmas el rechazo definitivo del lote ${batch.code}?`)
-    )
-      void lifecycle.run(() =>
-        rejectBatch(lifecycle.request, batch.id, { reason: value.trim() }),
+    if (typeof value !== 'string' || !value.trim()) return;
+    const accepted = await confirm({
+      title: `Rechazar el lote ${batch.code}`,
+      description:
+        'El rechazo es definitivo, conservará el motivo y quedará registrado en la bitácora.',
+      confirmLabel: 'Rechazar lote',
+      destructive: true,
+    });
+    if (accepted)
+      await lifecycle.run(
+        () =>
+          rejectBatch(lifecycle.request, batch.id, { reason: value.trim() }),
+        'Lote rechazado correctamente',
       );
   };
-  return (
-    <form onSubmit={submit}>
-      <label>
-        Motivo del rechazo
-        <input name="reason" required maxLength={500} />
-      </label>
-      <button className="danger-button" type="submit" disabled={lifecycle.busy}>
-        Rechazar lote
-      </button>
-    </form>
-  );
+  return <RejectForm busy={lifecycle.busy} submit={submit} />;
 };
 
 export const BatchLifecycleActions = ({

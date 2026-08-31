@@ -2,6 +2,15 @@ import { ArrowUpRight, FlaskConical, Wine } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { InspectionItem } from '@sigecal/shared';
 
+import { EmptyState } from '../../components/ui/empty-state.js';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/table.js';
 import {
   inspectionStatusLabel,
   inspectionTypeLabel,
@@ -9,18 +18,18 @@ import {
   statusClass,
 } from './inspection-labels.js';
 
-const TableHead = (): React.JSX.Element => (
-  <thead>
-    <tr>
-      <th>Inspección</th>
-      <th>Lote / etapa</th>
-      <th>Tipo</th>
-      <th>Programación</th>
-      <th>Responsable</th>
-      <th>Estado</th>
-      <th aria-label="Acciones" />
-    </tr>
-  </thead>
+const InspectionTableHead = (): React.JSX.Element => (
+  <TableHeader>
+    <TableRow>
+      <TableHead>Inspección</TableHead>
+      <TableHead>Lote / etapa</TableHead>
+      <TableHead>Tipo</TableHead>
+      <TableHead>Programación</TableHead>
+      <TableHead>Responsable</TableHead>
+      <TableHead>Estado</TableHead>
+      <TableHead aria-label="Acciones" />
+    </TableRow>
+  </TableHeader>
 );
 
 const InspectionIdentity = ({
@@ -29,14 +38,14 @@ const InspectionIdentity = ({
   readonly item: InspectionItem;
 }): React.JSX.Element => (
   <>
-    <td>
+    <TableCell>
       <strong>{item.code}</strong>
       <small>{item.dataOrigin === 'DEMO' ? 'Demostración' : 'Real'}</small>
-    </td>
-    <td>
+    </TableCell>
+    <TableCell>
       <strong>{item.batch.code}</strong>
       <small>{item.stage.name}</small>
-    </td>
+    </TableCell>
   </>
 );
 
@@ -47,12 +56,12 @@ const InspectionTypeCell = ({
 }): React.JSX.Element => {
   const TypeIcon = item.type === 'FISICOQUIMICO' ? FlaskConical : Wine;
   return (
-    <td>
+    <TableCell>
       <span className="quality-type">
         <TypeIcon aria-hidden="true" />
         {inspectionTypeLabel[item.type]}
       </span>
-    </td>
+    </TableCell>
   );
 };
 
@@ -61,19 +70,19 @@ const InspectionRow = ({
 }: {
   readonly item: InspectionItem;
 }): React.JSX.Element => (
-  <tr>
+  <TableRow>
     <InspectionIdentity item={item} />
     <InspectionTypeCell item={item} />
-    <td>{limaDateTime(item.scheduledDate)}</td>
-    <td>
+    <TableCell>{limaDateTime(item.scheduledDate)}</TableCell>
+    <TableCell>
       {item.responsible.firstName} {item.responsible.lastName}
-    </td>
-    <td>
+    </TableCell>
+    <TableCell>
       <span className={statusClass(item.status)}>
         {inspectionStatusLabel[item.status]}
       </span>
-    </td>
-    <td>
+    </TableCell>
+    <TableCell>
       <Link
         className="quality-row-action"
         to={`/inspecciones/${item.id}`}
@@ -81,8 +90,8 @@ const InspectionRow = ({
       >
         <ArrowUpRight aria-hidden="true" />
       </Link>
-    </td>
-  </tr>
+    </TableCell>
+  </TableRow>
 );
 
 export const InspectionTable = ({
@@ -91,17 +100,22 @@ export const InspectionTable = ({
   readonly items: readonly InspectionItem[];
 }): React.JSX.Element => {
   if (items.length === 0)
-    return <p className="quality-empty">No hay inspecciones para mostrar.</p>;
+    return (
+      <EmptyState
+        title="No encontramos inspecciones"
+        description="Ajuste los filtros o programe una nueva inspección."
+      />
+    );
   return (
     <div className="table-scroll quality-table-wrap">
-      <table className="quality-table">
-        <TableHead />
-        <tbody>
+      <Table className="quality-table">
+        <InspectionTableHead />
+        <TableBody>
           {items.map((item) => (
             <InspectionRow item={item} key={item.id} />
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 };

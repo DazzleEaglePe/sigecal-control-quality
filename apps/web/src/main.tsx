@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './app/App.js';
+import { ConfirmProvider } from './components/ui/confirm-provider.js';
+import { Toaster } from './components/ui/toaster.js';
 import { AuthProvider } from './features/auth/AuthProvider.js';
 import { applyStoredTheme } from './features/shell/useTheme.js';
 import './styles.css';
@@ -39,7 +41,10 @@ createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <ConfirmProvider>
+          <App />
+          <Toaster />
+        </ConfirmProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

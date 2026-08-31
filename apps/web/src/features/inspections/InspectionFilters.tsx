@@ -1,6 +1,8 @@
 import type { SyntheticEvent } from 'react';
 import type { InspectionListQuery } from '@sigecal/shared';
 
+import { Input } from '../../components/ui/input.js';
+import { NativeSelect } from '../../components/ui/native-select.js';
 import type { InspectionMasters } from './useInspections.js';
 
 interface Props {
@@ -41,7 +43,7 @@ const StatusAndTypeFilters = ({
   <>
     <label>
       Estado
-      <select name="status" defaultValue={query.status ?? ''}>
+      <NativeSelect name="status" defaultValue={query.status ?? ''}>
         <option value="">Todos</option>
         <option value="PROGRAMADA">Programada</option>
         <option value="EN_PROCESO">En proceso</option>
@@ -49,15 +51,15 @@ const StatusAndTypeFilters = ({
         <option value="VENCIDA">Vencida</option>
         <option value="CANCELADA">Cancelada</option>
         <option value="REPROGRAMADA">Reprogramada</option>
-      </select>
+      </NativeSelect>
     </label>
     <label>
       Tipo
-      <select name="type" defaultValue={query.type ?? ''}>
+      <NativeSelect name="type" defaultValue={query.type ?? ''}>
         <option value="">Todos</option>
         <option value="FISICOQUIMICO">Fisicoquímico</option>
         <option value="ORGANOLEPTICO">Organoléptico</option>
-      </select>
+      </NativeSelect>
     </label>
   </>
 );
@@ -66,25 +68,28 @@ const MasterFilters = ({ masters, query }: Props): React.JSX.Element => (
   <>
     <label>
       Etapa
-      <select name="stageId" defaultValue={query.stageId ?? ''}>
+      <NativeSelect name="stageId" defaultValue={query.stageId ?? ''}>
         <option value="">Todas</option>
         {masters.stages.map((stage) => (
           <option key={stage.id} value={stage.id}>
             {stage.name}
           </option>
         ))}
-      </select>
+      </NativeSelect>
     </label>
     <label>
       Responsable
-      <select name="responsibleId" defaultValue={query.responsibleId ?? ''}>
+      <NativeSelect
+        name="responsibleId"
+        defaultValue={query.responsibleId ?? ''}
+      >
         <option value="">Todos</option>
         {masters.users.map((user) => (
           <option key={user.id} value={user.id}>
             {user.firstName} {user.lastName}
           </option>
         ))}
-      </select>
+      </NativeSelect>
     </label>
   </>
 );
@@ -93,7 +98,7 @@ const DateFilters = ({ query }: Pick<Props, 'query'>): React.JSX.Element => (
   <>
     <label>
       Desde
-      <input
+      <Input
         name="dateFrom"
         type="date"
         defaultValue={initialDate(query.dateFrom)}
@@ -101,7 +106,7 @@ const DateFilters = ({ query }: Pick<Props, 'query'>): React.JSX.Element => (
     </label>
     <label>
       Hasta
-      <input
+      <Input
         name="dateTo"
         type="date"
         defaultValue={initialDate(query.dateTo)}

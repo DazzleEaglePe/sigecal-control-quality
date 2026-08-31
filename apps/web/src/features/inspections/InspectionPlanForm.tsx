@@ -5,7 +5,10 @@ import {
   type InspectionTemplateItem,
   type Role,
 } from '@sigecal/shared';
+import { toast } from 'sonner';
 
+import { useConfirm } from '../../components/ui/use-confirm.js';
+import { NativeSelect } from '../../components/ui/native-select.js';
 import { errorMessage } from '../admin/admin-ui.js';
 import type { AuthorizedRequest } from '../auth/auth-context.js';
 import { createInspectionPlan } from './inspections-api.js';
@@ -76,6 +79,17 @@ const roleAssignments = (
   return result;
 };
 
+const planInputFrom = (
+  template: InspectionTemplateItem | undefined,
+  templateId: string,
+  form: FormData,
+) =>
+  CreateInspectionPlanRequestSchema.parse({
+    batchId: form.get('batchId'),
+    templateId,
+    responsibleByRole: roleAssignments(template, form),
+  });
+
 interface PlanState {
   readonly template: InspectionTemplateItem | undefined;
   readonly templateId: string;
@@ -87,6 +101,7 @@ interface PlanState {
 }
 
 const usePlanForm = ({ request, masters, completed }: Props): PlanState => {
+  const confirm = useConfirm();
   const [templateId, changeTemplate] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
@@ -101,18 +116,22 @@ const usePlanForm = ({ request, masters, completed }: Props): PlanState => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     try {
-      const input = CreateInspectionPlanRequestSchema.parse({
-        batchId: form.get('batchId'),
-        templateId,
-        responsibleByRole: roleAssignments(template, form),
+      const input = planInputFrom(template, templateId, form);
+      const accepted = await confirm({
+        title: 'Generar el plan de inspecciones',
+        description:
+          'Se crearán todas las inspecciones de la plantilla con las fechas y responsables seleccionados.',
+        confirmLabel: 'Generar plan',
       });
-      if (!window.confirm('¿Generar todas las inspecciones de este plan?'))
-        return;
+      if (!accepted) return;
       setSaving(true);
       await createInspectionPlan(request, input);
+      toast.success('Plan de inspecciones generado');
       completed();
     } catch (cause) {
-      setError(errorMessage(cause));
+      const message = errorMessage(cause);
+      setError(message);
+      toast.error('No se pudo generar el plan', { description: message });
     } finally {
       setSaving(false);
     }
@@ -130,18 +149,18 @@ const PlanSelectors = ({
   <>
     <label>
       Lote
-      <select name="batchId" required>
+      <NativeSelect name="batchId" required defaultValue="">
         <option value="">Seleccione un lote</option>
         {masters.batches.map((batch) => (
           <option key={batch.id} value={batch.id}>
             {batch.code}
           </option>
         ))}
-      </select>
+      </NativeSelect>
     </label>
     <label>
       Plantilla vigente
-      <select
+      <NativeSelect
         value={state.templateId}
         required
         onChange={(event) => {
@@ -154,7 +173,7 @@ const PlanSelectors = ({
             {item.code} · {item.name}
           </option>
         ))}
-      </select>
+      </NativeSelect>
     </label>
   </>
 );
@@ -170,7 +189,7 @@ const RoleFields = ({
     {roles.map((role) => (
       <label key={role}>
         Responsable · {roleLabel[role]}
-        <select name={`role-${role}`} required>
+        <NativeSelect name={`role-${role}`} required defaultValue="">
           <option value="">Seleccione una persona</option>
           {masters.users
             .filter((user) => user.isActive && user.role === role)
@@ -179,7 +198,7 @@ const RoleFields = ({
                 {user.firstName} {user.lastName}
               </option>
             ))}
-        </select>
+        </NativeSelect>
       </label>
     ))}
   </>

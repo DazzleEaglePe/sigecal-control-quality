@@ -88,8 +88,8 @@ definitivos deben ser entregados y aprobados por la empresa.
 | Formato Prettier       | ✅ Sin diferencias                                          |
 | ESLint                 | ✅ API, web y shared sin errores ni advertencias            |
 | TypeScript estricto    | ✅ Tres workspaces aprobados                                |
-| Pruebas automatizadas  | ✅ 147/147: API 98, web 22, shared 27                       |
-| Archivos de prueba     | ✅ 52/52 aprobados                                          |
+| Pruebas automatizadas  | ✅ 149/149: API 98, web 24, shared 27                       |
+| Archivos de prueba     | ✅ 53/53 aprobados                                          |
 | Builds de producción   | ✅ API, web y shared generados                              |
 | Modelo Prisma          | ✅ Formateado y válido                                      |
 | Contrato OpenAPI       | ✅ Válido                                                   |
@@ -122,6 +122,10 @@ de `.env.example`.
 ## 6. Mejoras de interfaz incorporadas
 
 - [x] Componentes base de shadcn/ui y Lucide.
+- [x] Confirmaciones accesibles para acciones irreversibles con Radix Alert Dialog.
+- [x] Avisos breves de éxito, advertencia y error con Sonner.
+- [x] Campos, selectores y tablas reutilizables con foco visible.
+- [x] Estados vacíos explicativos en listados de lotes e inspecciones.
 - [x] Tema monocromo oscuro con contraste y estados textuales.
 - [x] Barra lateral colapsable y ajustable.
 - [x] Menú de sesión funcional.
@@ -130,6 +134,9 @@ de `.env.example`.
 - [x] Vistas de calidad adaptadas a escritorio, tableta y móvil.
 
 Estas mejoras no sustituyen funcionalidades pendientes de los Sprints 5 a 8.
+Las alertas anteriores corresponden a retroalimentación de interfaz; el centro
+de notificaciones operativas de RF-NOT-01 a RF-NOT-03 continúa pendiente dentro
+del Sprint 6.
 
 ## 7. Condiciones antes de la demostración
 

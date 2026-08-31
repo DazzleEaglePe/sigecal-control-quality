@@ -63,8 +63,9 @@ describe('InspectionTable', () => {
 
   it('explica cuando la consulta no tiene resultados', () => {
     render(<InspectionTable items={[]} />);
+    expect(screen.getByText('No encontramos inspecciones')).toBeInTheDocument();
     expect(
-      screen.getByText('No hay inspecciones para mostrar.'),
+      screen.getByText('Ajuste los filtros o programe una nueva inspección.'),
     ).toBeInTheDocument();
   });
 });

@@ -1,6 +1,8 @@
 import type { SyntheticEvent } from 'react';
 import type { BatchListQuery } from '@sigecal/shared';
 
+import { Input } from '../../components/ui/input.js';
+import { NativeSelect } from '../../components/ui/native-select.js';
 import type { BatchMasters } from './useBatches.js';
 
 interface BatchFiltersProps {
@@ -26,13 +28,13 @@ const FilterSelect = ({
 }): React.JSX.Element => (
   <label>
     {label}
-    <select name={name} defaultValue={initial ?? ''}>
+    <NativeSelect name={name} defaultValue={initial ?? ''}>
       {options.map((item) => (
         <option key={item.value} value={item.value}>
           {item.label}
         </option>
       ))}
-    </select>
+    </NativeSelect>
   </label>
 );
 
@@ -48,7 +50,7 @@ const MainFilters = ({ masters, query }: Omit<BatchFiltersProps, 'apply'>) => (
   <>
     <label>
       Buscar
-      <input
+      <Input
         name="search"
         defaultValue={query.search}
         placeholder="Código u origen"
@@ -101,11 +103,11 @@ const ExtraFilters = ({ masters, query }: Omit<BatchFiltersProps, 'apply'>) => (
     />
     <label>
       Desde
-      <input type="date" name="dateFrom" defaultValue={query.dateFrom} />
+      <Input type="date" name="dateFrom" defaultValue={query.dateFrom} />
     </label>
     <label>
       Hasta
-      <input type="date" name="dateTo" defaultValue={query.dateTo} />
+      <Input type="date" name="dateTo" defaultValue={query.dateTo} />
     </label>
   </>
 );
