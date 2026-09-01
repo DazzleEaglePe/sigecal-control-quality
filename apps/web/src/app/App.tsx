@@ -82,6 +82,18 @@ const SensorySessionDetailPage = lazy(async () => ({
   default: (await import('../pages/SensorySessionDetailPage.js'))
     .SensorySessionDetailPage,
 }));
+const NonConformitiesPage = lazy(async () => ({
+  default: (await import('../pages/NonConformitiesPage.js'))
+    .NonConformitiesPage,
+}));
+const NewNonConformityPage = lazy(async () => ({
+  default: (await import('../pages/NewNonConformityPage.js'))
+    .NewNonConformityPage,
+}));
+const NonConformityDetailPage = lazy(async () => ({
+  default: (await import('../pages/NonConformityDetailPage.js'))
+    .NonConformityDetailPage,
+}));
 const deferred = (element: React.JSX.Element): React.JSX.Element => (
   <Suspense fallback={<p>Cargando módulo…</p>}>{element}</Suspense>
 );
@@ -111,6 +123,24 @@ const qualityRoutes = (
       <Route
         path="inspecciones/nueva"
         element={deferred(<NewInspectionPage />)}
+      />
+    </Route>
+    <Route
+      path="no-conformidades"
+      element={deferred(<NonConformitiesPage />)}
+    />
+    <Route
+      path="no-conformidades/:id"
+      element={deferred(<NonConformityDetailPage />)}
+    />
+    <Route
+      element={
+        <PermissionRoute permission={Permission.NONCONFORMITIES_RECORD} />
+      }
+    >
+      <Route
+        path="no-conformidades/nueva"
+        element={deferred(<NewNonConformityPage />)}
       />
     </Route>
   </>

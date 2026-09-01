@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { BatchTimelineEntry } from '@sigecal/shared';
 
 import {
@@ -113,7 +114,9 @@ const NonConformityRow = ({
     id={`nc-${item.id}`}
   >
     <td>
-      <strong>{item.code}</strong>
+      <Link to={`/no-conformidades/${item.id}`}>
+        <strong>{item.code}</strong>
+      </Link>
     </td>
     <td>{item.stage}</td>
     <td>{severityLabel[item.severity]}</td>

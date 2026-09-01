@@ -53,8 +53,9 @@ export const createUsersRouter = (
 ): Router => {
   const router = Router();
   const controller = new UsersController(users);
-  router.use(authenticate(auth), requirePasswordChanged, authorize(Role.ADMIN));
+  router.use(authenticate(auth), requirePasswordChanged);
   router.get('/', validate({ query: UserListQuerySchema }), controller.list);
+  router.use(authorize(Role.ADMIN));
   router.get(
     '/:id',
     validate({ params: EntityIdParamsSchema }),

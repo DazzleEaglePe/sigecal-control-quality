@@ -142,7 +142,7 @@ const appFor = (role: Role, provisional = false) =>
 const bearer = { Authorization: 'Bearer access-prueba' };
 
 describe('autorización de usuarios', () => {
-  it('permite listar únicamente a ADMIN', async () => {
+  it('permite listar a cualquier rol autenticado', async () => {
     const allowed = await request(appFor('ADMIN'))
       .get(`${env.API_PREFIX}/users`)
       .set(bearer)
@@ -155,9 +155,27 @@ describe('autorización de usuarios', () => {
     await request(appFor('JEFE_CALIDAD'))
       .get(`${env.API_PREFIX}/users`)
       .set(bearer)
-      .expect(403);
+      .expect(200);
+    await request(appFor('ANALISTA'))
+      .get(`${env.API_PREFIX}/users`)
+      .set(bearer)
+      .expect(200);
   });
 
+  it('restringe la creación y edición a ADMIN', async () => {
+    await request(appFor('JEFE_CALIDAD'))
+      .get(`${env.API_PREFIX}/users/${user.id}`)
+      .set(bearer)
+      .expect(403);
+    await request(appFor('JEFE_CALIDAD'))
+      .post(`${env.API_PREFIX}/users`)
+      .set(bearer)
+      .send({})
+      .expect(403);
+  });
+});
+
+describe('provisionalidad de contraseña en usuarios', () => {
   it('bloquea módulos mientras la contraseña sea provisional', async () => {
     const response = await request(appFor('ADMIN', true))
       .get(`${env.API_PREFIX}/users`)

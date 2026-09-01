@@ -52,7 +52,7 @@ export const UpdateNonConformityRequestSchema = z
   });
 
 export const CloseNonConformityRequestSchema = z
-  .object({ closeComment: NoteSchema.optional() })
+  .object({ closeComment: NoteSchema })
   .strict();
 
 export const NonConformityListQuerySchema = PaginationQuerySchema.extend({

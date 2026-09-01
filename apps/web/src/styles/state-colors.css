@@ -39,6 +39,31 @@
   color: var(--destructive);
 }
 
+.nc-status-abierta,
+.nc-severity-critica,
+.nc-action-no_eficaz {
+  color: var(--destructive);
+  background: color-mix(in oklab, var(--destructive) 14%, var(--card));
+}
+
+.nc-status-en_analisis,
+.nc-status-en_tratamiento,
+.nc-status-en_verificacion,
+.nc-severity-moderada,
+.nc-action-pendiente,
+.nc-action-en_ejecucion,
+.nc-action-ejecutada {
+  color: var(--warning);
+  background: color-mix(in oklab, var(--warning) 14%, var(--card));
+}
+
+.nc-status-cerrada,
+.nc-severity-leve,
+.nc-action-verificada {
+  color: var(--success);
+  background: color-mix(in oklab, var(--success) 14%, var(--card));
+}
+
 /* El verde institucional se conserva únicamente en la marca. */
 .brand-mark,
 .auth-brand-mark,

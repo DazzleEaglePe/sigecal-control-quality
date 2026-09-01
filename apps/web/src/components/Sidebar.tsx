@@ -44,11 +44,6 @@ interface SidebarProps {
 
 const pendingModules: readonly NavigationItem[] = [
   {
-    name: 'No conformidades',
-    icon: TriangleAlert,
-    permission: Permission.NONCONFORMITIES_RECORD,
-  },
-  {
     name: 'Reportes',
     icon: ChartNoAxesCombined,
     permission: Permission.REPORTS_EXPORT,
@@ -128,6 +123,12 @@ const QualityNavigation = ({ action }: { readonly action: () => void }) => (
       icon={Wine}
       label="Organoléptico"
       to="/organoleptico"
+    />
+    <NavigationLink
+      action={action}
+      icon={TriangleAlert}
+      label="No conformidades"
+      to="/no-conformidades"
     />
     <PendingNavigation />
   </>

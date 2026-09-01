@@ -2694,7 +2694,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NonConformityDetailResponse'
+                $ref: '#/components/schemas/NonConformityResponse'
         '409':
           description: La no conformidad está cerrada o anulada.
           content:
@@ -2715,7 +2715,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NonConformityDetailResponse'
+                $ref: '#/components/schemas/NonConformityResponse'
         '409':
           description: La transición no está permitida.
           content:
@@ -2731,7 +2731,7 @@ paths:
       parameters:
         - *a28
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
@@ -2742,7 +2742,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NonConformityDetailResponse'
+                $ref: '#/components/schemas/NonConformityResponse'
         '409':
           description: Existen acciones sin verificar o ya está cerrada.
           content:
@@ -11618,6 +11618,8 @@ components:
           type: string
           minLength: 1
           maxLength: 1000
+      required:
+        - closeComment
       additionalProperties: false
     CreateActionRequest:
       type: object
@@ -11936,6 +11938,283 @@ components:
               - annulReason
               - dataOrigin
             additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    NonConformityResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+              pattern: ^NC-\d{4}-\d{4}$
+            batch:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                code:
+                  type: string
+              required:
+                - id
+                - code
+              additionalProperties: false
+            stage:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                    - id
+                    - code
+                    - name
+                  additionalProperties: false
+                - type: 'null'
+            inspectionId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            physChemResultId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            sensorySessionId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            origin:
+              type: string
+              enum:
+                - AUTOMATICA_FISICOQUIMICA
+                - AUTOMATICA_SENSORIAL
+                - MANUAL
+            severity:
+              type: string
+              enum:
+                - LEVE
+                - MODERADA
+                - CRITICA
+            status:
+              type: string
+              enum:
+                - ABIERTA
+                - EN_ANALISIS
+                - EN_TRATAMIENTO
+                - EN_VERIFICACION
+                - CERRADA
+                - ANULADA
+            description:
+              type: string
+            rootCause:
+              anyOf:
+                - type: string
+                - type: 'null'
+            detectedAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+            detectedBy:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+              required:
+                - id
+                - firstName
+                - lastName
+              additionalProperties: false
+            assignedTo:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                - type: 'null'
+            assignedArea:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                    - id
+                    - code
+                    - name
+                  additionalProperties: false
+                - type: 'null'
+            attentionStartedAt:
+              anyOf:
+                - type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                - type: 'null'
+            responseTimeHours:
+              anyOf:
+                - type: number
+                  minimum: 0
+                - type: 'null'
+            closedAt:
+              anyOf:
+                - type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                - type: 'null'
+            closedBy:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                - type: 'null'
+            closeComment:
+              anyOf:
+                - type: string
+                - type: 'null'
+            closureTimeHours:
+              anyOf:
+                - type: number
+                  minimum: 0
+                - type: 'null'
+            annulledAt:
+              anyOf:
+                - type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                - type: 'null'
+            annulledBy:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                - type: 'null'
+            annulReason:
+              anyOf:
+                - type: string
+                - type: 'null'
+            dataOrigin:
+              type: string
+              enum:
+                - REAL
+                - DEMO
+          required:
+            - id
+            - code
+            - batch
+            - stage
+            - inspectionId
+            - physChemResultId
+            - sensorySessionId
+            - origin
+            - severity
+            - status
+            - description
+            - rootCause
+            - detectedAt
+            - detectedBy
+            - assignedTo
+            - assignedArea
+            - attentionStartedAt
+            - responseTimeHours
+            - closedAt
+            - closedBy
+            - closeComment
+            - closureTimeHours
+            - annulledAt
+            - annulledBy
+            - annulReason
+            - dataOrigin
+          additionalProperties: false
         meta:
           type: object
           properties:

@@ -205,18 +205,18 @@ export interface NonConformitiesUseCases {
     input: UpdateNonConformityRequest,
     actor: NonConformityActor,
     ipAddress?: string,
-  ): Promise<NonConformityDetail>;
+  ): Promise<NonConformityItem>;
   startAttention(
     id: string,
     actor: NonConformityActor,
     ipAddress?: string,
-  ): Promise<NonConformityDetail>;
+  ): Promise<NonConformityItem>;
   close(
     id: string,
     input: CloseNonConformityRequest,
     actor: NonConformityActor,
     ipAddress?: string,
-  ): Promise<NonConformityDetail>;
+  ): Promise<NonConformityItem>;
   listActions(
     nonConformityId: string,
     actor: NonConformityActor,

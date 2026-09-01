@@ -96,7 +96,7 @@ export class NonConformitiesService implements NonConformitiesUseCases {
       input.assignedAreaId,
     );
     await this.mutations.update(id, input, actor.userId, ipAddress);
-    return this.detail(id, actor);
+    return this.existingItem(id, actor);
   }
 
   public async startAttention(
@@ -107,7 +107,7 @@ export class NonConformitiesService implements NonConformitiesUseCases {
     ensureNCManager(actor);
     await this.existing(id, actor);
     await this.mutations.startAttention(id, actor.userId, ipAddress);
-    return this.detail(id, actor);
+    return this.existingItem(id, actor);
   }
 
   public async close(
@@ -121,7 +121,7 @@ export class NonConformitiesService implements NonConformitiesUseCases {
     const actions = await this.nonConformities.findActions(id);
     ensureCloseable(current.status, actions);
     await this.mutations.close(id, input, actor.userId, ipAddress);
-    return this.detail(id, actor);
+    return this.existingItem(id, actor);
   }
 
   public async listActions(nonConformityId: string, actor: NonConformityActor) {
@@ -206,6 +206,10 @@ export class NonConformitiesService implements NonConformitiesUseCases {
         'La no conformidad no existe o no está a su alcance.',
       );
     return record;
+  }
+
+  private async existingItem(id: string, actor: NonConformityActor) {
+    return toNonConformityItem(await this.existing(id, actor));
   }
 
   private async existingAction(

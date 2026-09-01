@@ -54,22 +54,28 @@ describe('registro manual de no conformidades', () => {
   });
 });
 
+const analyst = { userId: IDS.otherUser, role: 'ANALISTA' } as const;
+
 describe('cierre de la no conformidad', () => {
   it('lo restringe a Jefatura de Calidad', async () => {
     const { service } = setup();
     await expect(
-      service.close(IDS.nc, {}, { userId: IDS.otherUser, role: 'ANALISTA' }),
+      service.close(IDS.nc, { closeComment: 'Resuelto' }, analyst),
     ).rejects.toMatchObject({ code: 'INSUFFICIENT_PERMISSIONS' });
   });
 
   it('bloquea el cierre con una acción ejecutada sin verificar', async () => {
     const { service, reads } = setup();
     reads.actions = [actionRecord({ status: 'EJECUTADA' })];
-    await expect(service.close(IDS.nc, {}, manager)).rejects.toMatchObject({
+    await expect(
+      service.close(IDS.nc, { closeComment: 'Resuelto' }, manager),
+    ).rejects.toMatchObject({
       code: 'NC_HAS_UNVERIFIED_ACTIONS',
     });
   });
+});
 
+describe('cierre exitoso de la no conformidad', () => {
   it('permite cerrar cuando todas las acciones ya fueron verificadas', async () => {
     const { service, reads, mutations } = setup();
     reads.actions = [
@@ -86,7 +92,7 @@ describe('cierre de la no conformidad', () => {
 
   it('permite cerrar sin acciones registradas', async () => {
     const { service, mutations } = setup();
-    await service.close(IDS.nc, {}, manager);
+    await service.close(IDS.nc, { closeComment: 'Resuelto' }, manager);
     expect(mutations.closeSpy).toHaveBeenCalledOnce();
   });
 });

@@ -153,7 +153,7 @@ export class NonConformityMutationRepository implements NonConformityMutationRep
         status: 'CERRADA',
         closedAt: new Date(),
         closedById: actorId,
-        closeComment: input.closeComment ?? null,
+        closeComment: input.closeComment,
       },
       actorId,
       ipAddress,

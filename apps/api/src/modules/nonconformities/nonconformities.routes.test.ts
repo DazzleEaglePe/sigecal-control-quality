@@ -4,6 +4,7 @@ import {
   ApiErrorSchema,
   NonConformityDetailResponseSchema,
   NonConformityListResponseSchema,
+  NonConformityResponseSchema,
   type ChangePasswordRequest,
   type LoginRequest,
   type Role,
@@ -106,6 +107,25 @@ describe('rutas de no conformidades', () => {
   });
 });
 
+describe('respuestas de transiciones de no conformidades', () => {
+  it('start-attention y cierre devuelven el registro plano, sin acciones', async () => {
+    const started = await request(appFor('JEFE_CALIDAD'))
+      .post(`${env.API_PREFIX}/nonconformities/${IDS.nc}/start-attention`)
+      .set(bearer)
+      .expect(200);
+    expect(NonConformityResponseSchema.parse(started.body).data.id).toBe(
+      IDS.nc,
+    );
+
+    const closed = await request(appFor('JEFE_CALIDAD'))
+      .post(`${env.API_PREFIX}/nonconformities/${IDS.nc}/close`)
+      .set(bearer)
+      .send({ closeComment: 'Resuelto en la prueba de ruta.' })
+      .expect(200);
+    expect(NonConformityResponseSchema.parse(closed.body).data.id).toBe(IDS.nc);
+  });
+});
+
 describe('permisos de escritura', () => {
   it('rechaza al operario en el inicio de atención', async () => {
     const response = await request(appFor('OPERARIO'))
@@ -132,5 +152,16 @@ describe('permisos de escritura', () => {
     await request(appFor('JEFE_CALIDAD'))
       .get(`${env.API_PREFIX}/nonconformities`)
       .expect(401);
+  });
+
+  it('rechaza el cierre sin comentario con un error de validación', async () => {
+    const response = await request(appFor('JEFE_CALIDAD'))
+      .post(`${env.API_PREFIX}/nonconformities/${IDS.nc}/close`)
+      .set(bearer)
+      .send({})
+      .expect(400);
+    expect(ApiErrorSchema.parse(response.body).error.code).toBe(
+      'VALIDATION_ERROR',
+    );
   });
 });

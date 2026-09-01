@@ -7,6 +7,7 @@ import {
   CreateNonConformityRequestSchema,
   NonConformityDetailResponseSchema,
   NonConformityListResponseSchema,
+  NonConformityResponseSchema,
   UpdateActionRequestSchema,
   UpdateNonConformityRequestSchema,
   VerifyActionRequestSchema,
@@ -153,7 +154,7 @@ const byId = {
     responses: {
       '200': {
         description: 'No conformidad actualizada.',
-        content: json('NonConformityDetailResponse'),
+        content: json('NonConformityResponse'),
       },
       '409': error('La no conformidad está cerrada o anulada.'),
     },
@@ -169,7 +170,7 @@ const startAttention = {
     responses: {
       '200': {
         description: 'No conformidad en tratamiento.',
-        content: json('NonConformityDetailResponse'),
+        content: json('NonConformityResponse'),
       },
       '409': error('La transición no está permitida.'),
     },
@@ -183,13 +184,13 @@ const close = {
     summary: 'Cierra la no conformidad; restringido a Jefatura de Calidad',
     parameters: [idParameter],
     requestBody: {
-      required: false,
+      required: true,
       content: json('CloseNonConformityRequest'),
     },
     responses: {
       '200': {
         description: 'No conformidad cerrada.',
-        content: json('NonConformityDetailResponse'),
+        content: json('NonConformityResponse'),
       },
       '409': error('Existen acciones sin verificar o ya está cerrada.'),
     },
@@ -298,6 +299,7 @@ export const nonConformitySchemas = {
   UpdateActionRequest: schema(UpdateActionRequestSchema),
   VerifyActionRequest: schema(VerifyActionRequestSchema),
   NonConformityListResponse: schema(NonConformityListResponseSchema),
+  NonConformityResponse: schema(NonConformityResponseSchema),
   NonConformityDetailResponse: schema(NonConformityDetailResponseSchema),
   CorrectiveActionResponse: schema(CorrectiveActionResponseSchema),
   CorrectiveActionListResponse: schema(CorrectiveActionListResponseSchema),
