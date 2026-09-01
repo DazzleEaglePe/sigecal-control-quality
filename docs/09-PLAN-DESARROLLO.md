@@ -157,13 +157,13 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 
 ## Sprint 6 · No conformidades y reportes (M7 + M8)
 
-- [ ] Registro manual y automático de no conformidades
-- [ ] Ciclo completo de estados
-- [ ] Registro de inicio de atención y cálculo de tiempos
-- [ ] Acciones correctivas: registro, asignación, ejecución
-- [ ] Verificación de eficacia con regla de verificador distinto del responsable
-- [ ] Bloqueo de cierre con acciones sin verificar
-- [ ] Retorno a tratamiento ante acción no eficaz
+- [x] Registro manual y automático de no conformidades
+- [x] Ciclo completo de estados
+- [x] Registro de inicio de atención y cálculo de tiempos
+- [x] Acciones correctivas: registro, asignación, ejecución
+- [x] Verificación de eficacia con regla de verificador distinto del responsable
+- [x] Bloqueo de cierre con acciones sin verificar
+- [x] Retorno a tratamiento ante acción no eficaz
 - [ ] Notificaciones dentro de la aplicación
 - [ ] Tareas programadas de aviso
 - [ ] Tablero con todos los indicadores
@@ -173,7 +173,7 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [ ] Pantallas: listado y detalle de no conformidad, tablero, reportes
 - [ ] Búsqueda global con permisos y alcance por pertenencia
 - [ ] Despliegue de una versión piloto estable y entrega controlada de credenciales
-- [ ] Pruebas unitarias: cálculo de tiempos, reglas de cierre, transiciones
+- [x] Pruebas unitarias: cálculo de tiempos, reglas de cierre, transiciones
 - [ ] Pruebas de KPI: denominador cero, exclusión `DEMO`, inspección tardía, NC sin atención y corte mensual en `America/Lima`
 
 **Criterio de cierre:** el ciclo completo funciona de extremo a extremo, incluido el caso de acción no eficaz, y existe una versión piloto estable para iniciar uso real.

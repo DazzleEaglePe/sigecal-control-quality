@@ -25,6 +25,8 @@ tags:
     description: Resultados finales, correcciones y control estadístico.
   - name: Organoléptico
     description: Sesiones, perfiles y correcciones sensoriales inmutables.
+  - name: No conformidades
+    description: Ciclo de vida de no conformidades y acciones correctivas.
 paths:
   /health:
     get:
@@ -2530,6 +2532,341 @@ paths:
                 $ref: '#/components/schemas/SensoryPreparationResponse'
         '422':
           description: No existe umbral aplicable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /nonconformities:
+    get:
+      security: &a26
+        - bearerAuth: []
+      tags: &a27
+        - No conformidades
+      operationId: listNonConformities
+      summary: Lista no conformidades con filtros
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - ABIERTA
+              - EN_ANALISIS
+              - EN_TRATAMIENTO
+              - EN_VERIFICACION
+              - CERRADA
+              - ANULADA
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum:
+              - LEVE
+              - MODERADA
+              - CRITICA
+        - name: batchId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: stageId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: assignedToId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: assignedAreaId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: origin
+          in: query
+          schema:
+            type: string
+            enum:
+              - AUTOMATICA_FISICOQUIMICA
+              - AUTOMATICA_SENSORIAL
+              - MANUAL
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: No conformidades accesibles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformityListResponse'
+    post:
+      security: *a26
+      tags: *a27
+      operationId: createNonConformity
+      summary: Registra manualmente una no conformidad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNonConformityRequest'
+      responses:
+        '201':
+          description: No conformidad creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformityDetailResponse'
+        '404':
+          description: El lote, la etapa o la persona asignada no existen.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /nonconformities/{id}:
+    get:
+      security: *a26
+      tags: *a27
+      operationId: getNonConformity
+      summary: Detalle consolidado con acciones y tiempos calculados
+      parameters:
+        - &a28
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: No conformidad.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformityDetailResponse'
+        '404':
+          description: No existe o no está a su alcance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      security: *a26
+      tags: *a27
+      operationId: updateNonConformity
+      summary: Actualiza descripción, severidad, causa raíz o asignación
+      parameters:
+        - *a28
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNonConformityRequest'
+      responses:
+        '200':
+          description: No conformidad actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformityDetailResponse'
+        '409':
+          description: La no conformidad está cerrada o anulada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /nonconformities/{id}/start-attention:
+    post:
+      security: *a26
+      tags: *a27
+      operationId: startNonConformityAttention
+      summary: Registra el inicio de atención
+      parameters:
+        - *a28
+      responses:
+        '200':
+          description: No conformidad en tratamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformityDetailResponse'
+        '409':
+          description: La transición no está permitida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /nonconformities/{id}/close:
+    post:
+      security: *a26
+      tags: *a27
+      operationId: closeNonConformity
+      summary: Cierra la no conformidad; restringido a Jefatura de Calidad
+      parameters:
+        - *a28
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloseNonConformityRequest'
+      responses:
+        '200':
+          description: No conformidad cerrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformityDetailResponse'
+        '409':
+          description: Existen acciones sin verificar o ya está cerrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /nonconformities/{id}/actions:
+    get:
+      security: *a26
+      tags: *a27
+      operationId: listCorrectiveActions
+      summary: Acciones de la no conformidad
+      parameters:
+        - *a28
+      responses:
+        '200':
+          description: Acciones registradas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CorrectiveActionListResponse'
+    post:
+      security: *a26
+      tags: *a27
+      operationId: createCorrectiveAction
+      summary: Registra una acción de corrección, correctiva o preventiva
+      parameters:
+        - *a28
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateActionRequest'
+      responses:
+        '201':
+          description: Acción creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CorrectiveActionResponse'
+        '404':
+          description: La no conformidad no existe o el responsable no está activo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /nonconformities/actions/{actionId}:
+    patch:
+      security: *a26
+      tags: *a27
+      operationId: updateCorrectiveAction
+      summary: Actualiza una acción mientras está pendiente
+      parameters:
+        - &a29
+          name: actionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateActionRequest'
+      responses:
+        '200':
+          description: Acción actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CorrectiveActionResponse'
+        '409':
+          description: Solo se puede editar una acción pendiente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /nonconformities/actions/{actionId}/execute:
+    post:
+      security: *a26
+      tags: *a27
+      operationId: executeCorrectiveAction
+      summary: Registra la ejecución con su fecha real
+      parameters:
+        - *a29
+      responses:
+        '200':
+          description: Acción ejecutada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CorrectiveActionResponse'
+        '409':
+          description: La acción no está pendiente ni en ejecución.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /nonconformities/actions/{actionId}/verify:
+    post:
+      security: *a26
+      tags: *a27
+      operationId: verifyCorrectiveAction
+      summary: Verifica la eficacia; el verificador no puede ser el responsable
+      parameters:
+        - *a29
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyActionRequest'
+      responses:
+        '200':
+          description: Acción verificada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CorrectiveActionResponse'
+        '409':
+          description: La acción no fue ejecutada o el verificador coincide con el responsable.
           content:
             application/json:
               schema:
@@ -11172,6 +11509,1072 @@ components:
             - attributes
             - threshold
           additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CreateNonConformityRequest:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        stageId:
+          anyOf:
+            - type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            - type: 'null'
+        description:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        severity:
+          type: string
+          enum:
+            - LEVE
+            - MODERADA
+            - CRITICA
+        rootCause:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 1000
+            - type: 'null'
+        assignedToId:
+          anyOf:
+            - type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            - type: 'null'
+        assignedAreaId:
+          anyOf:
+            - type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            - type: 'null'
+      required:
+        - batchId
+        - description
+        - severity
+      additionalProperties: false
+    UpdateNonConformityRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        severity:
+          type: string
+          enum:
+            - LEVE
+            - MODERADA
+            - CRITICA
+        rootCause:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 1000
+            - type: 'null'
+        assignedToId:
+          anyOf:
+            - type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            - type: 'null'
+        assignedAreaId:
+          anyOf:
+            - type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            - type: 'null'
+      additionalProperties: false
+    CloseNonConformityRequest:
+      type: object
+      properties:
+        closeComment:
+          type: string
+          minLength: 1
+          maxLength: 1000
+      additionalProperties: false
+    CreateActionRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - CORRECCION
+            - CORRECTIVA
+            - PREVENTIVA
+        description:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        responsibleId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        committedDate:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+      required:
+        - type
+        - description
+        - responsibleId
+        - committedDate
+      additionalProperties: false
+    UpdateActionRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - CORRECCION
+            - CORRECTIVA
+            - PREVENTIVA
+        description:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        responsibleId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        committedDate:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+      additionalProperties: false
+    VerifyActionRequest:
+      type: object
+      properties:
+        isEffective:
+          type: boolean
+        verificationComment:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+        - isEffective
+        - verificationComment
+      additionalProperties: false
+    NonConformityListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              code:
+                type: string
+                pattern: ^NC-\d{4}-\d{4}$
+              batch:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  code:
+                    type: string
+                required:
+                  - id
+                  - code
+                additionalProperties: false
+              stage:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      code:
+                        type: string
+                      name:
+                        type: string
+                    required:
+                      - id
+                      - code
+                      - name
+                    additionalProperties: false
+                  - type: 'null'
+              inspectionId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              physChemResultId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              sensorySessionId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              origin:
+                type: string
+                enum:
+                  - AUTOMATICA_FISICOQUIMICA
+                  - AUTOMATICA_SENSORIAL
+                  - MANUAL
+              severity:
+                type: string
+                enum:
+                  - LEVE
+                  - MODERADA
+                  - CRITICA
+              status:
+                type: string
+                enum:
+                  - ABIERTA
+                  - EN_ANALISIS
+                  - EN_TRATAMIENTO
+                  - EN_VERIFICACION
+                  - CERRADA
+                  - ANULADA
+              description:
+                type: string
+              rootCause:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              detectedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+              detectedBy:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                required:
+                  - id
+                  - firstName
+                  - lastName
+                additionalProperties: false
+              assignedTo:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                    required:
+                      - id
+                      - firstName
+                      - lastName
+                    additionalProperties: false
+                  - type: 'null'
+              assignedArea:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      code:
+                        type: string
+                      name:
+                        type: string
+                    required:
+                      - id
+                      - code
+                      - name
+                    additionalProperties: false
+                  - type: 'null'
+              attentionStartedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                  - type: 'null'
+              responseTimeHours:
+                anyOf:
+                  - type: number
+                    minimum: 0
+                  - type: 'null'
+              closedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                  - type: 'null'
+              closedBy:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                    required:
+                      - id
+                      - firstName
+                      - lastName
+                    additionalProperties: false
+                  - type: 'null'
+              closeComment:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              closureTimeHours:
+                anyOf:
+                  - type: number
+                    minimum: 0
+                  - type: 'null'
+              annulledAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                  - type: 'null'
+              annulledBy:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                    required:
+                      - id
+                      - firstName
+                      - lastName
+                    additionalProperties: false
+                  - type: 'null'
+              annulReason:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              dataOrigin:
+                type: string
+                enum:
+                  - REAL
+                  - DEMO
+            required:
+              - id
+              - code
+              - batch
+              - stage
+              - inspectionId
+              - physChemResultId
+              - sensorySessionId
+              - origin
+              - severity
+              - status
+              - description
+              - rootCause
+              - detectedAt
+              - detectedBy
+              - assignedTo
+              - assignedArea
+              - attentionStartedAt
+              - responseTimeHours
+              - closedAt
+              - closedBy
+              - closeComment
+              - closureTimeHours
+              - annulledAt
+              - annulledBy
+              - annulReason
+              - dataOrigin
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    NonConformityDetailResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            code:
+              type: string
+              pattern: ^NC-\d{4}-\d{4}$
+            batch:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                code:
+                  type: string
+              required:
+                - id
+                - code
+              additionalProperties: false
+            stage:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                    - id
+                    - code
+                    - name
+                  additionalProperties: false
+                - type: 'null'
+            inspectionId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            physChemResultId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            sensorySessionId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            origin:
+              type: string
+              enum:
+                - AUTOMATICA_FISICOQUIMICA
+                - AUTOMATICA_SENSORIAL
+                - MANUAL
+            severity:
+              type: string
+              enum:
+                - LEVE
+                - MODERADA
+                - CRITICA
+            status:
+              type: string
+              enum:
+                - ABIERTA
+                - EN_ANALISIS
+                - EN_TRATAMIENTO
+                - EN_VERIFICACION
+                - CERRADA
+                - ANULADA
+            description:
+              type: string
+            rootCause:
+              anyOf:
+                - type: string
+                - type: 'null'
+            detectedAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+            detectedBy:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+              required:
+                - id
+                - firstName
+                - lastName
+              additionalProperties: false
+            assignedTo:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                - type: 'null'
+            assignedArea:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    code:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                    - id
+                    - code
+                    - name
+                  additionalProperties: false
+                - type: 'null'
+            attentionStartedAt:
+              anyOf:
+                - type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                - type: 'null'
+            responseTimeHours:
+              anyOf:
+                - type: number
+                  minimum: 0
+                - type: 'null'
+            closedAt:
+              anyOf:
+                - type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                - type: 'null'
+            closedBy:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                - type: 'null'
+            closeComment:
+              anyOf:
+                - type: string
+                - type: 'null'
+            closureTimeHours:
+              anyOf:
+                - type: number
+                  minimum: 0
+                - type: 'null'
+            annulledAt:
+              anyOf:
+                - type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                - type: 'null'
+            annulledBy:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                - type: 'null'
+            annulReason:
+              anyOf:
+                - type: string
+                - type: 'null'
+            dataOrigin:
+              type: string
+              enum:
+                - REAL
+                - DEMO
+            actions:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  nonConformityId:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  type:
+                    type: string
+                    enum:
+                      - CORRECCION
+                      - CORRECTIVA
+                      - PREVENTIVA
+                  description:
+                    type: string
+                  responsible:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                    required:
+                      - id
+                      - firstName
+                      - lastName
+                    additionalProperties: false
+                  committedDate:
+                    type: string
+                    format: date
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                  executedAt:
+                    anyOf:
+                      - type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                      - type: 'null'
+                  status:
+                    type: string
+                    enum:
+                      - PENDIENTE
+                      - EN_EJECUCION
+                      - EJECUTADA
+                      - VERIFICADA
+                      - NO_EFICAZ
+                  isEffective:
+                    anyOf:
+                      - type: boolean
+                      - type: 'null'
+                  verifiedBy:
+                    anyOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                          firstName:
+                            type: string
+                          lastName:
+                            type: string
+                        required:
+                          - id
+                          - firstName
+                          - lastName
+                        additionalProperties: false
+                      - type: 'null'
+                  verifiedAt:
+                    anyOf:
+                      - type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                      - type: 'null'
+                  verificationComment:
+                    anyOf:
+                      - type: string
+                      - type: 'null'
+                required:
+                  - id
+                  - nonConformityId
+                  - type
+                  - description
+                  - responsible
+                  - committedDate
+                  - executedAt
+                  - status
+                  - isEffective
+                  - verifiedBy
+                  - verifiedAt
+                  - verificationComment
+                additionalProperties: false
+          required:
+            - id
+            - code
+            - batch
+            - stage
+            - inspectionId
+            - physChemResultId
+            - sensorySessionId
+            - origin
+            - severity
+            - status
+            - description
+            - rootCause
+            - detectedAt
+            - detectedBy
+            - assignedTo
+            - assignedArea
+            - attentionStartedAt
+            - responseTimeHours
+            - closedAt
+            - closedBy
+            - closeComment
+            - closureTimeHours
+            - annulledAt
+            - annulledBy
+            - annulReason
+            - dataOrigin
+            - actions
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CorrectiveActionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            nonConformityId:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            type:
+              type: string
+              enum:
+                - CORRECCION
+                - CORRECTIVA
+                - PREVENTIVA
+            description:
+              type: string
+            responsible:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+              required:
+                - id
+                - firstName
+                - lastName
+              additionalProperties: false
+            committedDate:
+              type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            executedAt:
+              anyOf:
+                - type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                - type: 'null'
+            status:
+              type: string
+              enum:
+                - PENDIENTE
+                - EN_EJECUCION
+                - EJECUTADA
+                - VERIFICADA
+                - NO_EFICAZ
+            isEffective:
+              anyOf:
+                - type: boolean
+                - type: 'null'
+            verifiedBy:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                  additionalProperties: false
+                - type: 'null'
+            verifiedAt:
+              anyOf:
+                - type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                - type: 'null'
+            verificationComment:
+              anyOf:
+                - type: string
+                - type: 'null'
+          required:
+            - id
+            - nonConformityId
+            - type
+            - description
+            - responsible
+            - committedDate
+            - executedAt
+            - status
+            - isEffective
+            - verifiedBy
+            - verifiedAt
+            - verificationComment
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    CorrectiveActionListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              nonConformityId:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              type:
+                type: string
+                enum:
+                  - CORRECCION
+                  - CORRECTIVA
+                  - PREVENTIVA
+              description:
+                type: string
+              responsible:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                required:
+                  - id
+                  - firstName
+                  - lastName
+                additionalProperties: false
+              committedDate:
+                type: string
+                format: date
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+              executedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                  - type: 'null'
+              status:
+                type: string
+                enum:
+                  - PENDIENTE
+                  - EN_EJECUCION
+                  - EJECUTADA
+                  - VERIFICADA
+                  - NO_EFICAZ
+              isEffective:
+                anyOf:
+                  - type: boolean
+                  - type: 'null'
+              verifiedBy:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                    required:
+                      - id
+                      - firstName
+                      - lastName
+                    additionalProperties: false
+                  - type: 'null'
+              verifiedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                  - type: 'null'
+              verificationComment:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+            required:
+              - id
+              - nonConformityId
+              - type
+              - description
+              - responsible
+              - committedDate
+              - executedAt
+              - status
+              - isEffective
+              - verifiedBy
+              - verifiedAt
+              - verificationComment
+            additionalProperties: false
         meta:
           type: object
           properties:

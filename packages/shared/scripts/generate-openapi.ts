@@ -28,6 +28,10 @@ import {
 } from './openapi/inspections.openapi.js';
 import { physChemPaths, physChemSchemas } from './openapi/physchem.openapi.js';
 import { sensoryPaths, sensorySchemas } from './openapi/sensory.openapi.js';
+import {
+  nonConformityPaths,
+  nonConformitySchemas,
+} from './openapi/nonconformities.openapi.js';
 
 const outputPath = fileURLToPath(
   new URL('../../../docs/openapi.yaml', import.meta.url),
@@ -84,6 +88,10 @@ const document = {
       name: 'Organoléptico',
       description: 'Sesiones, perfiles y correcciones sensoriales inmutables.',
     },
+    {
+      name: 'No conformidades',
+      description: 'Ciclo de vida de no conformidades y acciones correctivas.',
+    },
   ],
   paths: {
     '/health': {
@@ -138,6 +146,7 @@ const document = {
     ...inspectionPaths,
     ...physChemPaths,
     ...sensoryPaths,
+    ...nonConformityPaths,
   },
   components: {
     securitySchemes: {
@@ -163,6 +172,7 @@ const document = {
       ...inspectionSchemas,
       ...physChemSchemas,
       ...sensorySchemas,
+      ...nonConformitySchemas,
     },
   },
 };

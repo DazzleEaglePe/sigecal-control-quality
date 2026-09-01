@@ -58,10 +58,16 @@ import { SensoryMutationRepository } from './modules/sensory/sensory.mutations.j
 import { SensoryService } from './modules/sensory/sensory.service.js';
 import { createSensoryRouter } from './modules/sensory/sensory.routes.js';
 import type { SensoryUseCases } from './modules/sensory/sensory.types.js';
+import { NonConformityMutationRepository } from './modules/nonconformities/nonconformities.mutations.js';
+import { NonConformityRepository } from './modules/nonconformities/nonconformities.repository.js';
+import { NonConformitiesService } from './modules/nonconformities/nonconformities.service.js';
+import { createNonConformitiesRouter } from './modules/nonconformities/nonconformities.routes.js';
+import type { NonConformitiesUseCases } from './modules/nonconformities/nonconformities.types.js';
 
 export interface AppDependencies {
   readonly authService?: AuthUseCases;
   readonly batchesService?: BatchesUseCases;
+  readonly nonConformitiesService?: NonConformitiesUseCases;
   readonly catalogsService?: CatalogsUseCases;
   readonly areasService?: AreasUseCases;
   readonly healthService?: HealthCheckUseCase;
@@ -100,6 +106,11 @@ const defaultSensoryService = (): SensoryUseCases =>
   new SensoryService(
     new SensoryRepository(prisma),
     new SensoryMutationRepository(prisma),
+  );
+const defaultNonConformitiesService = (): NonConformitiesUseCases =>
+  new NonConformitiesService(
+    new NonConformityRepository(prisma),
+    new NonConformityMutationRepository(prisma),
   );
 
 const defaultAuthService = (): AuthUseCases =>
@@ -149,6 +160,7 @@ interface ResolvedServices {
   readonly templates: InspectionTemplatesUseCases;
   readonly physChem: PhysChemUseCases;
   readonly sensory: SensoryUseCases;
+  readonly nonConformities: NonConformitiesUseCases;
   readonly standards: StandardsUseCases;
   readonly users: UsersUseCases;
 }
@@ -165,6 +177,8 @@ const resolveServices = (dependencies: AppDependencies): ResolvedServices => ({
     defaultInspectionTemplatesService(),
   physChem: dependencies.physChemService ?? defaultPhysChemService(),
   sensory: dependencies.sensoryService ?? defaultSensoryService(),
+  nonConformities:
+    dependencies.nonConformitiesService ?? defaultNonConformitiesService(),
   standards: dependencies.standardsService ?? defaultStandardsService(),
   users: dependencies.usersService ?? defaultUsersService(),
 });
@@ -197,6 +211,10 @@ const mountRoutes = (app: Express, services: ResolvedServices): void => {
   app.use(
     `${env.API_PREFIX}/sensory`,
     createSensoryRouter(services.auth, services.sensory),
+  );
+  app.use(
+    `${env.API_PREFIX}/nonconformities`,
+    createNonConformitiesRouter(services.auth, services.nonConformities),
   );
   app.use(
     `${env.API_PREFIX}/users`,
