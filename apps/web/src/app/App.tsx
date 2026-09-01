@@ -70,7 +70,18 @@ const SettingsPage = lazy(async () => {
   const module = await import('../pages/SettingsPage.js');
   return { default: module.SettingsPage };
 });
-
+const SensorySessionsPage = lazy(async () => ({
+  default: (await import('../pages/SensorySessionsPage.js'))
+    .SensorySessionsPage,
+}));
+const NewSensorySessionPage = lazy(async () => ({
+  default: (await import('../pages/NewSensorySessionPage.js'))
+    .NewSensorySessionPage,
+}));
+const SensorySessionDetailPage = lazy(async () => ({
+  default: (await import('../pages/SensorySessionDetailPage.js'))
+    .SensorySessionDetailPage,
+}));
 const deferred = (element: React.JSX.Element): React.JSX.Element => (
   <Suspense fallback={<p>Cargando módulo…</p>}>{element}</Suspense>
 );
@@ -83,6 +94,17 @@ const qualityRoutes = (
       element={deferred(<InspectionDetailPage />)}
     />
     <Route path="analisis" element={deferred(<PhysChemAnalysisPage />)} />
+    <Route path="organoleptico" element={deferred(<SensorySessionsPage />)} />
+    <Route
+      path="organoleptico/:id"
+      element={deferred(<SensorySessionDetailPage />)}
+    />
+    <Route element={<PermissionRoute permission={Permission.SENSORY_RECORD} />}>
+      <Route
+        path="organoleptico/nueva"
+        element={deferred(<NewSensorySessionPage />)}
+      />
+    </Route>
     <Route
       element={<PermissionRoute permission={Permission.INSPECTIONS_SCHEDULE} />}
     >

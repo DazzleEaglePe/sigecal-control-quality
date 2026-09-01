@@ -27,6 +27,7 @@ import {
   inspectionSchemas,
 } from './openapi/inspections.openapi.js';
 import { physChemPaths, physChemSchemas } from './openapi/physchem.openapi.js';
+import { sensoryPaths, sensorySchemas } from './openapi/sensory.openapi.js';
 
 const outputPath = fileURLToPath(
   new URL('../../../docs/openapi.yaml', import.meta.url),
@@ -78,6 +79,10 @@ const document = {
     {
       name: 'Fisicoquímico',
       description: 'Resultados finales, correcciones y control estadístico.',
+    },
+    {
+      name: 'Organoléptico',
+      description: 'Sesiones, perfiles y correcciones sensoriales inmutables.',
     },
   ],
   paths: {
@@ -132,6 +137,7 @@ const document = {
     ...inspectionTemplatePaths,
     ...inspectionPaths,
     ...physChemPaths,
+    ...sensoryPaths,
   },
   components: {
     securitySchemes: {
@@ -156,6 +162,7 @@ const document = {
       ...inspectionTemplateSchemas,
       ...inspectionSchemas,
       ...physChemSchemas,
+      ...sensorySchemas,
     },
   },
 };

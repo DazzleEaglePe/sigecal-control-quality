@@ -23,6 +23,7 @@ import './styles/quality-measurements.css';
 import './styles/quality-review.css';
 import './styles/quality-traceability.css';
 import './styles/quality-analysis.css';
+import './styles/sensory.css';
 import './styles/auth-refresh.css';
 import './styles/auth-form-refresh.css';
 import './styles/state-colors.css';

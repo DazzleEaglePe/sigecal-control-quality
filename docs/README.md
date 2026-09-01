@@ -23,6 +23,8 @@ Plan Completo (COT-2026-VT-001) · 8 módulos · Setiembre–diciembre 2026
 | 11  | [Checklist Sprint 2](11-CHECKLIST-SPRINT-2.md)                       | Seguridad, usuarios, maestros y validaciones                         |
 | 12  | [Checklist Sprint 3](12-CHECKLIST-SPRINT-3.md)                       | Lotes, secuencia productiva y trazabilidad                           |
 | 13  | [Checklist Sprint 4](13-CHECKLIST-SPRINT-4.md)                       | Inspecciones, análisis fisicoquímico e inmutabilidad                 |
+| 14  | [Entrega funcional para Nicolle](14-CHECKLIST-ENTREGA-NICOLLE.md)    | Estado verificable, servicios y condiciones de demostración          |
+| 15  | [Checklist Sprint 5](15-CHECKLIST-SPRINT-5.md)                       | Evaluación organoléptica, perfiles e inmutabilidad                   |
 | —   | [OpenAPI](openapi.yaml)                                              | Contrato ejecutable generado desde los esquemas Zod                  |
 | —   | [AGENTS.md](../AGENTS.md)                                            | Reglas para el agente de desarrollo                                  |
 
@@ -35,8 +37,8 @@ Trabajar un sprint a la vez según `09-PLAN-DESARROLLO.md`.
 
 - ✅ Planificación revisada y decisiones críticas cerradas
 - ⏳ Correcciones metodológicas de la tesis: tesista + asesor
-- ✅ Desarrollo: Sprints 1, 2 y 3 implementados y verificados
-- ▶️ Siguiente foco técnico: Sprint 4, inspecciones y análisis fisicoquímico
+- ✅ Desarrollo: Sprints 1 a 5 implementados y verificados
+- ▶️ Siguiente foco técnico: Sprint 6, no conformidades y reportes
 - ⏳ Datos reales de empresa: pendientes; los estándares provisionales solo sirven para `DEMO`
 - ⏳ UML, manual de usuario y video demo: add-on **no aprobado**, no generar
 

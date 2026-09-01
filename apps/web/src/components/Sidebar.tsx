@@ -43,7 +43,6 @@ interface SidebarProps {
 }
 
 const pendingModules: readonly NavigationItem[] = [
-  { name: 'Organoléptico', icon: Wine, permission: Permission.SENSORY_RECORD },
   {
     name: 'No conformidades',
     icon: TriangleAlert,
@@ -123,6 +122,12 @@ const QualityNavigation = ({ action }: { readonly action: () => void }) => (
       icon={FlaskConical}
       label="Análisis"
       to="/analisis"
+    />
+    <NavigationLink
+      action={action}
+      icon={Wine}
+      label="Organoléptico"
+      to="/organoleptico"
     />
     <PendingNavigation />
   </>

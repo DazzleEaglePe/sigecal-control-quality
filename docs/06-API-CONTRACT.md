@@ -304,14 +304,16 @@ GET /physchem/control-chart?parameterId=uuid&piscoTypeId=uuid&stageId=uuid
 
 ## 9. Evaluación organoléptica — `/sensory`
 
-| Método | Ruta                            | Descripción                                              | Acceso |
-| ------ | ------------------------------- | -------------------------------------------------------- | ------ |
-| GET    | `/sensory/sessions`             | Lista. Filtros: `batchId`, `inspectionId`, `status`      | todos  |
-| GET    | `/sensory/sessions/:id`         | Detalle con panelistas y calificaciones                  | todos  |
-| POST   | `/sensory/sessions`             | Registra la sesión completa                              | A J N  |
-| POST   | `/sensory/sessions/:id/correct` | Crea una versión corregida y anula la anterior           | A J N  |
-| GET    | `/sensory/sessions/:id/profile` | Perfil sensorial promedio para gráfico radial            | todos  |
-| GET    | `/sensory/compare`              | Compara perfiles. Query: `sessionIds` separados por coma | todos  |
+| Método | Ruta                            | Descripción                                                                        | Acceso |
+| ------ | ------------------------------- | ---------------------------------------------------------------------------------- | ------ |
+| GET    | `/sensory/sessions`             | Lista. Filtros: `batchId`, `inspectionId`, `status`                                | todos  |
+| GET    | `/sensory/sessions/:id`         | Detalle con panelistas y calificaciones                                            | todos  |
+| POST   | `/sensory/sessions`             | Registra la sesión completa                                                        | A J N  |
+| POST   | `/sensory/sessions/:id/correct` | Crea una versión corregida y anula la anterior                                     | A J N  |
+| GET    | `/sensory/sessions/:id/profile` | Perfil sensorial promedio para gráfico radial                                      | todos  |
+| GET    | `/sensory/compare`              | Compara perfiles. Query: `sessionIds` separados por coma                           | todos  |
+| GET    | `/sensory/panelist-options`     | Usuarios activos disponibles como panelistas; sin métricas ni puntajes por persona | A J N  |
+| GET    | `/sensory/preparation`          | Atributos y umbral de solo lectura para una inspección (`inspectionId`)            | A J N  |
 
 ```
 POST /sensory/sessions

@@ -1,4 +1,4 @@
-import { ArrowLeft, FlaskConical, History } from 'lucide-react';
+import { ArrowLeft, FlaskConical, History, Wine } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   Permission,
@@ -62,7 +62,29 @@ interface DetailContentProps {
 const ExecutionSection = (
   props: DetailContentProps,
 ): React.JSX.Element | null => {
-  if (props.inspection.type !== 'FISICOQUIMICO') return null;
+  if (props.inspection.type === 'ORGANOLEPTICO') {
+    const available =
+      props.inspection.status === 'EN_PROCESO' && props.canRecord;
+    return (
+      <section className="quality-panel quality-locked">
+        <span className="quality-lock-icon">
+          <Wine />
+        </span>
+        <div>
+          <h2>Evaluación organoléptica</h2>
+          <p>Registre el panel y la matriz sensorial del producto.</p>
+          {available ? (
+            <Link
+              className="primary-button"
+              to={`/organoleptico/nueva?inspectionId=${props.inspection.id}`}
+            >
+              Iniciar evaluación
+            </Link>
+          ) : null}
+        </div>
+      </section>
+    );
+  }
   const executable =
     props.canRecord && props.inspection.status === 'EN_PROCESO';
   return executable ? (
@@ -111,7 +133,11 @@ export const InspectionDetailPage = (): React.JSX.Element => {
     user?.permissions.includes(Permission.INSPECTIONS_SCHEDULE),
   );
   const canRecord = Boolean(
-    user?.permissions.includes(Permission.RESULTS_RECORD),
+    user?.permissions.includes(
+      detail.inspection?.type === 'ORGANOLEPTICO'
+        ? Permission.SENSORY_RECORD
+        : Permission.RESULTS_RECORD,
+    ),
   );
   const changed = (inspection: InspectionItem): void => {
     if (inspection.id !== id) void navigate(`/inspecciones/${inspection.id}`);

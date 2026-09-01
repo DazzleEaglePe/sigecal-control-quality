@@ -9,6 +9,7 @@ import { PrismaClient } from '../src/generated/prisma/client.js';
 import { seedCatalogs } from './seed/catalogs.seed.js';
 import { seedDemoBatches } from './seed/demo-batches.seed.js';
 import { seedDemoQuality } from './seed/demo-quality.seed.js';
+import { seedDemoSensory } from './seed/demo-sensory.seed.js';
 import { seedStandards } from './seed/standards.seed.js';
 import { seedUsers } from './seed/users.seed.js';
 
@@ -44,6 +45,7 @@ const main = async (): Promise<void> => {
       await seedStandards(tx);
       await seedDemoBatches(tx);
       await seedDemoQuality(tx);
+      await seedDemoSensory(tx);
     },
     { timeout: 30_000 },
   );

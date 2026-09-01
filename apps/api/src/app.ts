@@ -53,6 +53,11 @@ import { PhysChemRepository } from './modules/physchem/physchem.repository.js';
 import { createPhysChemRouter } from './modules/physchem/physchem.routes.js';
 import { PhysChemService } from './modules/physchem/physchem.service.js';
 import type { PhysChemUseCases } from './modules/physchem/physchem.types.js';
+import { SensoryRepository } from './modules/sensory/sensory.repository.js';
+import { SensoryMutationRepository } from './modules/sensory/sensory.mutations.js';
+import { SensoryService } from './modules/sensory/sensory.service.js';
+import { createSensoryRouter } from './modules/sensory/sensory.routes.js';
+import type { SensoryUseCases } from './modules/sensory/sensory.types.js';
 
 export interface AppDependencies {
   readonly authService?: AuthUseCases;
@@ -63,6 +68,7 @@ export interface AppDependencies {
   readonly inspectionsService?: InspectionsUseCases;
   readonly inspectionTemplatesService?: InspectionTemplatesUseCases;
   readonly physChemService?: PhysChemUseCases;
+  readonly sensoryService?: SensoryUseCases;
   readonly standardsService?: StandardsUseCases;
   readonly usersService?: UsersUseCases;
 }
@@ -89,6 +95,11 @@ const defaultPhysChemService = (): PhysChemUseCases =>
   new PhysChemService(
     new PhysChemRepository(prisma),
     new PhysChemMutationRepository(prisma),
+  );
+const defaultSensoryService = (): SensoryUseCases =>
+  new SensoryService(
+    new SensoryRepository(prisma),
+    new SensoryMutationRepository(prisma),
   );
 
 const defaultAuthService = (): AuthUseCases =>
@@ -137,6 +148,7 @@ interface ResolvedServices {
   readonly inspections: InspectionsUseCases;
   readonly templates: InspectionTemplatesUseCases;
   readonly physChem: PhysChemUseCases;
+  readonly sensory: SensoryUseCases;
   readonly standards: StandardsUseCases;
   readonly users: UsersUseCases;
 }
@@ -152,6 +164,7 @@ const resolveServices = (dependencies: AppDependencies): ResolvedServices => ({
     dependencies.inspectionTemplatesService ??
     defaultInspectionTemplatesService(),
   physChem: dependencies.physChemService ?? defaultPhysChemService(),
+  sensory: dependencies.sensoryService ?? defaultSensoryService(),
   standards: dependencies.standardsService ?? defaultStandardsService(),
   users: dependencies.usersService ?? defaultUsersService(),
 });
@@ -180,6 +193,10 @@ const mountRoutes = (app: Express, services: ResolvedServices): void => {
   app.use(
     `${env.API_PREFIX}/physchem`,
     createPhysChemRouter(services.auth, services.physChem),
+  );
+  app.use(
+    `${env.API_PREFIX}/sensory`,
+    createSensoryRouter(services.auth, services.sensory),
   );
   app.use(
     `${env.API_PREFIX}/users`,

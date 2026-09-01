@@ -29,27 +29,32 @@ Si alguno de esos puertos está ocupado, cambia conjuntamente `PORT`, `VITE_API_
 
 ## Datos iniciales
 
-El seed crea cuatro usuarios técnicos, catálogos base y un conjunto controlado de demostración: cinco lotes, ocho resultados comparables y dos no conformidades. Los valores normativos provisionales están identificados y no pueden utilizarse para calificar datos `REAL`.
+El seed crea cuatro usuarios técnicos, catálogos base y un conjunto controlado de demostración: cinco lotes, ocho resultados comparables, una sesión sensorial, una inspección organoléptica pendiente y dos no conformidades. Los valores normativos provisionales están identificados y no pueden utilizarse para calificar datos `REAL`.
 
 La contraseña inicial se toma exclusivamente de `SEED_DEFAULT_PASSWORD`; los usuarios deben cambiarla al primer ingreso. Ejecutar el seed nuevamente no duplica registros.
 
 ## Estado funcional
 
-Los Sprints 1, 2, 3 y 4 están implementados. Además de autenticación, RBAC,
+Los Sprints 1, 2, 3, 4 y 5 están implementados. Además de autenticación, RBAC,
 usuarios y maestros, SIGECAL registra lotes, aplica las reglas de composición
 Puro/Acholado, recorre en orden las seis etapas y ofrece QR y trazabilidad
 consolidada. También permite programar inspecciones, previsualizar y registrar
 resultados fisicoquímicos inmutables, aplicar el estándar vigente y generar una
 no conformidad automática ante un resultado fuera de rango.
 
+El módulo organoléptico registra panelistas internos o externos solo para
+trazabilidad, captura la matriz completa de atributos, calcula la conformidad,
+versiona correcciones sin editar resultados finales y presenta perfiles radiales
+comparables entre lotes. No genera promedios ni rankings de personas.
+
 Las mutaciones se autorizan nuevamente en la API, el alcance de `OPERARIO` se aplica antes de paginar y cerrar o rechazar requiere el permiso correspondiente. El tipo, las variedades y la fecha inicial se congelan al avanzar o programar la primera inspección.
 
 Los catálogos se desactivan mediante baja lógica y la API rechaza la operación si el elemento ya tiene dependencias. Hasta recibir los rangos confirmados de la empresa, los valores normativos existentes permanecen marcados como provisionales y no pueden aplicarse a datos `REAL`.
 
-Esta es una entrega funcional de avance. Los Sprints 5 a 8 —evaluación
-organoléptica, ciclo completo de no conformidades, reportes, PWA, despliegue y
-entrega formal— continúan pendientes. El estado verificable para revisión con la
-tesista está en `docs/14-CHECKLIST-ENTREGA-NICOLLE.md`.
+Esta es una entrega funcional de avance. Los Sprints 6 a 8 —ciclo completo de
+no conformidades, reportes, PWA, despliegue y entrega formal— continúan
+pendientes. El estado verificable para revisión con la tesista está en
+`docs/14-CHECKLIST-ENTREGA-NICOLLE.md`.
 
 ## Comandos principales
 

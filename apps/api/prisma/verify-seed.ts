@@ -17,34 +17,78 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: DATABASE_URL }),
 });
 
+const readSeedCounts = async () =>
+  Promise.all([
+    prisma.user.count(),
+    prisma.batch.count({ where: { dataOrigin: DataOrigin.DEMO } }),
+    prisma.physChemResult.count({ where: { dataOrigin: DataOrigin.DEMO } }),
+    prisma.sensorySession.count({ where: { dataOrigin: DataOrigin.DEMO } }),
+    prisma.inspection.count({
+      where: {
+        dataOrigin: DataOrigin.DEMO,
+        type: 'ORGANOLEPTICO',
+        status: 'EN_PROCESO',
+      },
+    }),
+    prisma.nonConformity.count({ where: { dataOrigin: DataOrigin.DEMO } }),
+    prisma.physChemResult.count({
+      where: {
+        dataOrigin: DataOrigin.REAL,
+        standard: { isProvisional: true },
+      },
+    }),
+    prisma.sensorySession.count({
+      where: {
+        dataOrigin: DataOrigin.REAL,
+        sensoryThreshold: { isProvisional: true },
+      },
+    }),
+  ]);
+
+const assertSafeRealData = (
+  unsafeRealResults: number,
+  unsafeRealSensory: number,
+): void => {
+  if (unsafeRealResults !== 0)
+    throw new Error(
+      'Existen resultados REAL asociados a estándares provisionales.',
+    );
+  if (unsafeRealSensory !== 0)
+    throw new Error(
+      'Existen sesiones REALES asociadas a umbrales provisionales.',
+    );
+};
+
 const verify = async (): Promise<void> => {
-  const [users, batches, results, nonConformities, unsafeRealResults] =
-    await Promise.all([
-      prisma.user.count(),
-      prisma.batch.count({ where: { dataOrigin: DataOrigin.DEMO } }),
-      prisma.physChemResult.count({ where: { dataOrigin: DataOrigin.DEMO } }),
-      prisma.nonConformity.count({ where: { dataOrigin: DataOrigin.DEMO } }),
-      prisma.physChemResult.count({
-        where: {
-          dataOrigin: DataOrigin.REAL,
-          standard: { isProvisional: true },
-        },
-      }),
-    ]);
+  const [
+    users,
+    batches,
+    results,
+    sensorySessions,
+    sensoryPending,
+    nonConformities,
+    unsafeRealResults,
+    unsafeRealSensory,
+  ] = await readSeedCounts();
   const summary = {
     users,
     demoBatches: batches,
     demoResults: results,
+    demoSensorySessions: sensorySessions,
+    demoSensoryPending: sensoryPending,
     demoNC: nonConformities,
   };
-  if (users < 4 || batches !== 5 || results < 8 || nonConformities < 2) {
+  if (
+    users < 4 ||
+    batches !== 5 ||
+    results < 8 ||
+    sensorySessions < 1 ||
+    sensoryPending < 1 ||
+    nonConformities < 2
+  ) {
     throw new Error(`Seed incompleto: ${JSON.stringify(summary)}`);
   }
-  if (unsafeRealResults !== 0) {
-    throw new Error(
-      'Existen resultados REAL asociados a estándares provisionales.',
-    );
-  }
+  assertSafeRealData(unsafeRealResults, unsafeRealSensory);
   process.stdout.write(`${JSON.stringify(summary)}\n`);
 };
 

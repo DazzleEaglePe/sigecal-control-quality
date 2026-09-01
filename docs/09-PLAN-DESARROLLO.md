@@ -136,19 +136,22 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 
 ## Sprint 5 · Evaluación organoléptica (M6)
 
-- [ ] Registro de sesión sensorial con panelistas
-- [ ] Matriz de calificación por atributo y panelista
-- [ ] Cálculo de promedios por atributo y general
-- [ ] Umbral configurable y determinación de conformidad
-- [ ] Resolución del umbral en servidor; el formulario solo lo consulta
-- [ ] Generación automática de no conformidad
-- [ ] Corrección de sesión por nueva versión, sin edición destructiva
-- [ ] Perfil sensorial en gráfico radial
-- [ ] Comparación de perfiles entre lotes
-- [ ] Pantallas: alta y detalle de sesión, comparador
-- [ ] Pruebas unitarias: cálculo de promedios, aplicación del umbral
+- [x] Registro de sesión sensorial con panelistas
+- [x] Matriz de calificación por atributo y panelista
+- [x] Cálculo de promedios por atributo y general
+- [x] Umbral configurable y determinación de conformidad
+- [x] Resolución del umbral en servidor; el formulario solo lo consulta
+- [x] Generación automática de no conformidad
+- [x] Corrección de sesión por nueva versión, sin edición destructiva
+- [x] Perfil sensorial en gráfico radial
+- [x] Comparación de perfiles entre lotes
+- [x] Pantallas: alta y detalle de sesión, comparador
+- [x] Pruebas unitarias: cálculo de promedios, aplicación del umbral
 
 **Verificación obligatoria del sprint:** confirmar que no existe ninguna consulta, vista ni extremo que agregue, promedie o compare panelistas entre sí.
+
+**Cierre:** completado el 31/08/2026. Evidencia detallada en
+`15-CHECKLIST-SPRINT-5.md`.
 
 ---
 

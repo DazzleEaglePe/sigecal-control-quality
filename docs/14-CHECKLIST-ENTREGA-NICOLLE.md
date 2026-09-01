@@ -1,6 +1,6 @@
 # 14 · CHECKLIST DE ENTREGA FUNCIONAL PARA NICOLLE
 
-**Corte verificado:** 30/08/2026
+**Corte verificado:** 31/08/2026
 
 **Rama evaluada:** `feature/sprint-4-ui-foundation`
 
@@ -9,12 +9,13 @@ del alcance total ya está aprobada técnicamente.
 
 ## 1. Dictamen de entrega
 
-SIGECAL está listo para una **revisión funcional de los Sprints 1 a 4**. La
+SIGECAL está listo para una **revisión funcional de los Sprints 1 a 5**. La
 versión incluye cimientos, seguridad y maestros, lotes y trazabilidad,
-programación de inspecciones y análisis fisicoquímico.
+programación de inspecciones, análisis fisicoquímico y evaluación
+organoléptica.
 
 No corresponde presentarla aún como entrega final ni iniciar el piloto con datos
-reales: los Sprints 5 a 8 siguen pendientes y los parámetros, rangos y umbrales
+reales: los Sprints 6 a 8 siguen pendientes y los parámetros, rangos y umbrales
 definitivos deben ser entregados y aprobados por la empresa.
 
 ## 2. Estado por sprint
@@ -25,7 +26,7 @@ definitivos deben ser entregados y aprobados por la empresa.
 | 2      | Autenticación, RBAC, usuarios, áreas, maestros y estándares | ✅ Cerrado              | Sí, usando usuarios y datos de demostración                                                   |
 | 3      | Lotes, seis etapas, QR y trazabilidad                       | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                                 |
 | 4      | Inspecciones, estándares y resultados fisicoquímicos        | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                                 |
-| 5      | Evaluación organoléptica                                    | ⏳ Pendiente            | No disponible                                                                                 |
+| 5      | Evaluación organoléptica                                    | ✅ Cerrado              | Sí; sesión, corrección inmutable, perfiles y comparación respaldados por pruebas              |
 | 6      | Ciclo completo de NC, acciones, indicadores y reportes      | ⏳ Pendiente            | Solo existe la generación automática de NC desde M5 y su consulta en la trazabilidad del lote |
 | 7      | PWA, accesibilidad, seguridad, rendimiento y piloto         | ⏳ Pendiente            | No disponible                                                                                 |
 | 8      | Despliegue, post-test y entrega formal                      | ⏳ Pendiente            | No disponible                                                                                 |
@@ -81,6 +82,18 @@ definitivos deben ser entregados y aprobados por la empresa.
 - [x] Detalle consolidado con estándar, resultado vigente e historial.
 - [x] Histórico por parámetro y gráfico de control con regla mínima de ocho mediciones.
 
+### Sprint 5 · Evaluación organoléptica
+
+- [x] Registro de sesiones desde inspecciones organolépticas en proceso.
+- [x] Panelistas internos o externos conservados únicamente para trazabilidad.
+- [x] Matriz completa de calificaciones de 1 a 5 por atributo del producto.
+- [x] Promedios por atributo y general calculados en servidor y mostrados en vivo.
+- [x] Umbral vigente resuelto en servidor; los provisionales bloquean datos `REAL`.
+- [x] Generación transaccional de NC para sesiones no conformes.
+- [x] Sesiones finales inmutables y corrección mediante una nueva versión enlazada.
+- [x] Perfil radial y comparación de perfiles entre lotes.
+- [x] Ausencia verificada de rankings, promedios o comparaciones de panelistas.
+
 ## 4. Evaluación funcional del corte actual
 
 | Evaluación             | Resultado                                                   |
@@ -88,12 +101,12 @@ definitivos deben ser entregados y aprobados por la empresa.
 | Formato Prettier       | ✅ Sin diferencias                                          |
 | ESLint                 | ✅ API, web y shared sin errores ni advertencias            |
 | TypeScript estricto    | ✅ Tres workspaces aprobados                                |
-| Pruebas automatizadas  | ✅ 151/151: API 98, web 26, shared 27                       |
-| Archivos de prueba     | ✅ 54/54 aprobados                                          |
+| Pruebas automatizadas  | ✅ 163/163: API 105, web 28, shared 30                      |
+| Archivos de prueba     | ✅ 58/58 aprobados                                          |
 | Builds de producción   | ✅ API, web y shared generados                              |
 | Modelo Prisma          | ✅ Formateado y válido                                      |
 | Contrato OpenAPI       | ✅ Válido                                                   |
-| Integridad del seed    | ✅ 4 usuarios, 5 lotes DEMO, 8 resultados DEMO y 2 NC DEMO  |
+| Integridad del seed    | ✅ Incluye sesión y captura organoléptica pendientes `DEMO` |
 | Salud de API           | ✅ HTTP 200 y base conectada                                |
 | Frontend local         | ✅ HTTP 200                                                 |
 | Login responsivo       | ✅ 1440 px, 1024 px y 390 px, sin desbordamiento horizontal |
@@ -105,7 +118,8 @@ definitivos deben ser entregados y aprobados por la empresa.
 Los recorridos que mutan lotes e inspecciones no se repitieron en este corte para
 no alterar los cinco lotes del seed. Sus evidencias de aceptación están
 registradas en `12-CHECKLIST-SPRINT-3.md` y `13-CHECKLIST-SPRINT-4.md`; la batería
-automatizada completa sí se repitió después del rediseño visual.
+automatizada completa sí se repitió después del rediseño visual. El recorrido
+interactivo del Sprint 5 se registró en `15-CHECKLIST-SPRINT-5.md`.
 
 ## 5. Servicios verificados
 
@@ -135,7 +149,7 @@ de `.env.example`.
 - [x] Pantalla de ajustes de apariencia.
 - [x] Vistas de calidad adaptadas a escritorio, tableta y móvil.
 
-Estas mejoras no sustituyen funcionalidades pendientes de los Sprints 5 a 8.
+Estas mejoras no sustituyen funcionalidades pendientes de los Sprints 6 a 8.
 Las alertas anteriores corresponden a retroalimentación de interfaz; el centro
 de notificaciones operativas de RF-NOT-01 a RF-NOT-03 continúa pendiente dentro
 del Sprint 6.
@@ -148,14 +162,13 @@ del Sprint 6.
 - [ ] Se explica que resultados y sesiones finales no se editan: se versionan.
 - [ ] Se explica que las evaluaciones sensoriales califican el producto, nunca a los panelistas.
 - [ ] Se comunica que UML, manual formal y video formal continúan fuera del alcance aprobado.
-- [ ] Se confirma que la revisión es de Sprints 1–4, no la entrega final del sistema.
+- [ ] Se confirma que la revisión es de Sprints 1–5, no la entrega final del sistema.
 
 ## 8. Prioridad inmediata
 
-1. Sprint 5: evaluación organoléptica e inmutabilidad de sesiones.
-2. Sprint 6: ciclo completo de no conformidades, acciones, tablero y reportes.
-3. Sprint 7: PWA, accesibilidad, seguridad, rendimiento y piloto.
-4. Sprint 8: despliegue, evidencia, post-test y traspaso formal.
+1. Sprint 6: ciclo completo de no conformidades, acciones, tablero y reportes.
+2. Sprint 7: PWA, accesibilidad, seguridad, rendimiento y piloto.
+3. Sprint 8: despliegue, evidencia, post-test y traspaso formal.
 
 Los rangos reales de la empresa y las correcciones metodológicas de la tesis
 continúan como dependencias externas; no deben resolverse inventando datos ni
