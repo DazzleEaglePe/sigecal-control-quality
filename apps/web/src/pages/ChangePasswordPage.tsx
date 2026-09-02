@@ -130,16 +130,23 @@ const ChangePasswordForm = (): React.JSX.Element => {
 };
 
 export const ChangePasswordPage = (): React.JSX.Element => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const required = Boolean(user?.mustChangePassword);
   const closeSession = (): void => {
     void signOut();
   };
   return (
     <AuthLayout
       eyebrow="Protección de la cuenta"
-      title="Cambie su contraseña provisional"
+      title={
+        required ? 'Cambie su contraseña provisional' : 'Cambie su contraseña'
+      }
       titleId="password-title"
-      intro="Antes de continuar, defina una contraseña personal. Se cerrarán las demás sesiones."
+      intro={
+        required
+          ? 'Antes de continuar, defina una contraseña personal. Se cerrarán las demás sesiones.'
+          : 'Confirme su contraseña actual y defina una nueva. Se cerrarán las demás sesiones.'
+      }
       footnote="La contraseña se procesa mediante una conexión protegida"
     >
       <ChangePasswordForm />

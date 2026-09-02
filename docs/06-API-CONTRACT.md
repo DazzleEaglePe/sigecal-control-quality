@@ -64,13 +64,16 @@ No devuelve versiones, credenciales, nombres de host ni cadenas de conexión.
 
 ## 3. Autenticación — `/auth`
 
-| Método | Ruta             | Descripción                                                                                | Acceso              |
-| ------ | ---------------- | ------------------------------------------------------------------------------------------ | ------------------- |
-| POST   | `/auth/login`    | Inicia sesión. Devuelve `accessToken` y usuario; establece el refresh en cookie `httpOnly` | público             |
-| POST   | `/auth/refresh`  | Renueva el token de acceso                                                                 | público con refresh |
-| POST   | `/auth/logout`   | Revoca el token de refresco                                                                | autenticado         |
-| GET    | `/auth/me`       | Devuelve el usuario en sesión con sus permisos                                             | autenticado         |
-| PATCH  | `/auth/password` | Cambia la contraseña propia                                                                | autenticado         |
+| Método | Ruta                    | Descripción                                                                                | Acceso              |
+| ------ | ----------------------- | ------------------------------------------------------------------------------------------ | ------------------- |
+| POST   | `/auth/login`           | Inicia sesión. Devuelve `accessToken` y usuario; establece el refresh en cookie `httpOnly` | público             |
+| POST   | `/auth/refresh`         | Renueva el token de acceso                                                                 | público con refresh |
+| POST   | `/auth/logout`          | Revoca el token de refresco                                                                | autenticado         |
+| GET    | `/auth/me`              | Devuelve el usuario en sesión con sus permisos                                             | autenticado         |
+| PATCH  | `/auth/password`        | Cambia la contraseña propia                                                                | autenticado         |
+| POST   | `/auth/activate`        | Activa la cuenta y define la primera contraseña mediante token                             | público             |
+| POST   | `/auth/forgot-password` | Solicita recuperación; siempre devuelve el mismo mensaje                                   | público             |
+| POST   | `/auth/reset-password`  | Define una contraseña nueva mediante token temporal                                        | público             |
 
 ```
 POST /auth/login
@@ -87,6 +90,11 @@ Set-Cookie: sigecal_refresh=...; HttpOnly; Secure; SameSite=Strict; Path=/api/v1
 
 El `refreshToken` no aparece jamás en el cuerpo. `/auth/refresh` rota la cookie y devuelve únicamente un nuevo `accessToken`. Login, refresh y logout usan `Cache-Control: no-store`.
 
+Activación y recuperación reciben `{ "token": "...", "newPassword": "..." }`.
+La solicitud de recuperación recibe `{ "email": "..." }` y responde `202`
+con un mensaje genérico aunque la cuenta no exista o esté inactiva. Los tokens
+expiran, se consumen una sola vez y nunca se devuelven por la API.
+
 ---
 
 ## 4. Usuarios — `/users`
@@ -95,12 +103,15 @@ El `refreshToken` no aparece jamás en el cuerpo. `/auth/refresh` rota la cookie
 | ------ | --------------------------- | ------------------------------------------- | ------ |
 | GET    | `/users`                    | Lista paginada. Filtros: `role`, `isActive` | A      |
 | GET    | `/users/:id`                | Detalle                                     | A      |
-| POST   | `/users`                    | Crea usuario                                | A      |
+| POST   | `/users`                    | Crea usuario y envía invitación             | A      |
 | PATCH  | `/users/:id`                | Actualiza datos y rol                       | A      |
 | PATCH  | `/users/:id/status`         | Activa o desactiva                          | A      |
-| POST   | `/users/:id/reset-password` | Restablece contraseña                       | A      |
+| POST   | `/users/:id/reset-password` | Inicia recuperación por correo              | A      |
+| POST   | `/users/:id/resend-invite`  | Reenvía invitación de cuenta no activada    | A      |
 
-Crear o restablecer contraseña establece `mustChangePassword: true`. Mientras esté activo, el usuario solo puede consultar `/auth/me`, cambiar su contraseña o cerrar sesión.
+La creación no recibe ni comunica una contraseña provisional. La cuenta no
+puede iniciar sesión hasta completar la invitación. El restablecimiento
+administrativo envía un enlace temporal y no revela el token en la respuesta.
 
 ---
 

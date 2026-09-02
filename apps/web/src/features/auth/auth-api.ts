@@ -1,7 +1,10 @@
 import {
+  MessageResponseSchema,
   LoginResponseSchema,
   MeResponseSchema,
   RefreshResponseSchema,
+  type AccountEmailRequest,
+  type AccountTokenPasswordRequest,
   type ChangePasswordRequest,
   type LoginRequest,
   type UserSession,
@@ -47,3 +50,23 @@ export const changePassword = (
     accessToken,
     body: input,
   });
+
+export const requestPasswordReset = async (
+  input: AccountEmailRequest,
+): Promise<string> => {
+  const response = await requestJson<unknown>('/auth/forgot-password', {
+    method: 'POST',
+    body: input,
+  });
+  return MessageResponseSchema.parse(response).data.message;
+};
+
+export const activateAccount = (
+  input: AccountTokenPasswordRequest,
+): Promise<void> =>
+  requestJson('/auth/activate', { method: 'POST', body: input });
+
+export const resetPassword = (
+  input: AccountTokenPasswordRequest,
+): Promise<void> =>
+  requestJson('/auth/reset-password', { method: 'POST', body: input });

@@ -15,6 +15,11 @@ enum Role {
   OPERARIO
 }
 
+enum AccountTokenType {
+  ACTIVATION
+  PASSWORD_RESET
+}
+
 enum BatchStatus {
   EN_PROCESO
   EN_OBSERVACION
@@ -127,6 +132,7 @@ model User {
   position                String?
   isActive                Boolean              @default(true)
   mustChangePassword      Boolean              @default(true)
+  emailVerifiedAt         DateTime?            @db.Timestamptz(3)
   failedAttempts          Int                  @default(0)
   lockedUntil             DateTime?            @db.Timestamptz(3)
   lastLoginAt             DateTime?            @db.Timestamptz(3)
@@ -134,6 +140,7 @@ model User {
   updatedAt               DateTime             @updatedAt @db.Timestamptz(3)
   area                    Area?                @relation(fields: [areaId], references: [id], onDelete: Restrict)
   refreshTokens           RefreshToken[]
+  accountTokens           AccountToken[]
   auditLogs               AuditLog[]
   notifications           Notification[]
   createdBatches          Batch[]              @relation("BatchCreatedBy")
@@ -156,6 +163,20 @@ model User {
 
   @@index([areaId])
   @@index([role, isActive])
+}
+
+model AccountToken {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  type      AccountTokenType
+  tokenHash String           @unique
+  expiresAt DateTime         @db.Timestamptz(3)
+  usedAt    DateTime?        @db.Timestamptz(3)
+  createdAt DateTime         @default(now()) @db.Timestamptz(3)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type, usedAt])
+  @@index([expiresAt])
 }
 
 model RefreshToken {

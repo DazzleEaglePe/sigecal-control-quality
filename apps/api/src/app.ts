@@ -25,6 +25,12 @@ import { UserRepository } from './modules/users/users.repository.js';
 import { createUsersRouter } from './modules/users/users.routes.js';
 import { UsersService } from './modules/users/users.service.js';
 import type { UsersUseCases } from './modules/users/users.types.js';
+import { AccountAccessRepository } from './modules/account-access/account-access.repository.js';
+import { AccountAccessService } from './modules/account-access/account-access.service.js';
+import { SecureAccountTokenService } from './modules/account-access/account-access.tokens.js';
+import { SmtpAccountMailer } from './modules/account-access/account-access.mailer.js';
+import { createAccountAccessRouter } from './modules/account-access/account-access.routes.js';
+import type { AccountAccessUseCases } from './modules/account-access/account-access.types.js';
 import { StandardRepository } from './modules/standards/standards.repository.js';
 import { ThresholdRepository } from './modules/standards/thresholds.repository.js';
 import { StandardsService } from './modules/standards/standards.service.js';
@@ -65,6 +71,7 @@ import { createNonConformitiesRouter } from './modules/nonconformities/nonconfor
 import type { NonConformitiesUseCases } from './modules/nonconformities/nonconformities.types.js';
 
 export interface AppDependencies {
+  readonly accountAccessService?: AccountAccessUseCases;
   readonly authService?: AuthUseCases;
   readonly batchesService?: BatchesUseCases;
   readonly nonConformitiesService?: NonConformitiesUseCases;
@@ -120,6 +127,14 @@ const defaultAuthService = (): AuthUseCases =>
     new BcryptPasswordService(),
   );
 
+const defaultAccountAccessService = (): AccountAccessUseCases =>
+  new AccountAccessService(
+    new AccountAccessRepository(prisma),
+    new SecureAccountTokenService(),
+    new BcryptPasswordService(),
+    new SmtpAccountMailer(),
+  );
+
 const defaultAreasService = (): AreasUseCases =>
   new AreasService(new AreaRepository(prisma));
 
@@ -127,7 +142,11 @@ const defaultCatalogsService = (): CatalogsUseCases =>
   new CatalogsService(new CatalogRepository(prisma));
 
 const defaultUsersService = (): UsersUseCases =>
-  new UsersService(new UserRepository(prisma), new BcryptPasswordService());
+  new UsersService(
+    new UserRepository(prisma),
+    new BcryptPasswordService(),
+    defaultAccountAccessService(),
+  );
 
 const defaultStandardsService = (): StandardsUseCases =>
   new StandardsService(
@@ -151,6 +170,7 @@ const configureMiddleware = (app: Express): void => {
 };
 
 interface ResolvedServices {
+  readonly accountAccess: AccountAccessUseCases;
   readonly auth: AuthUseCases;
   readonly batches: BatchesUseCases;
   readonly catalogs: CatalogsUseCases;
@@ -165,41 +185,30 @@ interface ResolvedServices {
   readonly users: UsersUseCases;
 }
 
+const resolveTemplates = (dependencies: AppDependencies) =>
+  dependencies.inspectionTemplatesService ??
+  defaultInspectionTemplatesService();
+const resolveNonConformities = (dependencies: AppDependencies) =>
+  dependencies.nonConformitiesService ?? defaultNonConformitiesService();
+
 const resolveServices = (dependencies: AppDependencies): ResolvedServices => ({
+  accountAccess:
+    dependencies.accountAccessService ?? defaultAccountAccessService(),
   auth: dependencies.authService ?? defaultAuthService(),
   batches: dependencies.batchesService ?? defaultBatchesService(),
   catalogs: dependencies.catalogsService ?? defaultCatalogsService(),
   areas: dependencies.areasService ?? defaultAreasService(),
   health: dependencies.healthService ?? defaultHealthService(),
   inspections: dependencies.inspectionsService ?? defaultInspectionsService(),
-  templates:
-    dependencies.inspectionTemplatesService ??
-    defaultInspectionTemplatesService(),
+  templates: resolveTemplates(dependencies),
   physChem: dependencies.physChemService ?? defaultPhysChemService(),
   sensory: dependencies.sensoryService ?? defaultSensoryService(),
-  nonConformities:
-    dependencies.nonConformitiesService ?? defaultNonConformitiesService(),
+  nonConformities: resolveNonConformities(dependencies),
   standards: dependencies.standardsService ?? defaultStandardsService(),
   users: dependencies.usersService ?? defaultUsersService(),
 });
 
-const mountRoutes = (app: Express, services: ResolvedServices): void => {
-  app.use(`${env.API_PREFIX}/health`, createHealthRouter(services.health));
-  app.use(`${env.API_PREFIX}/auth`, createAuthRouter(services.auth));
-  app.use(
-    `${env.API_PREFIX}/batches`,
-    createBatchesRouter(services.auth, services.batches),
-  );
-  app.use(
-    `${env.API_PREFIX}/masters/areas`,
-    createAreasRouter(services.auth, services.areas),
-  );
-  app.use(
-    `${env.API_PREFIX}/masters`,
-    createStandardsRouter(services.auth, services.standards),
-    createCatalogsRouter(services.auth, services.catalogs),
-    createInspectionTemplatesRouter(services.auth, services.templates),
-  );
+const mountQualityRoutes = (app: Express, services: ResolvedServices): void => {
   app.use(
     `${env.API_PREFIX}/inspections`,
     createInspectionsRouter(services.auth, services.inspections),
@@ -216,6 +225,30 @@ const mountRoutes = (app: Express, services: ResolvedServices): void => {
     `${env.API_PREFIX}/nonconformities`,
     createNonConformitiesRouter(services.auth, services.nonConformities),
   );
+};
+
+const mountRoutes = (app: Express, services: ResolvedServices): void => {
+  app.use(`${env.API_PREFIX}/health`, createHealthRouter(services.health));
+  app.use(`${env.API_PREFIX}/auth`, createAuthRouter(services.auth));
+  app.use(
+    `${env.API_PREFIX}/auth`,
+    createAccountAccessRouter(services.accountAccess),
+  );
+  app.use(
+    `${env.API_PREFIX}/batches`,
+    createBatchesRouter(services.auth, services.batches),
+  );
+  app.use(
+    `${env.API_PREFIX}/masters/areas`,
+    createAreasRouter(services.auth, services.areas),
+  );
+  app.use(
+    `${env.API_PREFIX}/masters`,
+    createStandardsRouter(services.auth, services.standards),
+    createCatalogsRouter(services.auth, services.catalogs),
+    createInspectionTemplatesRouter(services.auth, services.templates),
+  );
+  mountQualityRoutes(app, services);
   app.use(
     `${env.API_PREFIX}/users`,
     createUsersRouter(services.auth, services.users),

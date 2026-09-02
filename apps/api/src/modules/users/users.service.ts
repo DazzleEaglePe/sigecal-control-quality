@@ -1,12 +1,14 @@
+import { randomBytes } from 'node:crypto';
+
 import type {
   CreateUserRequest,
-  ResetUserPasswordRequest,
   UpdateUserRequest,
   UserItem,
   UserListQuery,
 } from '@sigecal/shared';
 
 import { ConflictError, NotFoundError } from '../../errors/app-error.js';
+import type { AccountAccessUseCases } from '../account-access/account-access.types.js';
 import type {
   PasswordHasher,
   UserRecord,
@@ -25,6 +27,7 @@ const toItem = (record: UserRecord): UserItem => ({
       }
     : null,
   lastLoginAt: record.lastLoginAt?.toISOString() ?? null,
+  emailVerifiedAt: record.emailVerifiedAt?.toISOString() ?? null,
   createdAt: record.createdAt.toISOString(),
   updatedAt: record.updatedAt.toISOString(),
 });
@@ -33,6 +36,7 @@ export class UsersService implements UsersUseCases {
   public constructor(
     private readonly repository: UserRepositoryPort,
     private readonly passwords: PasswordHasher,
+    private readonly accountAccess: AccountAccessUseCases,
   ) {}
 
   public async list(query: UserListQuery) {
@@ -53,10 +57,17 @@ export class UsersService implements UsersUseCases {
   ): Promise<UserItem> {
     await this.ensureUniqueEmail(input.email);
     await this.ensureActiveArea(input.areaId);
-    const passwordHash = await this.passwords.hash(input.temporaryPassword);
-    return toItem(
-      await this.repository.create(input, passwordHash, actorId, ipAddress),
+    const passwordHash = await this.passwords.hash(
+      randomBytes(48).toString('base64url'),
     );
+    const user = await this.repository.create(
+      input,
+      passwordHash,
+      actorId,
+      ipAddress,
+    );
+    await this.accountAccess.sendInvitation(user.id, actorId, ipAddress);
+    return toItem(user);
   }
 
   public async update(
@@ -65,10 +76,25 @@ export class UsersService implements UsersUseCases {
     actorId: string,
     ipAddress?: string,
   ): Promise<UserItem> {
-    await this.existing(id);
-    if (input.email) await this.ensureUniqueEmail(input.email, id);
+    const current = await this.existing(id);
+    const emailChanged = Boolean(
+      input.email && input.email.toLowerCase() !== current.email,
+    );
+    if (emailChanged && input.email)
+      await this.ensureUniqueEmail(input.email, id);
     if (input.areaId) await this.ensureActiveArea(input.areaId);
-    return toItem(await this.repository.update(id, input, actorId, ipAddress));
+    const effectiveInput = emailChanged
+      ? input
+      : { ...input, email: undefined };
+    const user = await this.repository.update(
+      id,
+      effectiveInput,
+      actorId,
+      ipAddress,
+    );
+    if (emailChanged)
+      await this.accountAccess.sendInvitation(id, actorId, ipAddress);
+    return toItem(user);
   }
 
   public async setStatus(
@@ -91,13 +117,24 @@ export class UsersService implements UsersUseCases {
 
   public async resetPassword(
     id: string,
-    input: ResetUserPasswordRequest,
     actorId: string,
     ipAddress?: string,
   ): Promise<void> {
     await this.existing(id);
-    const passwordHash = await this.passwords.hash(input.temporaryPassword);
-    await this.repository.resetPassword(id, passwordHash, actorId, ipAddress);
+    await this.accountAccess.requestPasswordResetForUser(
+      id,
+      actorId,
+      ipAddress,
+    );
+  }
+
+  public async resendInvitation(
+    id: string,
+    actorId: string,
+    ipAddress?: string,
+  ): Promise<void> {
+    await this.existing(id);
+    await this.accountAccess.sendInvitation(id, actorId, ipAddress);
   }
 
   private async existing(id: string): Promise<UserRecord> {

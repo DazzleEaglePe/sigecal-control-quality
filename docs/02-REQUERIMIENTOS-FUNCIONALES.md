@@ -21,8 +21,15 @@
 | RF-M1-10 | Bloquear la cuenta tras 5 intentos fallidos consecutivos durante 15 minutos                       | 🟡        |
 | RF-M1-11 | Obligar a cambiar la contraseña provisional en el primer ingreso o después de un restablecimiento | 🔴        |
 | RF-M1-12 | Gestionar un catálogo mínimo de áreas y asociar cada usuario con un área activa                   | 🟡        |
+| RF-M1-13 | Activar una cuenta interna mediante una invitación de correo con token temporal de un solo uso    | 🟡        |
+| RF-M1-14 | Solicitar y completar la recuperación de contraseña sin revelar si el correo existe               | 🟡        |
+| RF-M1-15 | Permitir al `ADMIN` reenviar una invitación o iniciar la recuperación sin comunicar contraseñas   | 🟡        |
 
 **Nunca se elimina un usuario físicamente** — se desactiva. Los registros históricos deben conservar la referencia a su autor.
+
+No existe auto-registro público. El `ADMIN` crea la cuenta y el usuario define
+su contraseña mediante la invitación. En desarrollo los mensajes se capturan
+en Mailpit; producción requiere un transporte SMTP autorizado por la empresa.
 
 ---
 

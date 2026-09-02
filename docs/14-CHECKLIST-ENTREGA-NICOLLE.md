@@ -1,6 +1,6 @@
 # 14 · CHECKLIST DE ENTREGA FUNCIONAL PARA NICOLLE
 
-**Corte verificado:** 31/08/2026
+**Corte verificado:** 02/09/2026
 
 **Rama evaluada:** `feature/sprint-4-ui-foundation`
 
@@ -50,6 +50,9 @@ definitivos deben ser entregados y aprobados por la empresa.
 - [x] Rotación y revocación del token de refresco.
 - [x] Bloqueo por intentos fallidos y autorización por rol en el servidor.
 - [x] Gestión de usuarios y catálogo mínimo de áreas.
+- [x] Invitación, verificación de correo y recuperación de contraseña con tokens de un solo uso.
+- [x] Edición, filtros, paginación y restablecimiento administrativo de acceso.
+- [x] Cambio voluntario de contraseña disponible desde el menú de sesión.
 - [x] Maestros, equipos, parámetros, estándares y umbrales versionados.
 - [x] Baja lógica con bloqueo de elementos que ya tienen dependencias.
 - [x] Auditoría sin contraseñas, tokens ni hashes.
@@ -101,8 +104,8 @@ definitivos deben ser entregados y aprobados por la empresa.
 | Formato Prettier       | ✅ Sin diferencias                                          |
 | ESLint                 | ✅ API, web y shared sin errores ni advertencias            |
 | TypeScript estricto    | ✅ Tres workspaces aprobados                                |
-| Pruebas automatizadas  | ✅ 163/163: API 105, web 28, shared 30                      |
-| Archivos de prueba     | ✅ 58/58 aprobados                                          |
+| Pruebas automatizadas  | ✅ 197/197: API 134, web 30, shared 33                      |
+| Archivos de prueba     | ✅ 64/64 aprobados                                          |
 | Builds de producción   | ✅ API, web y shared generados                              |
 | Modelo Prisma          | ✅ Formateado y válido                                      |
 | Contrato OpenAPI       | ✅ Válido                                                   |
@@ -123,11 +126,12 @@ interactivo del Sprint 5 se registró en `15-CHECKLIST-SPRINT-5.md`.
 
 ## 5. Servicios verificados
 
-| Servicio   | Dirección local del entorno evaluado | Estado                  |
-| ---------- | ------------------------------------ | ----------------------- |
-| Web        | `http://localhost:5173`              | ✅ Disponible           |
-| API        | `http://localhost:3002/api/v1`       | ✅ Disponible           |
-| PostgreSQL | `localhost:5434`                     | ✅ Contenedor saludable |
+| Servicio   | Dirección local del entorno evaluado | Estado                        |
+| ---------- | ------------------------------------ | ----------------------------- |
+| Web        | `http://localhost:5173`              | ✅ Disponible                 |
+| API        | `http://localhost:3002/api/v1`       | ✅ Disponible                 |
+| PostgreSQL | `localhost:5434`                     | ✅ Contenedor saludable       |
+| Mailpit    | `http://localhost:8025`              | ✅ SMTP y captura verificados |
 
 Los puertos 3000 y 3001 pertenecen a otros proyectos locales y no deben
 detenerse. En una instalación limpia se pueden usar los puertos predeterminados
@@ -156,7 +160,7 @@ del Sprint 6.
 
 ## 7. Condiciones antes de la demostración
 
-- [ ] Nicolle cambia personalmente la contraseña provisional de su usuario.
+- [ ] Nicolle cambia personalmente la contraseña provisional de su usuario técnico o activa una cuenta nueva desde su invitación.
 - [ ] No se comparte el archivo `.env` ni sus secretos.
 - [ ] La demostración usa datos `DEMO` hasta recibir rangos definitivos.
 - [ ] Se explica que resultados y sesiones finales no se editan: se versionan.

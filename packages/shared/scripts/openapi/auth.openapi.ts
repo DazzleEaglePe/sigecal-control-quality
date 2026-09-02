@@ -1,10 +1,13 @@
 import { z } from 'zod';
 
 import {
+  AccountEmailRequestSchema,
+  AccountTokenPasswordRequestSchema,
   ChangePasswordRequestSchema,
   LoginRequestSchema,
   LoginResponseSchema,
   MeResponseSchema,
+  MessageResponseSchema,
   RefreshResponseSchema,
   UserSessionSchema,
 } from '../../src/index.js';
@@ -105,6 +108,57 @@ export const authPaths = {
       },
     },
   },
+  '/auth/forgot-password': {
+    post: {
+      operationId: 'requestPasswordReset',
+      summary: 'Solicita recuperación sin revelar si la cuenta existe',
+      tags: ['Autenticación'],
+      requestBody: {
+        required: true,
+        content: json('#/components/schemas/AccountEmailRequest'),
+      },
+      responses: {
+        '202': {
+          description: 'Solicitud procesada con respuesta genérica.',
+          content: json('#/components/schemas/MessageResponse'),
+        },
+        '400': errorResponse('Correo inválido.'),
+        '429': errorResponse('Demasiadas solicitudes.'),
+      },
+    },
+  },
+  '/auth/activate': {
+    post: {
+      operationId: 'activateAccount',
+      summary: 'Activa la cuenta y define la primera contraseña',
+      tags: ['Autenticación'],
+      requestBody: {
+        required: true,
+        content: json('#/components/schemas/AccountTokenPasswordRequest'),
+      },
+      responses: {
+        '204': { description: 'Cuenta activada.' },
+        '400': errorResponse('Token inválido, consumido o vencido.'),
+        '429': errorResponse('Demasiadas solicitudes.'),
+      },
+    },
+  },
+  '/auth/reset-password': {
+    post: {
+      operationId: 'completePasswordReset',
+      summary: 'Restablece la contraseña mediante un token temporal',
+      tags: ['Autenticación'],
+      requestBody: {
+        required: true,
+        content: json('#/components/schemas/AccountTokenPasswordRequest'),
+      },
+      responses: {
+        '204': { description: 'Contraseña restablecida.' },
+        '400': errorResponse('Token inválido, consumido o vencido.'),
+        '429': errorResponse('Demasiadas solicitudes.'),
+      },
+    },
+  },
 };
 
 export const authSchemas = {
@@ -114,4 +168,7 @@ export const authSchemas = {
   MeResponse: schema(MeResponseSchema),
   UserSession: schema(UserSessionSchema),
   ChangePasswordRequest: schema(ChangePasswordRequestSchema),
+  AccountEmailRequest: schema(AccountEmailRequestSchema),
+  AccountTokenPasswordRequest: schema(AccountTokenPasswordRequestSchema),
+  MessageResponse: schema(MessageResponseSchema),
 };

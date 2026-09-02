@@ -16,6 +16,7 @@ const userSelection = {
   role: true,
   isActive: true,
   mustChangePassword: true,
+  emailVerifiedAt: true,
   failedAttempts: true,
   lockedUntil: true,
 } as const;

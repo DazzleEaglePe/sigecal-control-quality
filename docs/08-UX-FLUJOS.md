@@ -37,6 +37,9 @@
 │   ├── /configuracion/areas
 │   └── /configuracion/equipos
 ├── /usuarios                      → ADMIN
+├── /activar-cuenta                → público con token
+├── /recuperar-contrasena          → público
+├── /restablecer-contrasena        → público con token
 └── /auditoria                     → ADMIN · JEFE_CALIDAD
 ```
 
@@ -45,6 +48,17 @@
 ---
 
 ## 2. Pantallas
+
+### 2.0 Acceso y administración de cuentas
+
+- El acceso incluye “Olvidé mi contraseña”, siempre con confirmación genérica.
+- La invitación permite definir y confirmar la primera contraseña; no muestra
+  ni solicita una clave provisional enviada por correo.
+- La recuperación valida el token temporal y solicita contraseña y confirmación.
+- `/usuarios` ofrece búsqueda, filtros, paginación, alta, edición, cambio de
+  estado, reenvío de invitación e inicio de recuperación administrativa.
+- “Cambiar mi contraseña” permanece disponible desde el menú de sesión para
+  cualquier usuario autenticado.
 
 ### 2.1 Tablero `/`
 

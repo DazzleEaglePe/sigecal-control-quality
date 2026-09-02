@@ -3,7 +3,6 @@ import { Router } from 'express';
 import {
   CreateUserRequestSchema,
   EntityIdParamsSchema,
-  ResetUserPasswordRequestSchema,
   Role,
   UpdateUserRequestSchema,
   UpdateUserStatusRequestSchema,
@@ -39,11 +38,13 @@ const registerMutations = (
   );
   router.post(
     '/:id/reset-password',
-    validate({
-      params: EntityIdParamsSchema,
-      body: ResetUserPasswordRequestSchema,
-    }),
+    validate({ params: EntityIdParamsSchema }),
     controller.resetPassword,
+  );
+  router.post(
+    '/:id/resend-invite',
+    validate({ params: EntityIdParamsSchema }),
+    controller.resendInvitation,
   );
 };
 
@@ -54,8 +55,8 @@ export const createUsersRouter = (
   const router = Router();
   const controller = new UsersController(users);
   router.use(authenticate(auth), requirePasswordChanged);
-  router.get('/', validate({ query: UserListQuerySchema }), controller.list);
   router.use(authorize(Role.ADMIN));
+  router.get('/', validate({ query: UserListQuerySchema }), controller.list);
   router.get(
     '/:id',
     validate({ params: EntityIdParamsSchema }),

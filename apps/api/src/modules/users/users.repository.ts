@@ -32,6 +32,7 @@ const userSelection = {
   position: true,
   isActive: true,
   mustChangePassword: true,
+  emailVerifiedAt: true,
   lastLoginAt: true,
   createdAt: true,
   updatedAt: true,
@@ -46,12 +47,15 @@ const auditView = (user: UserRecord) => ({
   position: user.position,
   isActive: user.isActive,
   mustChangePassword: user.mustChangePassword,
+  emailVerifiedAt: user.emailVerifiedAt,
 });
 
 const updateData = (input: UpdateUserRequest) => ({
   ...(input.firstName === undefined ? {} : { firstName: input.firstName }),
   ...(input.lastName === undefined ? {} : { lastName: input.lastName }),
-  ...(input.email === undefined ? {} : { email: input.email.toLowerCase() }),
+  ...(input.email === undefined
+    ? {}
+    : { email: input.email.toLowerCase(), emailVerifiedAt: null }),
   ...(input.role === undefined ? {} : { role: input.role }),
   ...(input.position === undefined ? {} : { position: input.position }),
   ...(input.areaId === undefined
@@ -207,6 +211,11 @@ export class UserRepository implements UserRepositoryPort {
           where: { userId: id, revokedAt: null },
           data: { revokedAt: new Date() },
         });
+      if (!isActive)
+        await tx.accountToken.updateMany({
+          where: { userId: id, usedAt: null },
+          data: { usedAt: new Date() },
+        });
       await tx.auditLog.create({
         data: {
           userId: actorId,
@@ -219,44 +228,6 @@ export class UserRepository implements UserRepositoryPort {
         },
       });
       return user;
-    });
-  }
-
-  public async resetPassword(
-    id: string,
-    passwordHash: string,
-    actorId: string,
-    ipAddress?: string,
-  ): Promise<void> {
-    await this.client.$transaction(async (tx) => {
-      const before = await tx.user.findUniqueOrThrow({
-        where: { id },
-        select: { mustChangePassword: true },
-      });
-      await tx.user.update({
-        where: { id },
-        data: {
-          passwordHash,
-          mustChangePassword: true,
-          failedAttempts: 0,
-          lockedUntil: null,
-        },
-      });
-      await tx.refreshToken.updateMany({
-        where: { userId: id, revokedAt: null },
-        data: { revokedAt: new Date() },
-      });
-      await tx.auditLog.create({
-        data: {
-          userId: actorId,
-          action: AuditAction.UPDATE,
-          entity: 'UserPassword',
-          entityId: id,
-          before: { mustChangePassword: before.mustChangePassword },
-          after: { mustChangePassword: true },
-          ipAddress: ipAddress ?? null,
-        },
-      });
     });
   }
 }

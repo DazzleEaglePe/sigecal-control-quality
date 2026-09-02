@@ -2,7 +2,6 @@ import type { Request, RequestHandler } from 'express';
 
 import type {
   CreateUserRequest,
-  ResetUserPasswordRequest,
   UpdateUserRequest,
   UpdateUserStatusRequest,
   UserListQuery,
@@ -99,7 +98,23 @@ export class UsersController {
     try {
       await this.users.resetPassword(
         entityId(request),
-        request.body as ResetUserPasswordRequest,
+        request.auth?.userId ?? '',
+        request.ip,
+      );
+      response.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public readonly resendInvitation: RequestHandler = async (
+    request,
+    response,
+    next,
+  ) => {
+    try {
+      await this.users.resendInvitation(
+        entityId(request),
         request.auth?.userId ?? '',
         request.ip,
       );

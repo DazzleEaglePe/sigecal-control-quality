@@ -57,6 +57,16 @@ describe('AuthService login', () => {
   });
 });
 
+describe('AuthService verificación', () => {
+  it('no permite ingresar antes de verificar el correo', async () => {
+    const { repository, service } = setup();
+    repository.user = testUser({ emailVerifiedAt: null });
+    await expect(
+      service.login({ email: 'jefe@sigecal.pe', password: 'Correcta1' }),
+    ).rejects.toMatchObject({ code: 'INVALID_CREDENTIALS' });
+  });
+});
+
 describe('AuthService rotación', () => {
   it('revoca el token usado y emite un par nuevo', async () => {
     const { repository, service } = setup();

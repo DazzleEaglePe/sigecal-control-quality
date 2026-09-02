@@ -18,6 +18,17 @@ const ChangePasswordPage = lazy(async () => {
   return { default: module.ChangePasswordPage };
 });
 
+const ForgotPasswordPage = lazy(async () => ({
+  default: (await import('../pages/ForgotPasswordPage.js')).ForgotPasswordPage,
+}));
+const ActivateAccountPage = lazy(async () => ({
+  default: (await import('../pages/ActivateAccountPage.js'))
+    .ActivateAccountPage,
+}));
+const ResetPasswordPage = lazy(async () => ({
+  default: (await import('../pages/ResetPasswordPage.js')).ResetPasswordPage,
+}));
+
 const AreasPage = lazy(async () => {
   const module = await import('../pages/AreasPage.js');
   return { default: module.AreasPage };
@@ -146,9 +157,23 @@ const qualityRoutes = (
   </>
 );
 
-export const App = (): React.JSX.Element => (
-  <Routes>
+const publicRoutes = (
+  <>
     <Route path="login" element={deferred(<LoginPage />)} />
+    <Route
+      path="recuperar-contrasena"
+      element={deferred(<ForgotPasswordPage />)}
+    />
+    <Route path="activar-cuenta" element={deferred(<ActivateAccountPage />)} />
+    <Route
+      path="restablecer-contrasena"
+      element={deferred(<ResetPasswordPage />)}
+    />
+  </>
+);
+
+const protectedRoutes = (
+  <>
     <Route element={<ProtectedRoute />}>
       <Route path="password" element={deferred(<ChangePasswordPage />)} />
       <Route element={<AppShell />}>
@@ -183,5 +208,12 @@ export const App = (): React.JSX.Element => (
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Route>
+  </>
+);
+
+export const App = (): React.JSX.Element => (
+  <Routes>
+    {publicRoutes}
+    {protectedRoutes}
   </Routes>
 );

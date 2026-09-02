@@ -70,7 +70,6 @@ const inputFrom = (form: HTMLFormElement) =>
     role: fieldValue(form, 'role'),
     areaId: fieldValue(form, 'areaId'),
     position: fieldValue(form, 'position') || undefined,
-    temporaryPassword: fieldValue(form, 'temporaryPassword'),
   });
 
 const useNewUser = (added: (user: UserItem) => void) => {
@@ -84,9 +83,7 @@ const useNewUser = (added: (user: UserItem) => void) => {
     const form = event.currentTarget;
     const parsed = inputFrom(form);
     if (!parsed.success) {
-      setError(
-        'Revise los datos y use una contraseña de al menos 8 caracteres, con letra y número.',
-      );
+      setError('Revise los nombres, el correo, el rol y el área seleccionada.');
       return;
     }
     setBusy(true);
@@ -120,16 +117,10 @@ export const NewUserForm = ({
       ) : null}
       <IdentityFields />
       <AssignmentFields areas={areas} />
-      <label className="form-span">
-        Contraseña provisional
-        <input
-          name="temporaryPassword"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-        />
-      </label>
+      <p className="field-help form-span">
+        SIGECAL enviará una invitación para que la persona defina su propia
+        contraseña.
+      </p>
       <button
         className="primary-button form-span"
         type="submit"

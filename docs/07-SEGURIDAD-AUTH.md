@@ -46,6 +46,18 @@ El token de refresco **nunca** se devuelve en JSON, encabezados personalizados, 
 - La contraseña provisional obliga a cambiarla en el primer ingreso.
 - Mientras `mustChangePassword = true`, el servidor solo permite `/auth/me`, `/auth/password` y `/auth/logout`.
 
+### Activación y recuperación por correo
+
+- No existe auto-registro público; el `ADMIN` crea las cuentas internas.
+- La invitación y la recuperación usan tokens aleatorios de alta entropía.
+- La base conserva únicamente SHA-256, nunca el token original.
+- La invitación dura 24 horas y la recuperación 30 minutos por defecto.
+- Cada token es de un solo uso; emitir otro invalida los anteriores del mismo tipo.
+- Activar o restablecer revoca todos los tokens de refresco del usuario.
+- `/auth/forgot-password` responde igual exista o no la cuenta para impedir enumeración.
+- La contraseña nunca se envía por correo ni se guarda en bitácora.
+- Mailpit se usa exclusivamente en desarrollo y su interfaz no se publica.
+
 ---
 
 ## 2. Autorización (RBAC)
@@ -182,6 +194,15 @@ LOCKOUT_MINUTES=15
 RATE_LIMIT_WINDOW_MS=60000
 RATE_LIMIT_MAX=5
 
+# Correo y enlaces de cuenta
+MAIL_HOST="localhost"
+MAIL_PORT=1025
+MAIL_SECURE=false
+MAIL_FROM="SIGECAL <no-responder@sigecal.local>"
+WEB_BASE_URL="http://localhost:5173"
+ACTIVATION_TOKEN_MINUTES=1440
+PASSWORD_RESET_TOKEN_MINUTES=30
+
 # Datos iniciales
 SEED_ADMIN_EMAIL="admin@sigecal.pe"
 SEED_DEFAULT_PASSWORD="<definir en la instalación>"
@@ -206,3 +227,5 @@ SEED_DEFAULT_PASSWORD="<definir en la instalación>"
 - [ ] Respaldo de base de datos verificado
 - [ ] Cuentas de prueba innecesarias desactivadas
 - [ ] Caché de datos verificada como vacía después de cerrar sesión o cambiar de usuario
+- [ ] SMTP de producción autenticado y `MAIL_FROM` autorizado por la empresa
+- [ ] Mailpit no expuesto en producción

@@ -36,6 +36,7 @@
 
 ```
 Role                 ADMIN · JEFE_CALIDAD · ANALISTA · OPERARIO
+AccountTokenType     ACTIVATION · PASSWORD_RESET
 BatchStatus          EN_PROCESO · EN_OBSERVACION · CERRADO · RECHAZADO
 InspectionType       FISICOQUIMICO · ORGANOLEPTICO
 InspectionStatus     PROGRAMADA · EN_PROCESO · COMPLETADA · VENCIDA · CANCELADA · REPROGRAMADA
@@ -69,6 +70,7 @@ DataOrigin           REAL · DEMO
 | `position`                | string?   | cargo en la empresa                               |
 | `isActive`                | boolean   | por defecto `true`                                |
 | `mustChangePassword`      | boolean   | `true` para claves provisionales o restablecidas  |
+| `emailVerifiedAt`         | datetime? | nulo hasta completar la invitación                |
 | `failedAttempts`          | int       | por defecto 0                                     |
 | `lockedUntil`             | datetime? | bloqueo temporal                                  |
 | `lastLoginAt`             | datetime? |                                                   |
@@ -85,6 +87,15 @@ DataOrigin           REAL · DEMO
 ### `RefreshToken`
 
 `id` · `userId` → User · `tokenHash` · `expiresAt` · `revokedAt?` · `createdAt`
+
+### `AccountToken`
+
+`id` · `userId` → User · `type` (AccountTokenType) · `tokenHash` (único) ·
+`expiresAt` · `usedAt?` · `createdAt`
+
+Solo se persiste el SHA-256 del token. Al emitir uno nuevo se invalidan los
+anteriores sin usar del mismo tipo y usuario. Activación y recuperación se
+consumen una sola vez y revocan todas las sesiones activas del usuario.
 
 ### `AuditLog`
 

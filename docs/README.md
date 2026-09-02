@@ -25,6 +25,7 @@ Plan Completo (COT-2026-VT-001) · 8 módulos · Setiembre–diciembre 2026
 | 13  | [Checklist Sprint 4](13-CHECKLIST-SPRINT-4.md)                       | Inspecciones, análisis fisicoquímico e inmutabilidad                 |
 | 14  | [Entrega funcional para Nicolle](14-CHECKLIST-ENTREGA-NICOLLE.md)    | Estado verificable, servicios y condiciones de demostración          |
 | 15  | [Checklist Sprint 5](15-CHECKLIST-SPRINT-5.md)                       | Evaluación organoléptica, perfiles e inmutabilidad                   |
+| 16  | [Checklist Sprint 2.1](16-CHECKLIST-SPRINT-2-1.md)                   | Cuentas internas, invitaciones y recuperación                        |
 | —   | [OpenAPI](openapi.yaml)                                              | Contrato ejecutable generado desde los esquemas Zod                  |
 | —   | [AGENTS.md](../AGENTS.md)                                            | Reglas para el agente de desarrollo                                  |
 

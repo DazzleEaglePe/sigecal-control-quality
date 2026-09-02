@@ -5,7 +5,6 @@ import {
   AreaResponseSchema,
   CreateAreaRequestSchema,
   CreateUserRequestSchema,
-  ResetUserPasswordRequestSchema,
   UpdateAreaRequestSchema,
   UpdateUserRequestSchema,
   UpdateUserStatusRequestSchema,
@@ -57,6 +56,13 @@ export const adminPaths = {
           },
         },
         { name: 'isActive', in: 'query', schema: { type: 'boolean' } },
+        { name: 'search', in: 'query', schema: { type: 'string' } },
+        { name: 'sortBy', in: 'query', schema: { type: 'string' } },
+        {
+          name: 'sortOrder',
+          in: 'query',
+          schema: { type: 'string', enum: ['asc', 'desc'] },
+        },
       ],
       responses: {
         '200': {
@@ -70,7 +76,7 @@ export const adminPaths = {
     post: {
       ...secured,
       operationId: 'createUser',
-      summary: 'Crea un usuario con contraseña provisional',
+      summary: 'Crea un usuario y envía una invitación',
       tags: ['Usuarios'],
       requestBody: {
         required: true,
@@ -148,16 +154,28 @@ export const adminPaths = {
     post: {
       ...secured,
       operationId: 'resetUserPassword',
-      summary: 'Asigna una contraseña provisional y revoca sesiones',
+      summary: 'Inicia la recuperación administrativa por correo',
       tags: ['Usuarios'],
       parameters: [idParameter],
-      requestBody: {
-        required: true,
-        content: json('#/components/schemas/ResetUserPasswordRequest'),
-      },
       responses: {
-        '204': { description: 'Contraseña restablecida.' },
+        '204': { description: 'Correo de recuperación o activación enviado.' },
         '404': errorResponse('Usuario inexistente.'),
+        '503': errorResponse('El correo no pudo enviarse.'),
+      },
+    },
+  },
+  '/users/{id}/resend-invite': {
+    post: {
+      ...secured,
+      operationId: 'resendUserInvitation',
+      summary: 'Reenvía la invitación de una cuenta no activada',
+      tags: ['Usuarios'],
+      parameters: [idParameter],
+      responses: {
+        '204': { description: 'Invitación enviada.' },
+        '400': errorResponse('La cuenta ya está activada.'),
+        '404': errorResponse('Usuario inexistente.'),
+        '503': errorResponse('El correo no pudo enviarse.'),
       },
     },
   },
@@ -225,7 +243,6 @@ export const adminSchemas = {
   CreateUserRequest: schema(CreateUserRequestSchema),
   UpdateUserRequest: schema(UpdateUserRequestSchema),
   UpdateUserStatusRequest: schema(UpdateUserStatusRequestSchema),
-  ResetUserPasswordRequest: schema(ResetUserPasswordRequestSchema),
   AreaResponse: schema(AreaResponseSchema),
   AreaListResponse: schema(AreaListResponseSchema),
   CreateAreaRequest: schema(CreateAreaRequestSchema),

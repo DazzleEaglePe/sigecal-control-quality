@@ -1,4 +1,4 @@
-import { ChevronDown, LogOut, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, KeyRound, LogOut, SlidersHorizontal } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -49,6 +49,13 @@ export const SessionMenu = (): React.JSX.Element => {
           }}
         >
           <SlidersHorizontal aria-hidden="true" /> Ajustes
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={() => {
+            void navigate('/password');
+          }}
+        >
+          <KeyRound aria-hidden="true" /> Cambiar mi contraseña
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem

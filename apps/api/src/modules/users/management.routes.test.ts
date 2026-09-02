@@ -9,7 +9,6 @@ import type {
   CreateAreaRequest,
   CreateUserRequest,
   LoginRequest,
-  ResetUserPasswordRequest,
   Role,
   UpdateAreaRequest,
   UpdateUserRequest,
@@ -48,6 +47,7 @@ const user: UserItem = {
   position: null,
   isActive: true,
   mustChangePassword: false,
+  emailVerifiedAt: new Date().toISOString(),
   lastLoginAt: null,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
@@ -110,9 +110,13 @@ class FakeUsers implements UsersUseCases {
     void _active;
     return Promise.resolve(user);
   }
-  public resetPassword(_id: string, _input: ResetUserPasswordRequest) {
+  public resetPassword(_id: string, _actorId: string) {
     void _id;
-    void _input;
+    void _actorId;
+    return Promise.resolve();
+  }
+  public resendInvitation(_id: string) {
+    void _id;
     return Promise.resolve();
   }
 }
@@ -142,7 +146,7 @@ const appFor = (role: Role, provisional = false) =>
 const bearer = { Authorization: 'Bearer access-prueba' };
 
 describe('autorización de usuarios', () => {
-  it('permite listar a cualquier rol autenticado', async () => {
+  it('permite listar únicamente al administrador', async () => {
     const allowed = await request(appFor('ADMIN'))
       .get(`${env.API_PREFIX}/users`)
       .set(bearer)
@@ -155,11 +159,15 @@ describe('autorización de usuarios', () => {
     await request(appFor('JEFE_CALIDAD'))
       .get(`${env.API_PREFIX}/users`)
       .set(bearer)
-      .expect(200);
+      .expect(403);
     await request(appFor('ANALISTA'))
       .get(`${env.API_PREFIX}/users`)
       .set(bearer)
-      .expect(200);
+      .expect(403);
+    await request(appFor('OPERARIO'))
+      .get(`${env.API_PREFIX}/users`)
+      .set(bearer)
+      .expect(403);
   });
 
   it('restringe la creación y edición a ADMIN', async () => {

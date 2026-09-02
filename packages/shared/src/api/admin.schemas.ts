@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import { RoleSchema } from '../domain/enums.js';
 import { createApiSuccessSchema, PaginationQuerySchema } from './contracts.js';
-import { PasswordSchema } from './auth.schemas.js';
 
 const TrimmedNameSchema = z.string().trim().min(1).max(80);
 const EntityIdSchema = z.uuid();
@@ -30,6 +29,7 @@ export const UserSchema = z
     position: z.string().nullable(),
     isActive: z.boolean(),
     mustChangePassword: z.boolean(),
+    emailVerifiedAt: z.iso.datetime().nullable(),
     lastLoginAt: z.iso.datetime().nullable(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
@@ -49,17 +49,15 @@ export const CreateUserRequestSchema = z
     role: RoleSchema,
     areaId: EntityIdSchema,
     position: z.string().trim().min(1).max(120).optional(),
-    temporaryPassword: PasswordSchema,
   })
   .strict();
 
-export const UpdateUserRequestSchema = CreateUserRequestSchema.omit({
-  temporaryPassword: true,
-})
-  .partial()
-  .refine((value) => Object.keys(value).length > 0, {
+export const UpdateUserRequestSchema = CreateUserRequestSchema.partial().refine(
+  (value) => Object.keys(value).length > 0,
+  {
     message: 'Debe enviar al menos un campo.',
-  });
+  },
+);
 
 export const UpdateUserStatusRequestSchema = z
   .object({
@@ -67,11 +65,8 @@ export const UpdateUserStatusRequestSchema = z
   })
   .strict();
 
-export const ResetUserPasswordRequestSchema = z
-  .object({
-    temporaryPassword: PasswordSchema,
-  })
-  .strict();
+export const EmptyRequestSchema = z.object({}).strict();
+export const ResetUserPasswordRequestSchema = EmptyRequestSchema;
 
 export const EntityIdParamsSchema = z.object({ id: EntityIdSchema }).strict();
 export const UserResponseSchema = createApiSuccessSchema(UserSchema);

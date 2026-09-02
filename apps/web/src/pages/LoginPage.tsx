@@ -1,6 +1,6 @@
 import { useState, type KeyboardEvent, type SyntheticEvent } from 'react';
 import { Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 
 import type { LoginRequest } from '@sigecal/shared';
 
@@ -232,6 +232,9 @@ const LoginForm = (): React.JSX.Element => {
       ) : null}
       <EmailField busy={busy} field={email} />
       <PasswordField busy={busy} field={password} />
+      <Link className="auth-text-link" to="/recuperar-contrasena">
+        ¿Olvidó su contraseña?
+      </Link>
       <SubmitButton busy={busy} />
     </form>
   );

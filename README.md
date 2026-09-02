@@ -24,6 +24,7 @@ Direcciones predeterminadas:
 - API: `http://localhost:3000/api/v1`
 - Salud: `http://localhost:3000/api/v1/health`
 - PostgreSQL: `localhost:5432`
+- Mailpit: `http://localhost:8025` (solo desarrollo)
 
 Si alguno de esos puertos está ocupado, cambia conjuntamente `PORT`, `VITE_API_URL` o `POSTGRES_PORT` y `DATABASE_URL` en el `.env` local. El archivo `.env` nunca se versiona.
 
@@ -31,7 +32,9 @@ Si alguno de esos puertos está ocupado, cambia conjuntamente `PORT`, `VITE_API_
 
 El seed crea cuatro usuarios técnicos, catálogos base y un conjunto controlado de demostración: cinco lotes, ocho resultados comparables, una sesión sensorial, una inspección organoléptica pendiente y dos no conformidades. Los valores normativos provisionales están identificados y no pueden utilizarse para calificar datos `REAL`.
 
-La contraseña inicial se toma exclusivamente de `SEED_DEFAULT_PASSWORD`; los usuarios deben cambiarla al primer ingreso. Ejecutar el seed nuevamente no duplica registros.
+La contraseña inicial se toma exclusivamente de `SEED_DEFAULT_PASSWORD`; los usuarios técnicos del seed ya figuran con correo verificado y deben cambiarla al primer ingreso. Ejecutar el seed nuevamente no duplica registros.
+
+Las cuentas creadas desde Administración no reciben una contraseña por correo: Mailpit captura una invitación con un enlace temporal para que cada usuario defina la suya. La recuperación funciona del mismo modo y siempre responde de forma genérica para no revelar si un correo existe.
 
 ## Estado funcional
 
@@ -88,6 +91,7 @@ La arquitectura de la API sigue `routes → controller → service → repositor
 - **La web muestra “No pudimos conectar”:** consulta `/api/v1/health`, verifica `PORT` y comprueba que `VITE_API_URL` use el mismo puerto.
 - **Prisma no encuentra la base:** confirma que `DATABASE_URL` coincida con usuario, contraseña, base y puerto de Docker.
 - **El puerto 3000 está ocupado:** usa, por ejemplo, `PORT=3001` y `VITE_API_URL=http://localhost:3001/api/v1` en `.env`.
+- **No llega una invitación en desarrollo:** confirma que Mailpit esté saludable, que SMTP use `localhost:1025` y abre `http://localhost:8025`.
 
 ## Documentación
 

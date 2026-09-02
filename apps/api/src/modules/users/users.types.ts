@@ -1,6 +1,5 @@
 import type {
   CreateUserRequest,
-  ResetUserPasswordRequest,
   Role,
   UpdateUserRequest,
   UserItem,
@@ -9,7 +8,7 @@ import type {
 
 export interface UserRecord extends Omit<
   UserItem,
-  'createdAt' | 'updatedAt' | 'lastLoginAt' | 'area'
+  'createdAt' | 'updatedAt' | 'lastLoginAt' | 'emailVerifiedAt' | 'area'
 > {
   readonly area:
     | (Omit<NonNullable<UserItem['area']>, 'createdAt' | 'updatedAt'> & {
@@ -18,6 +17,7 @@ export interface UserRecord extends Omit<
       })
     | null;
   readonly lastLoginAt: Date | null;
+  readonly emailVerifiedAt: Date | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -59,12 +59,6 @@ export interface UserRepositoryPort {
     actorId: string,
     ipAddress?: string,
   ): Promise<UserRecord>;
-  resetPassword(
-    id: string,
-    passwordHash: string,
-    actorId: string,
-    ipAddress?: string,
-  ): Promise<void>;
 }
 
 export interface UsersUseCases {
@@ -89,9 +83,9 @@ export interface UsersUseCases {
     actorId: string,
     ipAddress?: string,
   ): Promise<UserItem>;
-  resetPassword(
+  resetPassword(id: string, actorId: string, ipAddress?: string): Promise<void>;
+  resendInvitation(
     id: string,
-    input: ResetUserPasswordRequest,
     actorId: string,
     ipAddress?: string,
   ): Promise<void>;

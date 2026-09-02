@@ -47,7 +47,7 @@ export class AuthService implements AuthUseCases {
   ): Promise<LoginResult> {
     const email = input.email.toLowerCase();
     const user = await this.repository.findUserByEmail(email);
-    if (!user?.isActive) {
+    if (!user?.isActive || !user.emailVerifiedAt) {
       await this.passwords.compare(input.password, INVALID_PASSWORD_HASH);
       throw new UnauthorizedError(INVALID_CREDENTIALS, 'INVALID_CREDENTIALS');
     }
@@ -87,7 +87,11 @@ export class AuthService implements AuthUseCases {
         'TOKEN_REUSE_DETECTED',
       );
     }
-    if (stored.expiresAt <= new Date() || !stored.user.isActive) {
+    if (
+      stored.expiresAt <= new Date() ||
+      !stored.user.isActive ||
+      !stored.user.emailVerifiedAt
+    ) {
       await this.repository.revokeAllForUser(stored.userId);
       throw new UnauthorizedError('La sesión ha vencido.', 'TOKEN_EXPIRED');
     }
@@ -129,7 +133,8 @@ export class AuthService implements AuthUseCases {
       throw this.invalidToken();
     }
     const user = await this.repository.findUserById(claims.userId);
-    if (!user?.isActive || user.role !== claims.role) throw this.invalidToken();
+    if (!user?.isActive || !user.emailVerifiedAt || user.role !== claims.role)
+      throw this.invalidToken();
     return {
       userId: user.id,
       role: user.role,
@@ -139,7 +144,7 @@ export class AuthService implements AuthUseCases {
 
   public async me(userId: string): Promise<UserSession> {
     const user = await this.repository.findUserById(userId);
-    if (!user?.isActive) throw this.invalidToken();
+    if (!user?.isActive || !user.emailVerifiedAt) throw this.invalidToken();
     return sessionFrom(user);
   }
 

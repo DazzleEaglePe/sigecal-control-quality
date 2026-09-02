@@ -58,6 +58,7 @@ export const seedUsers = async (
         areaId: seedId(`area:${definition.areaCode}`),
         position: definition.position,
         mustChangePassword: true,
+        emailVerifiedAt: new Date('2026-08-24T00:00:00.000Z'),
       },
       update: {
         firstName: definition.firstName,
@@ -66,6 +67,7 @@ export const seedUsers = async (
         areaId: seedId(`area:${definition.areaCode}`),
         position: definition.position,
         isActive: true,
+        emailVerifiedAt: new Date('2026-08-24T00:00:00.000Z'),
       },
     });
   }

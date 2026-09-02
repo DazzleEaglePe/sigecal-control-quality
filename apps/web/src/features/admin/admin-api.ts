@@ -7,12 +7,28 @@ import {
   type CreateAreaRequest,
   type CreateUserRequest,
   type UserItem,
+  type UpdateUserRequest,
+  type UserListQuery,
 } from '@sigecal/shared';
 
 import type { AuthorizedRequest } from '../auth/auth-context.js';
 
-export const listUsers = async (request: AuthorizedRequest) =>
-  UserListResponseSchema.parse(await request<unknown>('/users'));
+const userQuery = (query: Partial<UserListQuery>): string => {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== '') params.set(key, String(value));
+  }
+  const serialized = params.toString();
+  return serialized ? `?${serialized}` : '';
+};
+
+export const listUsers = async (
+  request: AuthorizedRequest,
+  query: Partial<UserListQuery> = {},
+) =>
+  UserListResponseSchema.parse(
+    await request<unknown>(`/users${userQuery(query)}`),
+  );
 
 export const createUser = async (
   request: AuthorizedRequest,
@@ -35,6 +51,28 @@ export const setUserStatus = async (
   });
   return UserResponseSchema.parse(response).data;
 };
+
+export const updateUser = async (
+  request: AuthorizedRequest,
+  id: string,
+  input: UpdateUserRequest,
+): Promise<UserItem> => {
+  const response = await request<unknown>(`/users/${id}`, {
+    method: 'PATCH',
+    body: input,
+  });
+  return UserResponseSchema.parse(response).data;
+};
+
+export const requestUserPasswordReset = (
+  request: AuthorizedRequest,
+  id: string,
+): Promise<void> => request(`/users/${id}/reset-password`, { method: 'POST' });
+
+export const resendUserInvitation = (
+  request: AuthorizedRequest,
+  id: string,
+): Promise<void> => request(`/users/${id}/resend-invite`, { method: 'POST' });
 
 export const listAreas = async (
   request: AuthorizedRequest,

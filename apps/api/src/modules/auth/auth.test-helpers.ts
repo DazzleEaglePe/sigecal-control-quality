@@ -22,6 +22,7 @@ export const testUser = (
   role: 'JEFE_CALIDAD',
   isActive: true,
   mustChangePassword: true,
+  emailVerifiedAt: new Date('2026-08-24T00:00:00.000Z'),
   failedAttempts: 0,
   lockedUntil: null,
   ...overrides,

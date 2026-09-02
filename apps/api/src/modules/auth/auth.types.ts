@@ -15,6 +15,7 @@ export interface AuthUserRecord {
   readonly role: Role;
   readonly isActive: boolean;
   readonly mustChangePassword: boolean;
+  readonly emailVerifiedAt: Date | null;
   readonly failedAttempts: number;
   readonly lockedUntil: Date | null;
 }

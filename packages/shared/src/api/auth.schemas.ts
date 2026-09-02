@@ -53,6 +53,20 @@ export const ChangePasswordRequestSchema = z
     path: ['newPassword'],
   });
 
+export const AccountEmailRequestSchema = z
+  .object({ email: z.email().max(254) })
+  .strict();
+
+export const AccountTokenPasswordRequestSchema = z
+  .object({
+    token: z.string().min(32).max(512),
+    newPassword: PasswordSchema,
+  })
+  .strict();
+
+export const MessageDataSchema = z.object({ message: z.string() }).strict();
+export const MessageResponseSchema = createApiSuccessSchema(MessageDataSchema);
+
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export type UserSession = z.infer<typeof UserSessionSchema>;
 export type LoginData = z.infer<typeof LoginDataSchema>;
@@ -60,3 +74,7 @@ export type LoginResponse = z.infer<typeof LoginResponseSchema>;
 export type RefreshResponse = z.infer<typeof RefreshResponseSchema>;
 export type MeResponse = z.infer<typeof MeResponseSchema>;
 export type ChangePasswordRequest = z.infer<typeof ChangePasswordRequestSchema>;
+export type AccountEmailRequest = z.infer<typeof AccountEmailRequestSchema>;
+export type AccountTokenPasswordRequest = z.infer<
+  typeof AccountTokenPasswordRequestSchema
+>;

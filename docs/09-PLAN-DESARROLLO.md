@@ -84,6 +84,22 @@ El orden operativo, las comprobaciones y los criterios detallados están en `10-
 
 **Criterio de cierre:** los cuatro roles ingresan y ven exactamente lo que les corresponde; un estándar puede versionarse y el sistema resuelve correctamente cuál aplica a una fecha dada.
 
+### Estabilización Sprint 2.1 · Cuentas internas
+
+El orden y la evidencia se registran en `16-CHECKLIST-SPRINT-2-1.md`.
+
+- [x] Restringir todas las rutas de gestión de usuarios al rol `ADMIN`.
+- [x] Completar edición, filtros, paginación y acciones administrativas en la interfaz.
+- [x] Incorporar invitación y verificación del correo institucional.
+- [x] Incorporar recuperación segura de contraseña por autoservicio y por `ADMIN`.
+- [x] Integrar Mailpit como transporte SMTP exclusivo de desarrollo.
+- [x] Exponer el cambio voluntario de contraseña desde la sesión.
+- [x] Validar tokens de un solo uso, expiración, revocación y no enumeración.
+
+**Criterio de cierre:** el administrador crea una cuenta sin comunicar una
+contraseña; el usuario la activa desde el correo, puede recuperar el acceso y
+ningún rol distinto de `ADMIN` consulta ni modifica el directorio completo.
+
 ---
 
 ## Sprint 3 · Lotes y trazabilidad (M3)
