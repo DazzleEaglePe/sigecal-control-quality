@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import {
+  AssignmentOptionsQuerySchema,
   CreateUserRequestSchema,
   EntityIdParamsSchema,
   Role,
@@ -55,6 +56,11 @@ export const createUsersRouter = (
   const router = Router();
   const controller = new UsersController(users);
   router.use(authenticate(auth), requirePasswordChanged);
+  router.get(
+    '/assignment-options',
+    validate({ query: AssignmentOptionsQuerySchema }),
+    controller.assignmentOptions,
+  );
   router.use(authorize(Role.ADMIN));
   router.get('/', validate({ query: UserListQuerySchema }), controller.list);
   router.get(

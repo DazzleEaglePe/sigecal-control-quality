@@ -12,6 +12,8 @@ import { ConflictError } from '../../errors/app-error.js';
 import type { Prisma, PrismaClient } from '../../generated/prisma/client.js';
 import { AuditAction } from '../../generated/prisma/enums.js';
 import * as actionMutations from './nonconformities.action-mutations.js';
+import { lockOpenNonConformity } from './nonconformities.lock.js';
+import { ensureCloseable } from './nonconformities.rules.js';
 import {
   nonConformityAuditSelection,
   nonConformityAuditView,
@@ -168,6 +170,14 @@ export class NonConformityMutationRepository implements NonConformityMutationRep
     ipAddress?: string,
   ): Promise<void> {
     return this.client.$transaction(async (tx) => {
+      const status = await lockOpenNonConformity(tx, id);
+      if (data.status === 'CERRADA') {
+        const actions = await tx.correctiveAction.findMany({
+          where: { nonConformityId: id },
+          select: { id: true, status: true, replacesActionId: true },
+        });
+        ensureCloseable(status, actions);
+      }
       const before = await tx.nonConformity.findUniqueOrThrow({
         where: { id },
         select: nonConformityAuditSelection,

@@ -1,7 +1,11 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
-import { ApiErrorSchema, UserListResponseSchema } from '@sigecal/shared';
+import {
+  ApiErrorSchema,
+  UserListResponseSchema,
+  AssignmentOptionsResponseSchema,
+} from '@sigecal/shared';
 import type {
   AreaItem,
   AreaListQuery,
@@ -89,6 +93,13 @@ class RoleAuth implements AuthUseCases {
 }
 
 class FakeUsers implements UsersUseCases {
+  public assignmentOptions() {
+    const { id, firstName, lastName, role, isActive } = user;
+    return Promise.resolve({
+      data: [{ id, firstName, lastName, role, isActive }],
+      total: 1,
+    });
+  }
   public list(_query: UserListQuery) {
     void _query;
     return Promise.resolve({ data: [user], total: 1 });
@@ -146,6 +157,45 @@ const appFor = (role: Role, provisional = false) =>
 const bearer = { Authorization: 'Bearer access-prueba' };
 
 describe('autorización de usuarios', () => {
+  it.each(['ADMIN', 'JEFE_CALIDAD', 'ANALISTA', 'OPERARIO'] as const)(
+    'permite opciones mínimas a %s',
+    async (role) => {
+      const response = await request(appFor(role))
+        .get(`${env.API_PREFIX}/users/assignment-options`)
+        .set(bearer)
+        .expect(200);
+      const body = AssignmentOptionsResponseSchema.parse(response.body);
+      expect(Object.keys(body.data[0] ?? {}).sort()).toEqual([
+        'firstName',
+        'id',
+        'isActive',
+        'lastName',
+        'role',
+      ]);
+      expect(body.meta.total).toBe(1);
+    },
+  );
+
+  it('valida paginación y prohíbe filtros privados', async () => {
+    await request(appFor('ANALISTA'))
+      .get(`${env.API_PREFIX}/users/assignment-options?pageSize=101`)
+      .set(bearer)
+      .expect(400);
+    await request(appFor('ANALISTA'))
+      .get(`${env.API_PREFIX}/users/assignment-options?isActive=false`)
+      .set(bearer)
+      .expect(400);
+    await request(appFor('ANALISTA', true))
+      .get(`${env.API_PREFIX}/users/assignment-options`)
+      .set(bearer)
+      .expect(403);
+    await request(appFor('ANALISTA'))
+      .get(`${env.API_PREFIX}/users/assignment-options`)
+      .expect(401);
+  });
+});
+
+describe('directorio administrativo', () => {
   it('permite listar únicamente al administrador', async () => {
     const allowed = await request(appFor('ADMIN'))
       .get(`${env.API_PREFIX}/users`)

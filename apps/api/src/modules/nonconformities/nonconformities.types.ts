@@ -51,6 +51,7 @@ export interface CorrectiveActionRecord {
   readonly verifiedBy: PersonRecord | null;
   readonly verifiedAt: Date | null;
   readonly verificationComment: string | null;
+  readonly replacesActionId: string | null;
 }
 
 export interface NonConformityRecord {
@@ -106,6 +107,11 @@ export interface NonConformityReferences {
 export interface ActionReferences {
   readonly nonConformity: NonConformityRecord | null;
   readonly responsible: (PersonRecord & { readonly isActive: boolean }) | null;
+  readonly replacesAction:
+    | (Pick<CorrectiveActionRecord, 'id' | 'nonConformityId' | 'status'> & {
+        readonly replacementAction: { readonly id: string } | null;
+      })
+    | null;
 }
 
 export interface NonConformityReadRepositoryPort {
@@ -134,6 +140,7 @@ export interface NonConformityReadRepositoryPort {
   findActionReferences(
     nonConformityId: string,
     responsibleId: string,
+    replacesActionId?: string,
   ): Promise<ActionReferences>;
 }
 

@@ -60,15 +60,34 @@ export const ensureNCEditable = (status: string): void => {
 
 export const ensureActionReferences: (
   references: ActionReferences,
+  requestedReplacementId?: string,
 ) => asserts references is {
   readonly nonConformity: NonNullable<ActionReferences['nonConformity']>;
   readonly responsible: NonNullable<ActionReferences['responsible']>;
-} = (references) => {
+  readonly replacesAction: ActionReferences['replacesAction'];
+} = (references, requestedReplacementId) => {
   if (!references.nonConformity)
     throw new NotFoundError('La no conformidad no existe.');
   ensureNCEditable(references.nonConformity.status);
   if (!references.responsible?.isActive)
     throw new NotFoundError('La persona responsable no está activa.');
+  if (requestedReplacementId && !references.replacesAction)
+    throw new NotFoundError('La acción que desea reemplazar no existe.');
+  if (
+    references.replacesAction &&
+    (references.replacesAction.nonConformityId !==
+      references.nonConformity.id ||
+      references.replacesAction.status !== 'NO_EFICAZ')
+  )
+    throw new ConflictError(
+      'Solo puede reemplazar una acción no eficaz de la misma no conformidad.',
+      'INVALID_ACTION_REPLACEMENT',
+    );
+  if (references.replacesAction?.replacementAction)
+    throw new ConflictError(
+      'La acción no eficaz ya tiene una acción de reemplazo.',
+      'ACTION_ALREADY_REPLACED',
+    );
 };
 
 export const ensureActionExecuted = (action: CorrectiveActionRecord): void => {
@@ -90,28 +109,44 @@ export const ensureVerifierDifferentFromResponsible = (
     );
 };
 
-/** RF-M7-13: una acción "sin verificar" es la que aún no pasó por el paso de
- * verificación (pendiente, en ejecución o ejecutada). Una acción NO_EFICAZ ya
- * fue verificada, aunque el resultado exija registrar una nueva acción. */
-export const hasUnverifiedActions = (
-  actions: readonly CorrectiveActionRecord[],
-): boolean =>
-  actions.some((action) =>
-    ['PENDIENTE', 'EN_EJECUCION', 'EJECUTADA'].includes(action.status),
+/** RF-M7-13: verificar sin eficacia no resuelve la no conformidad. */
+const actionResolved = (
+  action: Pick<CorrectiveActionRecord, 'id' | 'status' | 'replacesActionId'>,
+  actions: readonly Pick<
+    CorrectiveActionRecord,
+    'id' | 'status' | 'replacesActionId'
+  >[],
+): boolean => {
+  if (action.status === 'VERIFICADA') return true;
+  if (action.status !== 'NO_EFICAZ') return false;
+  const replacement = actions.find(
+    (candidate) => candidate.replacesActionId === action.id,
   );
+  return replacement ? actionResolved(replacement, actions) : false;
+};
+
+export const hasUnverifiedActions = (
+  actions: readonly Pick<
+    CorrectiveActionRecord,
+    'id' | 'status' | 'replacesActionId'
+  >[],
+): boolean => actions.some((action) => !actionResolved(action, actions));
 
 export const ensureCloseable = (
   status: string,
-  actions: readonly CorrectiveActionRecord[],
+  actions: readonly Pick<
+    CorrectiveActionRecord,
+    'id' | 'status' | 'replacesActionId'
+  >[],
 ): void => {
   if (status === 'CERRADA' || status === 'ANULADA')
     throw new ConflictError(
       'La no conformidad ya está cerrada.',
       'NC_ALREADY_CLOSED',
     );
-  if (hasUnverifiedActions(actions))
+  if (actions.length === 0 || hasUnverifiedActions(actions))
     throw new ConflictError(
-      'No se puede cerrar la no conformidad mientras existan acciones sin verificar.',
+      'El cierre requiere al menos una acción y todas deben estar verificadas como eficaces.',
       'NC_HAS_UNVERIFIED_ACTIONS',
     );
 };

@@ -7,23 +7,24 @@
 
 ## M1 · SEGURIDAD, USUARIOS Y ROLES
 
-| ID       | Requerimiento                                                                                     | Prioridad |
-| -------- | ------------------------------------------------------------------------------------------------- | --------- |
-| RF-M1-01 | Iniciar sesión con correo y contraseña, devolviendo token de acceso y token de refresco           | 🔴        |
-| RF-M1-02 | Cerrar sesión invalidando el token de refresco                                                    | 🔴        |
-| RF-M1-03 | Renovar el token de acceso mediante el token de refresco                                          | 🔴        |
-| RF-M1-04 | Registrar, editar, activar y desactivar usuarios (solo `ADMIN`)                                   | 🔴        |
-| RF-M1-05 | Asignar exactamente un rol por usuario entre `ADMIN`, `JEFE_CALIDAD`, `ANALISTA`, `OPERARIO`      | 🔴        |
-| RF-M1-06 | Restringir cada operación del sistema según los permisos del rol                                  | 🔴        |
-| RF-M1-07 | Permitir al usuario cambiar su propia contraseña                                                  | 🟡        |
-| RF-M1-08 | Permitir al `ADMIN` restablecer la contraseña de otro usuario                                     | 🟡        |
-| RF-M1-09 | Registrar el último acceso de cada usuario                                                        | 🟢        |
-| RF-M1-10 | Bloquear la cuenta tras 5 intentos fallidos consecutivos durante 15 minutos                       | 🟡        |
-| RF-M1-11 | Obligar a cambiar la contraseña provisional en el primer ingreso o después de un restablecimiento | 🔴        |
-| RF-M1-12 | Gestionar un catálogo mínimo de áreas y asociar cada usuario con un área activa                   | 🟡        |
-| RF-M1-13 | Activar una cuenta interna mediante una invitación de correo con token temporal de un solo uso    | 🟡        |
-| RF-M1-14 | Solicitar y completar la recuperación de contraseña sin revelar si el correo existe               | 🟡        |
-| RF-M1-15 | Permitir al `ADMIN` reenviar una invitación o iniciar la recuperación sin comunicar contraseñas   | 🟡        |
+| ID        | Requerimiento                                                                                                            | Prioridad |
+| --------- | ------------------------------------------------------------------------------------------------------------------------ | --------- |
+| RF-M1-01  | Iniciar sesión con correo y contraseña, devolviendo token de acceso y token de refresco                                  | 🔴        |
+| RF-M1-02  | Cerrar sesión invalidando el token de refresco                                                                           | 🔴        |
+| RF-M1-03  | Renovar el token de acceso mediante el token de refresco                                                                 | 🔴        |
+| RF-M1-04  | Registrar, editar, activar y desactivar usuarios (solo `ADMIN`)                                                          | 🔴        |
+| RF-M1-04a | Consultar opciones mínimas de responsables activos desde los módulos operativos, sin acceso al directorio administrativo | 🔴        |
+| RF-M1-05  | Asignar exactamente un rol por usuario entre `ADMIN`, `JEFE_CALIDAD`, `ANALISTA`, `OPERARIO`                             | 🔴        |
+| RF-M1-06  | Restringir cada operación del sistema según los permisos del rol                                                         | 🔴        |
+| RF-M1-07  | Permitir al usuario cambiar su propia contraseña                                                                         | 🟡        |
+| RF-M1-08  | Permitir al `ADMIN` restablecer la contraseña de otro usuario                                                            | 🟡        |
+| RF-M1-09  | Registrar el último acceso de cada usuario                                                                               | 🟢        |
+| RF-M1-10  | Bloquear la cuenta tras 5 intentos fallidos consecutivos durante 15 minutos                                              | 🟡        |
+| RF-M1-11  | Obligar a cambiar la contraseña provisional en el primer ingreso o después de un restablecimiento                        | 🔴        |
+| RF-M1-12  | Gestionar un catálogo mínimo de áreas y asociar cada usuario con un área activa                                          | 🟡        |
+| RF-M1-13  | Activar una cuenta interna mediante una invitación de correo con token temporal de un solo uso                           | 🟡        |
+| RF-M1-14  | Solicitar y completar la recuperación de contraseña sin revelar si el correo existe                                      | 🟡        |
+| RF-M1-15  | Permitir al `ADMIN` reenviar una invitación o iniciar la recuperación sin comunicar contraseñas                          | 🟡        |
 
 **Nunca se elimina un usuario físicamente** — se desactiva. Los registros históricos deben conservar la referencia a su autor.
 
@@ -173,7 +174,7 @@ _Sustenta: Control → Tiempo de respuesta (A5-13 a A5-15) y Seguimiento de acci
 | RF-M7-10 | Asignar responsable y fecha comprometida a cada acción                                                                            | 🔴        |
 | RF-M7-11 | Registrar la ejecución de una acción con su fecha real                                                                            | 🔴        |
 | RF-M7-12 | **Verificar la eficacia** de cada acción ejecutada: resultado (eficaz / no eficaz), verificador, fecha y comentario               | 🔴        |
-| RF-M7-13 | Impedir el cierre de la no conformidad mientras exista alguna acción sin verificar                                                | 🔴        |
+| RF-M7-13 | Impedir el cierre sin acciones o mientras exista alguna acción sin verificar como eficaz                                          | 🔴        |
 | RF-M7-14 | Restringir el cierre de la no conformidad al rol `JEFE_CALIDAD`                                                                   | 🔴        |
 | RF-M7-15 | Notificar al responsable la asignación de una acción y su vencimiento próximo                                                     | 🟡        |
 | RF-M7-16 | Listar y filtrar no conformidades por estado, severidad, lote, etapa y responsable                                                | 🔴        |

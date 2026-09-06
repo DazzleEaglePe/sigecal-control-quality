@@ -41,6 +41,26 @@ export const UserListQuerySchema = PaginationQuerySchema.extend({
   isActive: z.stringbool().optional(),
 }).strict();
 
+export const AssignmentOptionSchema = UserSchema.pick({
+  id: true,
+  firstName: true,
+  lastName: true,
+  role: true,
+  isActive: true,
+});
+export const AssignmentOptionsQuerySchema = UserListQuerySchema.omit({
+  isActive: true,
+  sortBy: true,
+  sortOrder: true,
+});
+export const AssignmentOptionsResponseSchema = createApiSuccessSchema(
+  z.array(AssignmentOptionSchema),
+).required({ meta: true });
+export type AssignmentOption = z.infer<typeof AssignmentOptionSchema>;
+export type AssignmentOptionsQuery = z.infer<
+  typeof AssignmentOptionsQuerySchema
+>;
+
 export const CreateUserRequestSchema = z
   .object({
     firstName: TrimmedNameSchema,

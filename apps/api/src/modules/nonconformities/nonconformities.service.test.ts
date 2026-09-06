@@ -80,7 +80,7 @@ describe('cierre exitoso de la no conformidad', () => {
     const { service, reads, mutations } = setup();
     reads.actions = [
       actionRecord({ status: 'VERIFICADA', isEffective: true }),
-      actionRecord({ id: 'id-2', status: 'NO_EFICAZ', isEffective: false }),
+      actionRecord({ id: 'id-2', status: 'VERIFICADA', isEffective: true }),
     ];
     await service.close(IDS.nc, { closeComment: 'Resuelto' }, manager);
     expect(mutations.closeSpy).toHaveBeenCalledWith(
@@ -90,8 +90,38 @@ describe('cierre exitoso de la no conformidad', () => {
     );
   });
 
-  it('permite cerrar sin acciones registradas', async () => {
+  it('impide cerrar sin acciones registradas', async () => {
     const { service, mutations } = setup();
+    await expect(
+      service.close(IDS.nc, { closeComment: 'Resuelto' }, manager),
+    ).rejects.toMatchObject({ code: 'NC_HAS_UNVERIFIED_ACTIONS' });
+    expect(mutations.closeSpy).not.toHaveBeenCalled();
+  });
+
+  it('impide cerrar aunque una acción no eficaz acompañe a otra eficaz', async () => {
+    const { service, reads, mutations } = setup();
+    reads.actions = [
+      actionRecord({ status: 'VERIFICADA' }),
+      actionRecord({ status: 'NO_EFICAZ' }),
+    ];
+    await expect(
+      service.close(IDS.nc, { closeComment: 'Resuelto' }, manager),
+    ).rejects.toMatchObject({ code: 'NC_HAS_UNVERIFIED_ACTIONS' });
+    expect(mutations.closeSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('cierre con reemplazo de una acción no eficaz', () => {
+  it('permite cerrar si una acción eficaz reemplaza a la no eficaz', async () => {
+    const { service, reads, mutations } = setup();
+    reads.actions = [
+      actionRecord({ id: 'fallida', status: 'NO_EFICAZ' }),
+      actionRecord({
+        id: 'reemplazo',
+        status: 'VERIFICADA',
+        replacesActionId: 'fallida',
+      }),
+    ];
     await service.close(IDS.nc, { closeComment: 'Resuelto' }, manager);
     expect(mutations.closeSpy).toHaveBeenCalledOnce();
   });
@@ -146,6 +176,7 @@ describe('registro de acciones', () => {
     reads.actionReferences = {
       nonConformity: reads.record,
       responsible: null,
+      replacesAction: null,
     };
     await expect(
       service.createAction(

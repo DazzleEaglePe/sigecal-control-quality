@@ -45,7 +45,8 @@ Fuente: RF-M1-04 a RF-M1-15, contrato API §3–4, seguridad §1 y UX §2.0.
 
 ## Evidencia de cierre · 02/09/2026
 
-- 197 pruebas aprobadas: API 134, web 30 y contratos compartidos 33.
+- Evidencia original: 197 pruebas aprobadas. Corte 05/09/2026: 207 pruebas
+  unitarias/contrato y 10 pruebas PostgreSQL aisladas aprobadas.
 - 64 archivos de prueba aprobados; ESLint, TypeScript, Prettier y builds en verde.
 - Esquema Prisma válido, migración desplegada y seed idempotente verificado.
 - OpenAPI regenerado y validado desde los esquemas compartidos.

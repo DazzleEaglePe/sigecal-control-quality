@@ -79,6 +79,7 @@ export const CreateActionRequestSchema = z
     description: NoteSchema,
     responsibleId: IdSchema,
     committedDate: DateSchema,
+    replacesActionId: IdSchema.optional(),
   })
   .strict();
 
@@ -112,6 +113,7 @@ export const CorrectiveActionSchema = z
     verifiedBy: PersonSchema.nullable(),
     verifiedAt: DateTimeSchema.nullable(),
     verificationComment: z.string().nullable(),
+    replacesActionId: IdSchema.nullable(),
   })
   .strict();
 

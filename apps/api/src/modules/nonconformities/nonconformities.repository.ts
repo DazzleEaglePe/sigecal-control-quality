@@ -61,6 +61,7 @@ export const actionSelection = {
   verifiedBy: { select: personSelection },
   verifiedAt: true,
   verificationComment: true,
+  replacesActionId: true,
 } as const;
 
 /** El OPERARIO solo ve las no conformidades que detectó, salvo que se le haya
@@ -174,7 +175,7 @@ export class NonConformityRepository implements NonConformityReadRepositoryPort 
             where: { id: input.batchId },
             select: { id: true, dataOrigin: true },
           })
-        : { id: '', dataOrigin: 'REAL' as const };
+        : null;
     const stage = stageId
       ? await this.client.processStage.findUnique({
           where: { id: stageId },
@@ -199,6 +200,7 @@ export class NonConformityRepository implements NonConformityReadRepositoryPort 
   public async findActionReferences(
     nonConformityId: string,
     responsibleId: string,
+    replacesActionId?: string,
   ) {
     const nonConformity = await this.client.nonConformity.findUnique({
       where: { id: nonConformityId },
@@ -208,6 +210,17 @@ export class NonConformityRepository implements NonConformityReadRepositoryPort 
       where: { id: responsibleId },
       select: { ...personSelection, isActive: true },
     });
-    return { nonConformity, responsible };
+    const replacesAction = replacesActionId
+      ? await this.client.correctiveAction.findUnique({
+          where: { id: replacesActionId },
+          select: {
+            id: true,
+            nonConformityId: true,
+            status: true,
+            replacementAction: { select: { id: true } },
+          },
+        })
+      : null;
+    return { nonConformity, responsible, replacesAction };
   }
 }

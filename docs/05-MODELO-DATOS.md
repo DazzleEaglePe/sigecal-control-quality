@@ -70,6 +70,7 @@ DataOrigin           REAL · DEMO
 | `position`                | string?   | cargo en la empresa                               |
 | `isActive`                | boolean   | por defecto `true`                                |
 | `mustChangePassword`      | boolean   | `true` para claves provisionales o restablecidas  |
+| `sessionVersion`          | int       | contador interno para revocar JWT ya emitidos     |
 | `emailVerifiedAt`         | datetime? | nulo hasta completar la invitación                |
 | `failedAttempts`          | int       | por defecto 0                                     |
 | `lockedUntil`             | datetime? | bloqueo temporal                                  |
@@ -429,6 +430,11 @@ NC: ABIERTA → EN_ANALISIS → EN_TRATAMIENTO → EN_VERIFICACION → CERRADA
                                       └── acción NO_EFICAZ
 
 Acción: PENDIENTE → EN_EJECUCION → EJECUTADA → VERIFICADA | NO_EFICAZ
+
+Una nueva acción puede registrar `replacesActionId` únicamente contra una acción
+`NO_EFICAZ` de la misma no conformidad. La acción fallida nunca se modifica ni se
+oculta. Para cerrar, cada cadena iniciada en una acción no eficaz debe terminar en
+una acción `VERIFICADA`; pendientes, ejecuciones o cadenas sin reemplazo bloquean.
 ```
 
 `ANULADA` solo aplica a una NC automática cuyo resultado o sesión de origen fue anulado. No es una acción manual independiente.

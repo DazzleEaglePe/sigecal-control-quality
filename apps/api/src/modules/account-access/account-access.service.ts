@@ -4,8 +4,10 @@ import type {
 } from '@sigecal/shared';
 
 import { env } from '../../config/env.js';
+import { logger } from '../../config/logger.js';
 import {
   BadRequestError,
+  ConflictError,
   NotFoundError,
   ServiceUnavailableError,
 } from '../../errors/app-error.js';
@@ -47,7 +49,19 @@ export class AccountAccessService implements AccountAccessUseCases {
     const target = await this.repository.findActiveByEmail(
       input.email.toLowerCase(),
     );
-    if (target?.emailVerifiedAt) await this.issue(target, 'PASSWORD_RESET');
+    if (!target?.emailVerifiedAt) return;
+    try {
+      await this.issue(target, 'PASSWORD_RESET');
+    } catch (error) {
+      if (error instanceof ConflictError && error.code === 'ACCOUNT_CHANGED')
+        return;
+      if (!(error instanceof ServiceUnavailableError)) throw error;
+      // No registrar el error SMTP: puede contener destinatario o enlace sensible.
+      logger.error(
+        { code: 'EMAIL_DELIVERY_FAILED' },
+        'Falló el envío de recuperación de cuenta.',
+      );
+    }
   }
 
   public async requestPasswordResetForUser(
@@ -91,6 +105,7 @@ export class AccountAccessService implements AccountAccessUseCases {
       new Date(Date.now() + minutes * 60_000),
       actorId,
       ipAddress,
+      target.email,
     );
     try {
       if (type === 'ACTIVATION')

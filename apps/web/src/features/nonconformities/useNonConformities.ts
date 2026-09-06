@@ -5,11 +5,12 @@ import type {
   NonConformityItem,
   NonConformityListQuery,
   ProcessStageItem,
-  UserItem,
+  AssignmentOption,
 } from '@sigecal/shared';
 
 import { errorMessage } from '../admin/admin-ui.js';
-import { listAreas, listUsers } from '../admin/admin-api.js';
+import { listAreas } from '../admin/admin-api.js';
+import { listAssignmentOptions } from '../admin/assignment-options-api.js';
 import type { AuthorizedRequest } from '../auth/auth-context.js';
 import { listCatalog } from '../masters/catalog-api.js';
 import {
@@ -51,7 +52,7 @@ export const useNonConformityList = (
 export interface NonConformityMasters {
   readonly stages: readonly ProcessStageItem[];
   readonly areas: readonly AreaItem[];
-  readonly users: readonly UserItem[];
+  readonly users: readonly AssignmentOption[];
 }
 const emptyMasters: NonConformityMasters = {
   stages: [],
@@ -65,7 +66,7 @@ const loadMasters = async (
   const [stages, areas, usersResponse] = await Promise.all([
     listCatalog(request, 'stages'),
     listAreas(request, true),
-    listUsers(request),
+    listAssignmentOptions(request),
   ]);
   return { stages, areas, users: usersResponse.data };
 };

@@ -65,6 +65,7 @@ export const toCorrectiveActionItem = (
   verifiedBy: record.verifiedBy,
   verifiedAt: record.verifiedAt?.toISOString() ?? null,
   verificationComment: record.verificationComment,
+  replacesActionId: record.replacesActionId,
 });
 
 export const toNonConformityDetail = (

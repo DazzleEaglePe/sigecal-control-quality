@@ -1,4 +1,6 @@
 import type {
+  AssignmentOption,
+  AssignmentOptionsQuery,
   CreateUserRequest,
   Role,
   UpdateUserRequest,
@@ -37,6 +39,10 @@ export type UserSortField =
   | 'isActive';
 
 export interface UserRepositoryPort {
+  assignmentOptions(query: AssignmentOptionsQuery): Promise<{
+    readonly data: readonly AssignmentOption[];
+    readonly total: number;
+  }>;
   list(query: UserListQuery, sortBy: UserSortField): Promise<UserListResult>;
   findById(id: string): Promise<UserRecord | null>;
   findByEmail(email: string): Promise<UserRecord | null>;
@@ -62,6 +68,10 @@ export interface UserRepositoryPort {
 }
 
 export interface UsersUseCases {
+  assignmentOptions(query: AssignmentOptionsQuery): Promise<{
+    readonly data: readonly AssignmentOption[];
+    readonly total: number;
+  }>;
   list(
     query: UserListQuery,
   ): Promise<{ readonly data: readonly UserItem[]; readonly total: number }>;

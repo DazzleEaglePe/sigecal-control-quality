@@ -20,16 +20,16 @@ definitivos deben ser entregados y aprobados por la empresa.
 
 ## 2. Estado por sprint
 
-| Sprint | Alcance                                                     | Estado                  | Apto para Nicolle                                                                             |
-| ------ | ----------------------------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------- |
-| 1      | Monorepo, PostgreSQL, Prisma, API base, frontend y OpenAPI  | ✅ Cerrado técnicamente | Sí; queda pendiente únicamente la grabación breve de evidencia                                |
-| 2      | Autenticación, RBAC, usuarios, áreas, maestros y estándares | ✅ Cerrado              | Sí, usando usuarios y datos de demostración                                                   |
-| 3      | Lotes, seis etapas, QR y trazabilidad                       | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                                 |
-| 4      | Inspecciones, estándares y resultados fisicoquímicos        | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                                 |
-| 5      | Evaluación organoléptica                                    | ✅ Cerrado              | Sí; sesión, corrección inmutable, perfiles y comparación respaldados por pruebas              |
-| 6      | Ciclo completo de NC, acciones, indicadores y reportes      | ⏳ Pendiente            | Solo existe la generación automática de NC desde M5 y su consulta en la trazabilidad del lote |
-| 7      | PWA, accesibilidad, seguridad, rendimiento y piloto         | ⏳ Pendiente            | No disponible                                                                                 |
-| 8      | Despliegue, post-test y entrega formal                      | ⏳ Pendiente            | No disponible                                                                                 |
+| Sprint | Alcance                                                     | Estado                  | Apto para Nicolle                                                                |
+| ------ | ----------------------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------- |
+| 1      | Monorepo, PostgreSQL, Prisma, API base, frontend y OpenAPI  | ✅ Cerrado técnicamente | Sí; queda pendiente únicamente la grabación breve de evidencia                   |
+| 2      | Autenticación, RBAC, usuarios, áreas, maestros y estándares | ✅ Cerrado              | Sí, usando usuarios y datos de demostración                                      |
+| 3      | Lotes, seis etapas, QR y trazabilidad                       | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                    |
+| 4      | Inspecciones, estándares y resultados fisicoquímicos        | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                    |
+| 5      | Evaluación organoléptica                                    | ✅ Cerrado              | Sí; sesión, corrección inmutable, perfiles y comparación respaldados por pruebas |
+| 6      | Ciclo completo de NC, acciones, indicadores y reportes      | 🟡 En curso             | Ciclo y pantallas de NC disponibles; faltan notificaciones, KPI y exportaciones  |
+| 7      | PWA, accesibilidad, seguridad, rendimiento y piloto         | ⏳ Pendiente            | No disponible                                                                    |
+| 8      | Despliegue, post-test y entrega formal                      | ⏳ Pendiente            | No disponible                                                                    |
 
 ## 3. Funcionalidades aceptadas
 
@@ -104,7 +104,7 @@ definitivos deben ser entregados y aprobados por la empresa.
 | Formato Prettier       | ✅ Sin diferencias                                          |
 | ESLint                 | ✅ API, web y shared sin errores ni advertencias            |
 | TypeScript estricto    | ✅ Tres workspaces aprobados                                |
-| Pruebas automatizadas  | ✅ 197/197: API 134, web 30, shared 33                      |
+| Pruebas automatizadas  | ✅ 207 unitarias/contrato + 10 de integración PostgreSQL    |
 | Archivos de prueba     | ✅ 64/64 aprobados                                          |
 | Builds de producción   | ✅ API, web y shared generados                              |
 | Modelo Prisma          | ✅ Formateado y válido                                      |
@@ -170,7 +170,7 @@ del Sprint 6.
 
 ## 8. Prioridad inmediata
 
-1. Sprint 6: ciclo completo de no conformidades, acciones, tablero y reportes.
+1. Sprint 6: completar notificaciones, indicadores y reportes; el ciclo de no conformidades y acciones ya está implementado.
 2. Sprint 7: PWA, accesibilidad, seguridad, rendimiento y piloto.
 3. Sprint 8: despliegue, evidencia, post-test y traspaso formal.
 

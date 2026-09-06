@@ -1,15 +1,26 @@
 # 07 · SEGURIDAD Y AUTENTICACIÓN
 
+### Corrección de revocación (Sprint 6)
+
+`User.sessionVersion` es un contador interno incluido en ambos JWT. Se compara
+con la base de datos en cada autenticación y renovación. Cambiar/restablecer
+contraseña, activar la cuenta, cambiar correo/rol o desactivar incrementa el
+contador e invalida las sesiones anteriores. Los JWT antiguos sin versión se
+rechazan: tras desplegar esta migración todos deben ingresar nuevamente.
+Cambiar correo o contraseña invalida además todos los enlaces de acceso pendientes.
+La recuperación pública conserva el mensaje genérico incluso si falla SMTP;
+el fallo se registra sin correo, contraseña ni token. No implica entrega garantizada.
+
 ---
 
 ## 1. Esquema de autenticación
 
 **JWT con doble token.**
 
-| Token          | Duración   | Almacenamiento en cliente                                                     | Contenido                   |
-| -------------- | ---------- | ----------------------------------------------------------------------------- | --------------------------- |
-| `accessToken`  | 15 minutos | Memoria de la aplicación (estado), **nunca** en `localStorage`                | `sub`, `role`, `iat`, `exp` |
-| `refreshToken` | 7 días     | Cookie host-only `httpOnly`, `secure`, `sameSite=strict`, ruta `/api/v1/auth` | `sub`, `jti`                |
+| Token          | Duración   | Almacenamiento en cliente                                                     | Contenido                                     |
+| -------------- | ---------- | ----------------------------------------------------------------------------- | --------------------------------------------- |
+| `accessToken`  | 15 minutos | Memoria de la aplicación (estado), **nunca** en `localStorage`                | `sub`, `role`, `sessionVersion`, `iat`, `exp` |
+| `refreshToken` | 7 días     | Cookie host-only `httpOnly`, `secure`, `sameSite=strict`, ruta `/api/v1/auth` | `sub`, `jti`, `sessionVersion`                |
 
 **Por qué el token de acceso no va en `localStorage`:** cualquier script inyectado podría leerlo. Al mantenerlo en memoria, un cierre de pestaña obliga a renovar mediante la cookie, que el JavaScript no puede leer.
 

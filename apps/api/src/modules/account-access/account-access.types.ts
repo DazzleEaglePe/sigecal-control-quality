@@ -23,6 +23,7 @@ export interface AccountAccessRepositoryPort {
     expiresAt: Date,
     actorId?: string,
     ipAddress?: string,
+    expectedEmail?: string,
   ): Promise<void>;
   consumeToken(
     tokenHash: string,

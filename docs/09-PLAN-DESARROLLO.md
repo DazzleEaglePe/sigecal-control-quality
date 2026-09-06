@@ -180,13 +180,17 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [x] Verificación de eficacia con regla de verificador distinto del responsable
 - [x] Bloqueo de cierre con acciones sin verificar
 - [x] Retorno a tratamiento ante acción no eficaz
+- [x] Selectores operativos de responsables sin exponer el directorio ADMIN
+- [x] Revocación inmediata de sesiones al cambiar credenciales o permisos
+- [x] Pruebas PostgreSQL aisladas de tokens, concurrencia y cierre
 - [ ] Notificaciones dentro de la aplicación
 - [ ] Tareas programadas de aviso
 - [ ] Tablero con todos los indicadores
 - [ ] Exclusión por defecto de datos `DEMO`
 - [ ] Reporte de trazabilidad en PDF
 - [ ] Exportaciones a Excel con filtros configurables
-- [ ] Pantallas: listado y detalle de no conformidad, tablero, reportes
+- [x] Pantallas: listado y detalle de no conformidad
+- [ ] Pantallas: tablero consolidado y reportes
 - [ ] Búsqueda global con permisos y alcance por pertenencia
 - [ ] Despliegue de una versión piloto estable y entrega controlada de credenciales
 - [x] Pruebas unitarias: cálculo de tiempos, reglas de cierre, transiciones
@@ -199,6 +203,7 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 ## Sprint 7 · Calidad
 
 - [ ] Configuración de PWA: manifiesto, service worker, caché de vistas de consulta
+- [ ] Validación de uso en campo desde móvil como web responsiva/PWA; no aplicación nativa
 - [ ] Indicador de estado sin conexión
 - [ ] Auditoría de accesibilidad con Lighthouse y corrección de hallazgos
 - [ ] Navegación completa por teclado verificada

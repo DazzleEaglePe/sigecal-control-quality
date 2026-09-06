@@ -50,6 +50,7 @@ export const actionAuditSelection = {
   verifiedById: true,
   verifiedAt: true,
   verificationComment: true,
+  replacesActionId: true,
 } as const;
 
 interface ActionAuditRecord {
@@ -63,6 +64,7 @@ interface ActionAuditRecord {
   readonly verifiedById: string | null;
   readonly verifiedAt: Date | null;
   readonly verificationComment: string | null;
+  readonly replacesActionId: string | null;
 }
 
 export const actionAuditView = (record: ActionAuditRecord) => ({

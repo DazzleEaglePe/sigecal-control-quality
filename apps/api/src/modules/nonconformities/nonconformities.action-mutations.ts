@@ -7,6 +7,10 @@ import type {
 import type { Prisma, PrismaClient } from '../../generated/prisma/client.js';
 import { AuditAction } from '../../generated/prisma/enums.js';
 import {
+  lockActionParent,
+  lockOpenNonConformity,
+} from './nonconformities.lock.js';
+import {
   actionAuditSelection,
   actionAuditView,
   writeNonConformityAudit,
@@ -49,6 +53,7 @@ export const createAction = (
   ipAddress?: string,
 ): Promise<string> =>
   client.$transaction(async (tx) => {
+    await lockOpenNonConformity(tx, nonConformityId);
     const record = await tx.correctiveAction.create({
       data: {
         nonConformityId,
@@ -56,6 +61,7 @@ export const createAction = (
         description: input.description,
         responsibleId: input.responsibleId,
         committedDate: new Date(input.committedDate),
+        replacesActionId: input.replacesActionId ?? null,
       },
       select: { id: true },
     });
@@ -71,6 +77,7 @@ export const updateAction = (
   ipAddress?: string,
 ): Promise<void> =>
   client.$transaction(async (tx) => {
+    await lockActionParent(tx, actionId);
     const before = await tx.correctiveAction.findUniqueOrThrow({
       where: { id: actionId },
       select: actionAuditSelection,
@@ -131,6 +138,7 @@ export const executeAction = (
   ipAddress?: string,
 ): Promise<void> =>
   client.$transaction(async (tx) => {
+    await lockActionParent(tx, actionId);
     const before = await tx.correctiveAction.findUniqueOrThrow({
       where: { id: actionId },
       select: { ...actionAuditSelection, nonConformityId: true },
@@ -159,6 +167,7 @@ export const verifyAction = (
   ipAddress?: string,
 ): Promise<void> =>
   client.$transaction(async (tx) => {
+    await lockActionParent(tx, actionId);
     const before = await tx.correctiveAction.findUniqueOrThrow({
       where: { id: actionId },
       select: { ...actionAuditSelection, nonConformityId: true },
@@ -185,10 +194,7 @@ export const verifyAction = (
     if (!input.isEffective)
       // RF-M7: una acción no eficaz regresa la NC a EN_TRATAMIENTO.
       await tx.nonConformity.updateMany({
-        where: {
-          id: before.nonConformityId,
-          status: { notIn: ['CERRADA', 'ANULADA'] },
-        },
+        where: { id: before.nonConformityId },
         data: { status: 'EN_TRATAMIENTO' },
       });
   });

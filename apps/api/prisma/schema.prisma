@@ -132,6 +132,7 @@ model User {
   position                String?
   isActive                Boolean              @default(true)
   mustChangePassword      Boolean              @default(true)
+  sessionVersion          Int                  @default(0)
   emailVerifiedAt         DateTime?            @db.Timestamptz(3)
   failedAttempts          Int                  @default(0)
   lockedUntil             DateTime?            @db.Timestamptz(3)
@@ -618,21 +619,24 @@ model NonConformity {
 }
 
 model CorrectiveAction {
-  id                  String        @id @default(uuid()) @db.Uuid
-  nonConformityId     String        @db.Uuid
+  id                  String            @id @default(uuid()) @db.Uuid
+  nonConformityId     String            @db.Uuid
   type                ActionType
   description         String
-  responsibleId       String        @db.Uuid
-  committedDate       DateTime      @db.Date
-  executedAt          DateTime?     @db.Timestamptz(3)
-  status              ActionStatus  @default(PENDIENTE)
+  responsibleId       String            @db.Uuid
+  committedDate       DateTime          @db.Date
+  executedAt          DateTime?         @db.Timestamptz(3)
+  status              ActionStatus      @default(PENDIENTE)
   isEffective         Boolean?
-  verifiedById        String?       @db.Uuid
-  verifiedAt          DateTime?     @db.Timestamptz(3)
+  verifiedById        String?           @db.Uuid
+  verifiedAt          DateTime?         @db.Timestamptz(3)
   verificationComment String?
-  nonConformity       NonConformity @relation(fields: [nonConformityId], references: [id], onDelete: Cascade)
-  responsible         User          @relation("ActionResponsible", fields: [responsibleId], references: [id], onDelete: Restrict)
-  verifiedBy          User?         @relation("ActionVerifiedBy", fields: [verifiedById], references: [id], onDelete: Restrict)
+  replacesActionId    String?           @unique @db.Uuid
+  nonConformity       NonConformity     @relation(fields: [nonConformityId], references: [id], onDelete: Cascade)
+  responsible         User              @relation("ActionResponsible", fields: [responsibleId], references: [id], onDelete: Restrict)
+  verifiedBy          User?             @relation("ActionVerifiedBy", fields: [verifiedById], references: [id], onDelete: Restrict)
+  replacesAction      CorrectiveAction? @relation("ActionReplacement", fields: [replacesActionId], references: [id], onDelete: Restrict)
+  replacementAction   CorrectiveAction? @relation("ActionReplacement")
 
   @@index([nonConformityId])
   @@index([responsibleId])

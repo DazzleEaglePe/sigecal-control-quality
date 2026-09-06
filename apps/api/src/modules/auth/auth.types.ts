@@ -7,6 +7,7 @@ import type {
 } from '@sigecal/shared';
 
 export interface AuthUserRecord {
+  readonly sessionVersion: number;
   readonly id: string;
   readonly firstName: string;
   readonly lastName: string;
@@ -68,17 +69,27 @@ export interface IssuedTokenPair {
 }
 
 export interface AccessClaims {
+  readonly sessionVersion: number;
   readonly userId: string;
   readonly role: Role;
 }
 export interface RefreshClaims {
+  readonly sessionVersion: number;
   readonly userId: string;
   readonly tokenId: string;
 }
 
 export interface TokenPort {
-  issuePair(userId: string, role: Role): Promise<IssuedTokenPair>;
-  issueAccess(userId: string, role: Role): Promise<string>;
+  issuePair(
+    userId: string,
+    role: Role,
+    sessionVersion: number,
+  ): Promise<IssuedTokenPair>;
+  issueAccess(
+    userId: string,
+    role: Role,
+    sessionVersion: number,
+  ): Promise<string>;
   verifyAccess(token: string): Promise<AccessClaims>;
   verifyRefresh(token: string): Promise<RefreshClaims>;
   hash(token: string): string;

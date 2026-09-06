@@ -88,6 +88,15 @@ describe('AccountAccessService invitaciones', () => {
 });
 
 describe('AccountAccessService recuperación', () => {
+  it('no revela una cuenta existente si falla SMTP', async () => {
+    const { repository, sendPasswordReset, service } = setup();
+    repository.user = target(true);
+    sendPasswordReset.mockRejectedValueOnce(new Error('SMTP desconectado'));
+    await expect(
+      service.requestPasswordReset({ email: target().email }),
+    ).resolves.toBeUndefined();
+    expect(sendPasswordReset).toHaveBeenCalledOnce();
+  });
   it('no revela ni envía mensajes cuando el correo no existe', async () => {
     const { repository, sendPasswordReset, service } = setup();
     repository.user = null;
@@ -96,7 +105,9 @@ describe('AccountAccessService recuperación', () => {
     ).resolves.toBeUndefined();
     expect(sendPasswordReset).not.toHaveBeenCalled();
   });
+});
 
+describe('AccountAccessService consumo', () => {
   it('consume el token con contraseña hasheada', async () => {
     const { repository, service } = setup();
     await service.resetPassword({

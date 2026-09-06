@@ -31,20 +31,29 @@ const durationSeconds = (duration: string): number => {
 };
 
 const AccessPayloadSchema = z.object({
+  sessionVersion: z.number().int().nonnegative(),
   sub: z.uuid(),
   role: RoleSchema,
 });
-const RefreshPayloadSchema = z.object({ sub: z.uuid(), jti: z.uuid() });
+const RefreshPayloadSchema = z.object({
+  sub: z.uuid(),
+  jti: z.uuid(),
+  sessionVersion: z.number().int().nonnegative(),
+});
 
 export class JwtTokenService implements TokenPort {
   private readonly accessSecret = encoder.encode(env.JWT_ACCESS_SECRET);
   private readonly refreshSecret = encoder.encode(env.JWT_REFRESH_SECRET);
 
-  public async issuePair(userId: string, role: Role): Promise<IssuedTokenPair> {
+  public async issuePair(
+    userId: string,
+    role: Role,
+    sessionVersion: number,
+  ): Promise<IssuedTokenPair> {
     const refreshId = randomUUID();
     const [accessToken, refreshToken] = await Promise.all([
-      this.issueAccess(userId, role),
-      new SignJWT({})
+      this.issueAccess(userId, role, sessionVersion),
+      new SignJWT({ sessionVersion })
         .setProtectedHeader({ alg: algorithm })
         .setSubject(userId)
         .setJti(refreshId)
@@ -64,8 +73,12 @@ export class JwtTokenService implements TokenPort {
     };
   }
 
-  public async issueAccess(userId: string, role: Role): Promise<string> {
-    return new SignJWT({ role })
+  public async issueAccess(
+    userId: string,
+    role: Role,
+    sessionVersion: number,
+  ): Promise<string> {
+    return new SignJWT({ role, sessionVersion })
       .setProtectedHeader({ alg: algorithm })
       .setSubject(userId)
       .setIssuedAt()
@@ -82,7 +95,11 @@ export class JwtTokenService implements TokenPort {
       audience: AUDIENCE,
     });
     const parsed = AccessPayloadSchema.parse(payload);
-    return { userId: parsed.sub, role: parsed.role };
+    return {
+      userId: parsed.sub,
+      role: parsed.role,
+      sessionVersion: parsed.sessionVersion,
+    };
   }
 
   public async verifyRefresh(token: string): Promise<RefreshClaims> {
@@ -92,7 +109,11 @@ export class JwtTokenService implements TokenPort {
       audience: AUDIENCE,
     });
     const parsed = RefreshPayloadSchema.parse(payload);
-    return { userId: parsed.sub, tokenId: parsed.jti };
+    return {
+      userId: parsed.sub,
+      tokenId: parsed.jti,
+      sessionVersion: parsed.sessionVersion,
+    };
   }
 
   public hash(token: string): string {

@@ -14,6 +14,7 @@ const TEST_USER_ID = '11111111-1111-4111-a111-111111111111';
 export const testUser = (
   overrides: Partial<AuthUserRecord> = {},
 ): AuthUserRecord => ({
+  sessionVersion: 0,
   id: TEST_USER_ID,
   firstName: 'Jefatura',
   lastName: 'Calidad',
@@ -101,7 +102,12 @@ export class MemoryAuthRepository implements AuthRepositoryPort {
   public changePassword(_userId: string, passwordHash: string): Promise<void> {
     this.changedPasswordHash = passwordHash;
     if (this.user) {
-      this.user = { ...this.user, passwordHash, mustChangePassword: false };
+      this.user = {
+        ...this.user,
+        passwordHash,
+        mustChangePassword: false,
+        sessionVersion: this.user.sessionVersion + 1,
+      };
     }
     return Promise.resolve();
   }
@@ -140,6 +146,7 @@ export class FakeTokenService implements TokenPort {
     return Promise.resolve({
       userId: TEST_USER_ID,
       role: 'JEFE_CALIDAD' as const,
+      sessionVersion: 0,
     });
   }
 
@@ -151,6 +158,7 @@ export class FakeTokenService implements TokenPort {
     return Promise.resolve({
       userId: TEST_USER_ID,
       tokenId: `22222222-2222-4222-a222-${suffix}`,
+      sessionVersion: 0,
     });
   }
 

@@ -88,7 +88,10 @@ export class NonConformitiesService implements NonConformitiesUseCases {
     ensureNCManager(actor);
     const current = await this.existing(id, actor);
     ensureNCEditable(current.status);
-    const references = await this.nonConformities.findReferences(input);
+    const references = await this.nonConformities.findReferences({
+      ...input,
+      batchId: current.batchId,
+    });
     ensureNCReferences(
       references,
       undefined,
@@ -140,8 +143,9 @@ export class NonConformitiesService implements NonConformitiesUseCases {
     const references = await this.nonConformities.findActionReferences(
       nonConformityId,
       input.responsibleId,
+      input.replacesActionId,
     );
-    ensureActionReferences(references);
+    ensureActionReferences(references, input.replacesActionId);
     const id = await this.mutations.createAction(
       nonConformityId,
       input,

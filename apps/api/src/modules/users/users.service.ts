@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 
 import type {
+  AssignmentOptionsQuery,
   CreateUserRequest,
   UpdateUserRequest,
   UserItem,
@@ -44,6 +45,10 @@ export class UsersService implements UsersUseCases {
       USER_SORT_FIELDS.find((field) => field === query.sortBy) ?? 'lastName';
     const result = await this.repository.list(query, sortBy);
     return { data: result.items.map(toItem), total: result.total };
+  }
+
+  public assignmentOptions(query: AssignmentOptionsQuery) {
+    return this.repository.assignmentOptions(query);
   }
 
   public async get(id: string): Promise<UserItem> {

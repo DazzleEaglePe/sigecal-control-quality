@@ -1,6 +1,7 @@
 import type { Request, RequestHandler } from 'express';
 
 import type {
+  AssignmentOptionsQuery,
   CreateUserRequest,
   UpdateUserRequest,
   UpdateUserStatusRequest,
@@ -16,6 +17,28 @@ const entityId = (request: Request): string => {
 
 export class UsersController {
   public constructor(private readonly users: UsersUseCases) {}
+
+  public readonly assignmentOptions: RequestHandler = async (
+    request,
+    response,
+    next,
+  ) => {
+    try {
+      const query = request.query as unknown as AssignmentOptionsQuery;
+      const result = await this.users.assignmentOptions(query);
+      response.json({
+        success: true,
+        data: result.data,
+        meta: {
+          page: query.page,
+          pageSize: query.pageSize,
+          total: result.total,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
   public readonly list: RequestHandler = async (request, response, next) => {
     try {

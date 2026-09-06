@@ -1,5 +1,10 @@
 import { AuditAction, AccountTokenType } from '../../generated/prisma/enums.js';
 import type { Prisma, PrismaClient } from '../../generated/prisma/client.js';
+import {
+  lockAccount,
+  revokeAccountCredentials,
+} from '../auth/auth.revocation.js';
+import { ConflictError } from '../../errors/app-error.js';
 import type {
   AccountAccessRepositoryPort,
   AccountTarget,
@@ -22,6 +27,20 @@ interface ConsumableAccountToken {
   readonly usedAt: Date | null;
   readonly user: { readonly isActive: boolean };
 }
+
+const ensureCurrentTarget = (
+  user: AccountTarget,
+  expectedEmail?: string,
+): void => {
+  if (
+    !user.isActive ||
+    (expectedEmail !== undefined && user.email !== expectedEmail)
+  )
+    throw new ConflictError(
+      'La cuenta cambió. Reintente la solicitud.',
+      'ACCOUNT_CHANGED',
+    );
+};
 
 export class AccountAccessRepository implements AccountAccessRepositoryPort {
   public constructor(private readonly client: PrismaClient) {}
@@ -47,17 +66,24 @@ export class AccountAccessRepository implements AccountAccessRepositoryPort {
     expiresAt: Date,
     actorId?: string,
     ipAddress?: string,
+    expectedEmail?: string,
   ): Promise<void> {
     const kind = AccountTokenType[type];
-    await this.client.$transaction([
-      this.client.accountToken.updateMany({
+    await this.client.$transaction(async (tx) => {
+      await lockAccount(tx, userId);
+      const user = await tx.user.findUniqueOrThrow({
+        where: { id: userId },
+        select: targetSelection,
+      });
+      ensureCurrentTarget(user, expectedEmail);
+      await tx.accountToken.updateMany({
         where: { userId, type: kind, usedAt: null },
         data: { usedAt: new Date() },
-      }),
-      this.client.accountToken.create({
+      });
+      await tx.accountToken.create({
         data: { userId, type: kind, tokenHash, expiresAt },
-      }),
-      this.client.auditLog.create({
+      });
+      await tx.auditLog.create({
         data: {
           userId: actorId ?? userId,
           action: AuditAction.CREATE,
@@ -66,8 +92,8 @@ export class AccountAccessRepository implements AccountAccessRepositoryPort {
           ipAddress: ipAddress ?? null,
           after: { type, expiresAt: expiresAt.toISOString() },
         },
-      }),
-    ]);
+      });
+    });
   }
 
   public async consumeToken(
@@ -76,6 +102,12 @@ export class AccountAccessRepository implements AccountAccessRepositoryPort {
     passwordHash: string,
   ): Promise<boolean> {
     return this.client.$transaction(async (tx) => {
+      const target = await tx.accountToken.findUnique({
+        where: { tokenHash },
+        select: { userId: true },
+      });
+      if (!target) return false;
+      await lockAccount(tx, target.userId);
       const now = new Date();
       const token = await tx.accountToken.findUnique({
         where: { tokenHash },
@@ -116,16 +148,14 @@ export class AccountAccessRepository implements AccountAccessRepositoryPort {
       where: { id: userId },
       data: {
         passwordHash,
+        sessionVersion: { increment: 1 },
         mustChangePassword: false,
         failedAttempts: 0,
         lockedUntil: null,
         ...(type === 'ACTIVATION' ? { emailVerifiedAt: now } : {}),
       },
     });
-    await tx.refreshToken.updateMany({
-      where: { userId, revokedAt: null },
-      data: { revokedAt: now },
-    });
+    await revokeAccountCredentials(tx, userId);
     await tx.auditLog.create({
       data: {
         userId,

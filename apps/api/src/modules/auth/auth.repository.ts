@@ -8,6 +8,7 @@ import type {
 } from './auth.types.js';
 
 const userSelection = {
+  sessionVersion: true,
   id: true,
   firstName: true,
   lastName: true,
@@ -136,6 +137,7 @@ export class AuthRepository implements AuthRepositoryPort {
         where: { id: userId },
         data: {
           passwordHash,
+          sessionVersion: { increment: 1 },
           mustChangePassword: false,
           failedAttempts: 0,
           lockedUntil: null,
@@ -144,6 +146,10 @@ export class AuthRepository implements AuthRepositoryPort {
       this.client.refreshToken.updateMany({
         where: { userId, revokedAt: null },
         data: { revokedAt: new Date() },
+      }),
+      this.client.accountToken.updateMany({
+        where: { userId, usedAt: null },
+        data: { usedAt: new Date() },
       }),
       this.client.auditLog.create({
         data: {

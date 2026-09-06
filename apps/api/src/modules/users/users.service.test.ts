@@ -43,6 +43,9 @@ const record = (id = '11111111-1111-4111-a111-111111111111'): UserRecord => ({
 });
 
 class MemoryUsers implements UserRepositoryPort {
+  public assignmentOptions() {
+    return Promise.resolve({ data: [], total: 0 });
+  }
   public users: UserRecord[] = [];
   public activeArea = true;
   public revoked = false;

@@ -8,11 +8,11 @@ import type {
   InspectionTemplateItem,
   ParameterItem,
   ProcessStageItem,
-  UserItem,
+  AssignmentOption,
 } from '@sigecal/shared';
 
 import { errorMessage } from '../admin/admin-ui.js';
-import { listUsers } from '../admin/admin-api.js';
+import { listAssignmentOptions } from '../admin/assignment-options-api.js';
 import type { AuthorizedRequest } from '../auth/auth-context.js';
 import { listBatches } from '../batches/batches-api.js';
 import { listCatalog, type CatalogItem } from '../masters/catalog-api.js';
@@ -139,7 +139,7 @@ export interface InspectionMasters {
   readonly stages: readonly ProcessStageItem[];
   readonly equipment: readonly EquipmentItem[];
   readonly parameters: readonly ParameterItem[];
-  readonly users: readonly UserItem[];
+  readonly users: readonly AssignmentOption[];
   readonly templates: readonly InspectionTemplateItem[];
 }
 const emptyMasters: InspectionMasters = {
@@ -160,7 +160,7 @@ const loadMasters = async (
       listCatalog(request, 'stages'),
       listCatalog(request, 'equipment'),
       listCatalog(request, 'parameters'),
-      listUsers(request),
+      listAssignmentOptions(request),
       listInspectionTemplates(request, {
         page: 1,
         pageSize: 100,
@@ -205,12 +205,12 @@ export const useInspectionFilterMasters = (
   includeUsers: boolean,
 ) => {
   const [stages, setStages] = useState<readonly ProcessStageItem[]>([]);
-  const [users, setUsers] = useState<readonly UserItem[]>([]);
+  const [users, setUsers] = useState<readonly AssignmentOption[]>([]);
   const [error, setError] = useState<string>();
   useEffect(() => {
     let active = true;
     const usersRequest = includeUsers
-      ? listUsers(request).then((response) => response.data)
+      ? listAssignmentOptions(request).then((response) => response.data)
       : Promise.resolve([]);
     void Promise.all([listCatalog(request, 'stages'), usersRequest])
       .then(([nextStages, nextUsers]) => {

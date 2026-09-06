@@ -99,6 +99,17 @@ describe('AuthService rotación', () => {
 });
 
 describe('AuthService sesión y contraseña', () => {
+  it('rechaza el acceso anterior después de cambiar la contraseña', async () => {
+    const { service } = setup();
+    await expect(service.authenticate('valid-access')).resolves.toBeDefined();
+    await service.changePassword(testUser().id, {
+      currentPassword: 'Correcta1',
+      newPassword: 'NuevaClave2',
+    });
+    await expect(service.authenticate('valid-access')).rejects.toMatchObject({
+      code: 'TOKEN_INVALID',
+    });
+  });
   it('rechaza un access token si el rol almacenado cambió', async () => {
     const { repository, service } = setup();
     repository.user = testUser({ role: 'ADMIN' });

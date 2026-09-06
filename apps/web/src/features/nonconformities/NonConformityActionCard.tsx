@@ -101,6 +101,12 @@ const ActionFacts = ({
         <dd>{localDateTime(action.executedAt)}</dd>
       </div>
     ) : null}
+    {action.replacesActionId ? (
+      <div>
+        <dt>Trazabilidad</dt>
+        <dd>Reemplaza una acción no eficaz anterior</dd>
+      </div>
+    ) : null}
     {action.verifiedBy ? (
       <div>
         <dt>Verificada por</dt>

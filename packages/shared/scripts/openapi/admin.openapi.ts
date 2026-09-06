@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+  AssignmentOptionsResponseSchema,
   AreaListResponseSchema,
   AreaResponseSchema,
   CreateAreaRequestSchema,
@@ -34,6 +35,40 @@ const idParameter = {
 };
 
 export const adminPaths = {
+  '/users/assignment-options': {
+    get: {
+      ...secured,
+      operationId: 'listAssignmentOptions',
+      summary: 'Opciones mínimas de responsables activos para los cuatro roles',
+      tags: ['Usuarios'],
+      parameters: [
+        { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1 } },
+        {
+          name: 'pageSize',
+          in: 'query',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
+        { name: 'search', in: 'query', schema: { type: 'string' } },
+        {
+          name: 'role',
+          in: 'query',
+          schema: {
+            type: 'string',
+            enum: ['ADMIN', 'JEFE_CALIDAD', 'ANALISTA', 'OPERARIO'],
+          },
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Responsables activos paginados, sin datos privados.',
+          content: json('#/components/schemas/AssignmentOptionsResponse'),
+        },
+        '400': errorResponse('Consulta inválida.'),
+        '401': errorResponse('Sesión inválida.'),
+        '403': errorResponse('Contraseña provisional.'),
+      },
+    },
+  },
   '/users': {
     get: {
       ...secured,
@@ -240,6 +275,7 @@ export const adminPaths = {
 export const adminSchemas = {
   UserResponse: schema(UserResponseSchema),
   UserListResponse: schema(UserListResponseSchema),
+  AssignmentOptionsResponse: schema(AssignmentOptionsResponseSchema),
   CreateUserRequest: schema(CreateUserRequestSchema),
   UpdateUserRequest: schema(UpdateUserRequestSchema),
   UpdateUserStatusRequest: schema(UpdateUserStatusRequestSchema),

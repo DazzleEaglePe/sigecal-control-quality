@@ -95,6 +95,7 @@ export const actionRecord = (
   verifiedBy: null,
   verifiedAt: null,
   verificationComment: null,
+  replacesActionId: null,
   ...overrides,
 });
 
@@ -112,6 +113,7 @@ export class MemoryNonConformityReadRepository implements NonConformityReadRepos
   public actionReferences: ActionReferences = {
     nonConformity: this.record,
     responsible: { ...otherPerson, isActive: true },
+    replacesAction: null,
   };
 
   public list(_query: NonConformityListQuery, _actor: NonConformityActor) {

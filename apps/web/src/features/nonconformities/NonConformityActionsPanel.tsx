@@ -36,6 +36,7 @@ const useCreateActionForm = (
       description: inputValue(form, 'description'),
       responsibleId: inputValue(form, 'responsibleId'),
       committedDate: inputValue(form, 'committedDate'),
+      replacesActionId: inputValue(form, 'replacesActionId') || undefined,
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Revise el formulario.');
@@ -59,10 +60,51 @@ const useCreateActionForm = (
   return { busy, error, submit };
 };
 
-const ActionFormFields = ({
+const ReplacementField = ({
+  nc,
+}: {
+  readonly nc: NonConformityDetail;
+}): React.JSX.Element | null => {
+  const failed = nc.actions.filter(
+    (action) =>
+      action.status === 'NO_EFICAZ' &&
+      !nc.actions.some((candidate) => candidate.replacesActionId === action.id),
+  );
+  if (failed.length === 0) return null;
+  return (
+    <label className="form-span">
+      Reemplaza la acción no eficaz
+      <NativeSelect name="replacesActionId" defaultValue="">
+        <option value="">No corresponde</option>
+        {failed.map((action) => (
+          <option key={action.id} value={action.id}>
+            {action.description}
+          </option>
+        ))}
+      </NativeSelect>
+    </label>
+  );
+};
+
+const ResponsibleOptions = ({
   masters,
 }: {
   readonly masters: NonConformityMasters;
+}) =>
+  masters.users
+    .filter((person) => person.isActive)
+    .map((person) => (
+      <option key={person.id} value={person.id}>
+        {person.firstName} {person.lastName}
+      </option>
+    ));
+
+const ActionFormFields = ({
+  masters,
+  nc,
+}: {
+  readonly masters: NonConformityMasters;
+  readonly nc: NonConformityDetail;
 }): React.JSX.Element => (
   <>
     <label>
@@ -79,13 +121,7 @@ const ActionFormFields = ({
         <option value="" disabled>
           Seleccione una persona
         </option>
-        {masters.users
-          .filter((person) => person.isActive)
-          .map((person) => (
-            <option key={person.id} value={person.id}>
-              {person.firstName} {person.lastName}
-            </option>
-          ))}
+        <ResponsibleOptions masters={masters} />
       </NativeSelect>
     </label>
     <label>
@@ -96,16 +132,19 @@ const ActionFormFields = ({
       Descripción
       <Textarea name="description" rows={2} required maxLength={1000} />
     </label>
+    <ReplacementField nc={nc} />
   </>
 );
 
 const CreateActionForm = ({
   nonConformityId,
   masters,
+  nc,
   completed,
 }: {
   readonly nonConformityId: string;
   readonly masters: NonConformityMasters;
+  readonly nc: NonConformityDetail;
   readonly completed: () => Promise<void>;
 }): React.JSX.Element => {
   const form = useCreateActionForm(nonConformityId, completed);
@@ -121,7 +160,7 @@ const CreateActionForm = ({
         {form.error ? (
           <p className="form-error form-span">{form.error}</p>
         ) : null}
-        <ActionFormFields masters={masters} />
+        <ActionFormFields masters={masters} nc={nc} />
         <div className="form-actions form-span">
           <button className="primary-button" type="submit" disabled={form.busy}>
             {form.busy ? 'Registrando…' : 'Registrar acción'}
@@ -190,6 +229,7 @@ export const NonConformityActionsPanel = ({
         <CreateActionForm
           nonConformityId={nc.id}
           masters={masters}
+          nc={nc}
           completed={completed}
         />
       ) : null}

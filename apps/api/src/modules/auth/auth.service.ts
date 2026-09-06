@@ -1,7 +1,6 @@
 import type {
   ChangePasswordRequest,
   LoginRequest,
-  Role,
   UserSession,
 } from '@sigecal/shared';
 
@@ -9,6 +8,7 @@ import { permissionsFor } from '../../config/permissions.js';
 import { LockedError, UnauthorizedError } from '../../errors/app-error.js';
 import { env } from '../../config/env.js';
 import type {
+  AccessClaims,
   AuthRepositoryPort,
   AuthUseCases,
   AuthUserRecord,
@@ -18,11 +18,18 @@ import type {
   PasswordPort,
   RefreshResult,
   TokenPort,
+  StoredRefreshToken,
 } from './auth.types.js';
 
 const INVALID_PASSWORD_HASH =
   '$2b$10$AFX9gc5f900h1Dk2l2I3JOX4VbF9ibDi1STMV2Vgh1UA0vYr0mHaC';
 const INVALID_CREDENTIALS = 'Correo o contraseña incorrectos.';
+
+const refreshIsExpired = (stored: StoredRefreshToken, version: number) =>
+  stored.expiresAt <= new Date() ||
+  !stored.user.isActive ||
+  stored.user.sessionVersion !== version ||
+  !stored.user.emailVerifiedAt;
 
 const sessionFrom = (user: AuthUserRecord): UserSession => ({
   id: user.id,
@@ -58,7 +65,11 @@ export class AuthService implements AuthUseCases {
     );
     if (!validPassword) return this.rejectFailedLogin(user);
 
-    const issued = await this.tokens.issuePair(user.id, user.role);
+    const issued = await this.tokens.issuePair(
+      user.id,
+      user.role,
+      user.sessionVersion,
+    );
     await this.repository.completeLogin(
       this.newRefresh(user.id, issued),
       ipAddress,
@@ -87,16 +98,16 @@ export class AuthService implements AuthUseCases {
         'TOKEN_REUSE_DETECTED',
       );
     }
-    if (
-      stored.expiresAt <= new Date() ||
-      !stored.user.isActive ||
-      !stored.user.emailVerifiedAt
-    ) {
+    if (refreshIsExpired(stored, claims.sessionVersion)) {
       await this.repository.revokeAllForUser(stored.userId);
       throw new UnauthorizedError('La sesión ha vencido.', 'TOKEN_EXPIRED');
     }
 
-    const issued = await this.tokens.issuePair(stored.userId, stored.user.role);
+    const issued = await this.tokens.issuePair(
+      stored.userId,
+      stored.user.role,
+      stored.user.sessionVersion,
+    );
     const rotated = await this.repository.rotateRefresh(
       stored.id,
       this.newRefresh(stored.userId, issued),
@@ -126,14 +137,19 @@ export class AuthService implements AuthUseCases {
   public async authenticate(
     accessToken: string,
   ): Promise<AuthenticatedRequestUser> {
-    let claims: { readonly userId: string; readonly role: Role };
+    let claims: AccessClaims;
     try {
       claims = await this.tokens.verifyAccess(accessToken);
     } catch {
       throw this.invalidToken();
     }
     const user = await this.repository.findUserById(claims.userId);
-    if (!user?.isActive || !user.emailVerifiedAt || user.role !== claims.role)
+    if (
+      !user?.isActive ||
+      !user.emailVerifiedAt ||
+      user.role !== claims.role ||
+      user.sessionVersion !== claims.sessionVersion
+    )
       throw this.invalidToken();
     return {
       userId: user.id,

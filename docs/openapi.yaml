@@ -275,10 +275,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
-  /users:
+  /users/assignment-options:
     get:
       security: &a1
         - bearerAuth: []
+      operationId: listAssignmentOptions
+      summary: Opciones mínimas de responsables activos para los cuatro roles
+      tags:
+        - Usuarios
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum:
+              - ADMIN
+              - JEFE_CALIDAD
+              - ANALISTA
+              - OPERARIO
+      responses:
+        '200':
+          description: Responsables activos paginados, sin datos privados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssignmentOptionsResponse'
+        '400':
+          description: Consulta inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sesión inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Contraseña provisional.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /users:
+    get:
+      security: *a1
       operationId: listUsers
       summary: Lista usuarios con filtros y paginación
       tags:
@@ -3747,6 +3804,66 @@ components:
       required:
         - success
         - data
+      additionalProperties: false
+    AssignmentOptionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              firstName:
+                type: string
+              lastName:
+                type: string
+              role:
+                type: string
+                enum:
+                  - ADMIN
+                  - JEFE_CALIDAD
+                  - ANALISTA
+                  - OPERARIO
+              isActive:
+                type: boolean
+            required:
+              - id
+              - firstName
+              - lastName
+              - role
+              - isActive
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+        - meta
       additionalProperties: false
     CreateUserRequest:
       type: object
@@ -11832,6 +11949,10 @@ components:
           type: string
           format: date
           pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        replacesActionId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
       required:
         - type
         - description
@@ -12741,6 +12862,12 @@ components:
                     anyOf:
                       - type: string
                       - type: 'null'
+                  replacesActionId:
+                    anyOf:
+                      - type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      - type: 'null'
                 required:
                   - id
                   - nonConformityId
@@ -12754,6 +12881,7 @@ components:
                   - verifiedBy
                   - verifiedAt
                   - verificationComment
+                  - replacesActionId
                 additionalProperties: false
           required:
             - id
@@ -12899,6 +13027,12 @@ components:
               anyOf:
                 - type: string
                 - type: 'null'
+            replacesActionId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
           required:
             - id
             - nonConformityId
@@ -12912,6 +13046,7 @@ components:
             - verifiedBy
             - verifiedAt
             - verificationComment
+            - replacesActionId
           additionalProperties: false
         meta:
           type: object
@@ -13030,6 +13165,12 @@ components:
                 anyOf:
                   - type: string
                   - type: 'null'
+              replacesActionId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
             required:
               - id
               - nonConformityId
@@ -13043,6 +13184,7 @@ components:
               - verifiedBy
               - verifiedAt
               - verificationComment
+              - replacesActionId
             additionalProperties: false
         meta:
           type: object

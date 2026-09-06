@@ -1,6 +1,8 @@
 import { AuditAction } from '../../generated/prisma/enums.js';
+import { revokeAccountCredentials } from '../auth/auth.revocation.js';
 import type { PrismaClient } from '../../generated/prisma/client.js';
 import type {
+  AssignmentOptionsQuery,
   CreateUserRequest,
   UpdateUserRequest,
   UserListQuery,
@@ -51,6 +53,9 @@ const auditView = (user: UserRecord) => ({
 });
 
 const updateData = (input: UpdateUserRequest) => ({
+  ...(input.email !== undefined || input.role !== undefined
+    ? { sessionVersion: { increment: 1 } }
+    : {}),
   ...(input.firstName === undefined ? {} : { firstName: input.firstName }),
   ...(input.lastName === undefined ? {} : { lastName: input.lastName }),
   ...(input.email === undefined
@@ -65,6 +70,37 @@ const updateData = (input: UpdateUserRequest) => ({
 
 export class UserRepository implements UserRepositoryPort {
   public constructor(private readonly client: PrismaClient) {}
+
+  public async assignmentOptions(query: AssignmentOptionsQuery) {
+    const where = {
+      isActive: true,
+      ...(query.role ? { role: query.role } : {}),
+      ...(query.search
+        ? {
+            OR: ['firstName', 'lastName'].map((field) => ({
+              [field]: { contains: query.search, mode: 'insensitive' },
+            })),
+          }
+        : {}),
+    };
+    const [data, total] = await this.client.$transaction([
+      this.client.user.findMany({
+        where,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          isActive: true,
+        },
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }, { id: 'asc' }],
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+      this.client.user.count({ where }),
+    ]);
+    return { data, total };
+  }
 
   public async list(query: UserListQuery, sortBy: UserSortField) {
     const where = {
@@ -175,6 +211,8 @@ export class UserRepository implements UserRepositoryPort {
         data: updateData(input),
         select: userSelection,
       });
+      if (input.email !== undefined || input.role !== undefined)
+        await revokeAccountCredentials(tx, id);
       await tx.auditLog.create({
         data: {
           userId: actorId,
@@ -203,19 +241,13 @@ export class UserRepository implements UserRepositoryPort {
       });
       const user = await tx.user.update({
         where: { id },
-        data: { isActive },
+        data: {
+          isActive,
+          ...(!isActive ? { sessionVersion: { increment: 1 } } : {}),
+        },
         select: userSelection,
       });
-      if (!isActive)
-        await tx.refreshToken.updateMany({
-          where: { userId: id, revokedAt: null },
-          data: { revokedAt: new Date() },
-        });
-      if (!isActive)
-        await tx.accountToken.updateMany({
-          where: { userId: id, usedAt: null },
-          data: { usedAt: new Date() },
-        });
+      if (!isActive) await revokeAccountCredentials(tx, id);
       await tx.auditLog.create({
         data: {
           userId: actorId,

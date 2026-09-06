@@ -21,6 +21,7 @@ import type {
 } from '../auth/auth.types.js';
 import { NonConformitiesService } from './nonconformities.service.js';
 import {
+  actionRecord,
   createInput,
   IDS,
   MemoryNonConformityMutationRepository,
@@ -59,14 +60,18 @@ class RoleAuth implements AuthUseCases {
   }
 }
 
-const appFor = (role: Role) =>
-  createApp({
+const appFor = (role: Role, verifiedAction = false) => {
+  const reads = new MemoryNonConformityReadRepository();
+  if (verifiedAction)
+    reads.actions = [actionRecord({ status: 'VERIFICADA', isEffective: true })];
+  return createApp({
     authService: new RoleAuth(role),
     nonConformitiesService: new NonConformitiesService(
-      new MemoryNonConformityReadRepository(),
+      reads,
       new MemoryNonConformityMutationRepository(),
     ),
   });
+};
 const bearer = { Authorization: 'Bearer access-prueba' };
 
 describe('rutas de no conformidades', () => {
@@ -117,7 +122,7 @@ describe('respuestas de transiciones de no conformidades', () => {
       IDS.nc,
     );
 
-    const closed = await request(appFor('JEFE_CALIDAD'))
+    const closed = await request(appFor('JEFE_CALIDAD', true))
       .post(`${env.API_PREFIX}/nonconformities/${IDS.nc}/close`)
       .set(bearer)
       .send({ closeComment: 'Resuelto en la prueba de ruta.' })

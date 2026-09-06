@@ -64,6 +64,17 @@ No devuelve versiones, credenciales, nombres de host ni cadenas de conexión.
 
 ## 3. Autenticación — `/auth`
 
+### Consulta operativa de responsables
+
+`GET /users/assignment-options` permite a los cuatro roles autenticados con
+contraseña definitiva consultar exclusivamente usuarios activos para asignar
+inspecciones, no conformidades y acciones. No concede permisos de escritura.
+Devuelve `id`, `firstName`, `lastName`, `role`, `isActive` y `meta` obligatoria.
+Acepta `page`, `pageSize` (máximo 100), `search` (solo nombres) y `role`.
+Orden estable por apellidos, nombres e identificador. No expone correo, área,
+cargo, accesos ni estado de activación. `/users` y `/:id` siguen siendo ADMIN.
+Los selectores recorren las páginas, sin truncar silenciosamente a 20 usuarios.
+
 | Método | Ruta                    | Descripción                                                                                | Acceso              |
 | ------ | ----------------------- | ------------------------------------------------------------------------------------------ | ------------------- |
 | POST   | `/auth/login`           | Inicia sesión. Devuelve `accessToken` y usuario; establece el refresh en cookie `httpOnly` | público             |
@@ -372,7 +383,13 @@ GET /nonconformities/:id
 }}
 
 POST /nonconformities/:id/close
-409 si alguna acción no está VERIFICADA
+409 si no hay acciones o alguna acción no está VERIFICADA
+
+La comprobación de acciones y el cierre son atómicos respecto a las altas,
+ediciones, ejecuciones y verificaciones de acciones. `NO_EFICAZ` no autoriza
+el cierre. Una acción `NO_EFICAZ` solo deja de bloquear cuando una acción posterior
+de la misma no conformidad declara `replacesActionId` y la cadena termina en
+`VERIFICADA`. El antecedente no eficaz permanece visible e inmutable.
 → { "code": "NC_HAS_UNVERIFIED_ACTIONS" }
 
 POST /nonconformities/actions/:actionId/verify
