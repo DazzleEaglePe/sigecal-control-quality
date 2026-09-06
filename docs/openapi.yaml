@@ -27,6 +27,8 @@ tags:
     description: Sesiones, perfiles y correcciones sensoriales inmutables.
   - name: No conformidades
     description: Ciclo de vida de no conformidades y acciones correctivas.
+  - name: Notificaciones
+    description: Avisos internos y lectura aislada por usuario.
 paths:
   /health:
     get:
@@ -3054,6 +3056,89 @@ paths:
                 $ref: '#/components/schemas/CorrectiveActionResponse'
         '409':
           description: La acción no fue ejecutada o el verificador coincide con el responsable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /notifications:
+    get:
+      security: &a30
+        - bearerAuth: []
+      tags: &a31
+        - Notificaciones
+      operationId: listNotifications
+      summary: Lista las notificaciones del usuario autenticado
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: isRead
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Notificaciones propias paginadas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
+  /notifications/unread-count:
+    get:
+      security: *a30
+      tags: *a31
+      operationId: getUnreadNotificationCount
+      summary: Cuenta las notificaciones no leídas del usuario
+      responses:
+        '200':
+          description: Contador de no leídas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadNotificationCountResponse'
+  /notifications/read-all:
+    patch:
+      security: *a30
+      tags: *a31
+      operationId: markAllNotificationsRead
+      summary: Marca como leídas todas las notificaciones propias
+      responses:
+        '200':
+          description: Cantidad marcada como leída.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadNotificationCountResponse'
+  /notifications/{id}/read:
+    patch:
+      security: *a30
+      tags: *a31
+      operationId: markNotificationRead
+      summary: Marca una notificación propia como leída
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Notificación actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+        '404':
+          description: La notificación no existe o pertenece a otro usuario.
           content:
             application/json:
               schema:
@@ -13186,6 +13271,210 @@ components:
               - verificationComment
               - replacesActionId
             additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    NotificationListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              type:
+                type: string
+                enum:
+                  - INSPECTION_DUE_SOON
+                  - INSPECTION_OVERDUE
+                  - NONCONFORMITY_ASSIGNED
+                  - ACTION_ASSIGNED
+                  - ACTION_DUE_SOON
+              title:
+                type: string
+                minLength: 1
+              message:
+                type: string
+                minLength: 1
+              entityType:
+                anyOf:
+                  - type: string
+                    enum:
+                      - Inspection
+                      - NonConformity
+                      - CorrectiveAction
+                  - type: 'null'
+              entityId:
+                anyOf:
+                  - type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  - type: 'null'
+              isRead:
+                type: boolean
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+            required:
+              - id
+              - type
+              - title
+              - message
+              - entityType
+              - entityId
+              - isRead
+              - createdAt
+            additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    NotificationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            type:
+              type: string
+              enum:
+                - INSPECTION_DUE_SOON
+                - INSPECTION_OVERDUE
+                - NONCONFORMITY_ASSIGNED
+                - ACTION_ASSIGNED
+                - ACTION_DUE_SOON
+            title:
+              type: string
+              minLength: 1
+            message:
+              type: string
+              minLength: 1
+            entityType:
+              anyOf:
+                - type: string
+                  enum:
+                    - Inspection
+                    - NonConformity
+                    - CorrectiveAction
+                - type: 'null'
+            entityId:
+              anyOf:
+                - type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                - type: 'null'
+            isRead:
+              type: boolean
+            createdAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+          required:
+            - id
+            - type
+            - title
+            - message
+            - entityType
+            - entityId
+            - isRead
+            - createdAt
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    UnreadNotificationCountResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            count:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - count
+          additionalProperties: false
         meta:
           type: object
           properties:

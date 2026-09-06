@@ -29,6 +29,7 @@ import './styles/auth-refresh.css';
 import './styles/auth-form-refresh.css';
 import './styles/state-colors.css';
 import './styles/sidebar-collapse.css';
+import './styles/notifications.css';
 
 const rootElement = document.querySelector('#root');
 

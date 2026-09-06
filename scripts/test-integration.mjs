@@ -80,6 +80,7 @@ try {
       '--',
       'src/test/sprint6.integration.test.ts',
       'src/test/sprint6-nc.integration.test.ts',
+      'src/test/sprint6-notifications.integration.test.ts',
     ],
     env,
   );

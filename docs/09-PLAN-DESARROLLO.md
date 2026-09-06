@@ -183,8 +183,8 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [x] Selectores operativos de responsables sin exponer el directorio ADMIN
 - [x] Revocación inmediata de sesiones al cambiar credenciales o permisos
 - [x] Pruebas PostgreSQL aisladas de tokens, concurrencia y cierre
-- [ ] Notificaciones dentro de la aplicación
-- [ ] Tareas programadas de aviso
+- [x] Notificaciones dentro de la aplicación
+- [x] Tareas programadas de aviso
 - [ ] Tablero con todos los indicadores
 - [ ] Exclusión por defecto de datos `DEMO`
 - [ ] Reporte de trazabilidad en PDF

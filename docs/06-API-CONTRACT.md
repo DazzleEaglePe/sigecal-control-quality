@@ -447,6 +447,13 @@ Cada KPI sigue exactamente la fórmula de `02-REQUERIMIENTOS-FUNCIONALES.md`. Un
 
 > La bitácora no expone `POST`, `PATCH` ni `DELETE`. Solo lectura (RF-AUD-04).
 
+`GET /notifications` se pagina con `page` y `pageSize`; `isRead=true|false` es
+opcional. Las rutas de lectura derivan siempre el propietario del token y nunca
+aceptan `userId`. Tipos emitidos: `INSPECTION_DUE_SOON`,
+`INSPECTION_OVERDUE`, `NONCONFORMITY_ASSIGNED`, `ACTION_ASSIGNED` y
+`ACTION_DUE_SOON`. El cliente recibe `entityType` y `entityId` para navegar al
+registro relacionado; la clave interna de deduplicación no forma parte del DTO.
+
 ---
 
 ## 13. Catálogo de códigos de error de negocio

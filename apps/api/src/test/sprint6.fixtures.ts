@@ -41,15 +41,21 @@ export const testActionInput = () => ({
 });
 
 export const createTestBatch = async (db: PrismaClient, actorId: string) => {
+  const token = randomUUID();
+  const sequence = Number.parseInt(token.slice(0, 7), 16);
   const stage = await db.processStage.create({
-    data: { code: 'TEST', name: 'Etapa de prueba', sequence: 1 },
+    data: {
+      code: `TEST-${token}`,
+      name: 'Etapa de prueba',
+      sequence,
+    },
   });
   const piscoType = await db.piscoType.create({
-    data: { code: 'TEST', name: 'Tipo de prueba' },
+    data: { code: `TEST-${token}`, name: 'Tipo de prueba' },
   });
   return db.batch.create({
     data: {
-      code: 'TEST',
+      code: `TEST-${token}`,
       piscoTypeId: piscoType.id,
       currentStageId: stage.id,
       startDate: new Date(),

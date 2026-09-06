@@ -32,6 +32,10 @@ import {
   nonConformityPaths,
   nonConformitySchemas,
 } from './openapi/nonconformities.openapi.js';
+import {
+  notificationPaths,
+  notificationSchemas,
+} from './openapi/notifications.openapi.js';
 
 const outputPath = fileURLToPath(
   new URL('../../../docs/openapi.yaml', import.meta.url),
@@ -92,6 +96,10 @@ const document = {
       name: 'No conformidades',
       description: 'Ciclo de vida de no conformidades y acciones correctivas.',
     },
+    {
+      name: 'Notificaciones',
+      description: 'Avisos internos y lectura aislada por usuario.',
+    },
   ],
   paths: {
     '/health': {
@@ -147,6 +155,7 @@ const document = {
     ...physChemPaths,
     ...sensoryPaths,
     ...nonConformityPaths,
+    ...notificationPaths,
   },
   components: {
     securitySchemes: {
@@ -173,6 +182,7 @@ const document = {
       ...physChemSchemas,
       ...sensorySchemas,
       ...nonConformitySchemas,
+      ...notificationSchemas,
     },
   },
 };

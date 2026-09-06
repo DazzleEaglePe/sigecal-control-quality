@@ -1,0 +1,143 @@
+.notification-trigger {
+  position: relative;
+}
+
+.notification-count {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.4rem;
+  display: grid;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  padding: 0 0.25rem;
+  border: 2px solid var(--background);
+  border-radius: 999px;
+  color: #fff;
+  background: #b3261e;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.notification-panel {
+  width: min(28rem, calc(100vw - 1.5rem));
+  padding: 0;
+}
+
+.notification-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.notification-panel-header strong,
+.notification-panel-header small {
+  display: block;
+}
+
+.notification-panel-header small {
+  margin-top: 0.2rem;
+  color: var(--muted-foreground);
+}
+
+.notification-panel-header button {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  color: var(--foreground);
+  background: transparent;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.notification-panel-header button:disabled {
+  color: var(--muted-foreground);
+  cursor: not-allowed;
+}
+
+.notification-panel-header svg,
+.notification-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.notification-list {
+  max-height: min(31rem, 70vh);
+  overflow-y: auto;
+}
+
+.notification-row {
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.7rem;
+  padding: 0.9rem 1rem;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+  background: var(--popover);
+  text-align: left;
+  cursor: pointer;
+}
+
+.notification-row:hover,
+.notification-row.is-unread {
+  background: var(--secondary);
+}
+
+.notification-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+}
+
+.notification-copy,
+.notification-copy strong,
+.notification-copy span,
+.notification-copy time {
+  display: block;
+}
+
+.notification-copy strong {
+  font-size: 0.82rem;
+}
+
+.notification-copy span {
+  margin-top: 0.22rem;
+  color: var(--muted-foreground);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.notification-copy time {
+  margin-top: 0.4rem;
+  color: var(--muted-foreground);
+  font-size: 0.66rem;
+}
+
+.notification-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: 0.3rem;
+  border-radius: 999px;
+  background: var(--destructive);
+}
+
+.notification-state {
+  margin: 0;
+  padding: 2rem 1rem;
+  color: var(--muted-foreground);
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.notification-state.is-error {
+  color: var(--destructive);
+}

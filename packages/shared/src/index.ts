@@ -7,6 +7,7 @@ export * from './api/health.schemas.js';
 export * from './api/inspection-details.schemas.js';
 export * from './api/inspections.schemas.js';
 export * from './api/nonconformities.schemas.js';
+export * from './api/notifications.schemas.js';
 export * from './api/physchem.schemas.js';
 export * from './api/sensory.schemas.js';
 export * from './api/standards.schemas.js';

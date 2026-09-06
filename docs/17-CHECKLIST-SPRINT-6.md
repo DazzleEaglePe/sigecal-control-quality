@@ -1,6 +1,6 @@
 # Checklist Sprint 6 — No conformidades y respuesta al feedback
 
-Fecha de corte: 05/09/2026.
+Fecha de corte: 06/09/2026.
 
 ## Qué pidió demostrar el ingeniero
 
@@ -25,7 +25,7 @@ Fecha de corte: 05/09/2026.
 ## Pendientes para cerrar el Sprint 6 completo
 
 - [x] Registrar la acción que reemplaza a otra declarada no eficaz, conservando ambas en la trazabilidad.
-- [ ] Notificaciones internas y tareas programadas de aviso.
+- [x] Notificaciones internas, contador, lectura y tareas idempotentes de aviso.
 - [ ] KPI calculados en servidor, con exclusión `DEMO` por defecto y pruebas de bordes.
 - [ ] Reporte PDF de trazabilidad y exportaciones Excel filtradas.
 - [ ] Búsqueda global con permisos y pantalla de consulta de auditoría.
@@ -49,14 +49,15 @@ se limitará a caché de vistas de consulta según el plan aprobado.
 5. Marcarla no eficaz y mostrar el retorno a tratamiento.
 6. Completar una acción eficaz y demostrar las reglas de cierre.
 7. Cambiar una contraseña y comprobar que la sesión anterior deja de funcionar.
+8. Asignar una NC o acción, abrir la campana y demostrar contador, enlace y lectura.
 
 El login y la seguridad no se consideran únicamente una apariencia visual: la evidencia
 debe incluir controles del servidor, persistencia, correo en Mailpit y pruebas automatizadas.
 
-## Evidencia técnica · 05/09/2026
+## Evidencia técnica · 06/09/2026
 
-- 207 pruebas unitarias/contrato aprobadas: API 143, web 31 y shared 33.
-- 10 pruebas de integración aprobadas contra PostgreSQL 16 desechable.
+- 214 pruebas unitarias/contrato aprobadas: API 146, web 33 y shared 35.
+- 11 pruebas de integración aprobadas contra PostgreSQL 16 desechable.
 - ESLint, TypeScript, Prettier, OpenAPI y build de producción aprobados.
 - Migraciones aplicadas al entorno local; seed idempotente verificado con 4 usuarios,
   5 lotes DEMO, 8 resultados, 1 sesión sensorial y 2 no conformidades DEMO.

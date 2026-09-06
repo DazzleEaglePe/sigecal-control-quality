@@ -167,13 +167,15 @@ Formato uniforme de respuesta exitosa:
 
 ## 7. Tareas programadas
 
-| Tarea                           | Frecuencia    | Efecto                                                                |
-| ------------------------------- | ------------- | --------------------------------------------------------------------- |
-| Marcar inspecciones vencidas    | Diaria, 00:15 | `PROGRAMADA` → `VENCIDA` si la fecha prevista ya pasó                 |
-| Notificar inspecciones próximas | Diaria, 07:00 | Notificación a los responsables con inspección en 48 h                |
-| Notificar acciones por vencer   | Diaria, 07:00 | Notificación de acciones correctivas próximas a su fecha comprometida |
+| Tarea                           | Frecuencia                | Efecto                                                                                                |
+| ------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Marcar inspecciones vencidas    | Al iniciar y cada minuto  | `PROGRAMADA` → `VENCIDA` si la fecha prevista ya pasó                                                 |
+| Generar notificaciones internas | Al iniciar y cada minuto  | Avisos de asignación, inspecciones próximas o vencidas y acciones por vencer                          |
+| Ventana de próximo vencimiento  | 48 h desde cada ejecución | Valor explícito para inspecciones y provisional para acciones, pendiente de validación con la empresa |
 
-Implementadas con `node-cron` dentro del mismo proceso y zona horaria `America/Lima`. No se introduce una cola de mensajes: el volumen no lo justifica. Cada trabajo es idempotente y usa una clave única para evitar notificaciones duplicadas.
+Se ejecutan con temporizadores no bloqueantes dentro del mismo proceso. No se
+introduce una cola de mensajes: el volumen no lo justifica. Cada aviso usa una
+clave única; reinicios y ejecuciones concurrentes no producen duplicados.
 
 ---
 

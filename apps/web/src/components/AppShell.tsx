@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, CircleHelp, Menu, Search } from 'lucide-react';
+import { CircleHelp, Menu, Search } from 'lucide-react';
 import { Outlet } from 'react-router-dom';
 
 import { CommandPalette } from '../features/shell/CommandPalette.js';
@@ -7,6 +7,7 @@ import { useCommandPalette } from '../features/shell/useCommandPalette.js';
 import { useSidebarCollapsed } from '../features/shell/useSidebarCollapsed.js';
 import { useSidebarWidth } from '../features/shell/useSidebarWidth.js';
 import { SessionMenu } from './SessionMenu.js';
+import { NotificationsMenu } from './NotificationsMenu.js';
 import { Sidebar } from './Sidebar.js';
 
 interface MenuProps {
@@ -25,15 +26,7 @@ const TopbarActions = (): React.JSX.Element => (
     >
       <CircleHelp />
     </button>
-    <button
-      className="icon-button"
-      type="button"
-      disabled
-      title="Notificaciones disponibles próximamente"
-      aria-label="Notificaciones disponibles próximamente"
-    >
-      <Bell />
-    </button>
+    <NotificationsMenu />
   </div>
 );
 

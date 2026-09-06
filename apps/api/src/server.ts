@@ -6,6 +6,9 @@ import { logger } from './config/logger.js';
 import { prisma } from './config/prisma.js';
 import { InspectionMutationRepository } from './modules/inspections/inspections.mutations.js';
 import { startInspectionOverdueJob } from './modules/inspections/inspections.overdue-job.js';
+import { NotificationGenerationService } from './modules/notifications/notifications.generation.js';
+import { startNotificationJob } from './modules/notifications/notifications.job.js';
+import { NotificationGenerationRepository } from './modules/notifications/notifications.repository.js';
 
 const app = createApp();
 const server = app.listen(env.PORT, () => {
@@ -13,6 +16,11 @@ const server = app.listen(env.PORT, () => {
 });
 const overdueJob = startInspectionOverdueJob(
   new InspectionMutationRepository(prisma),
+);
+const notificationJob = startNotificationJob(
+  new NotificationGenerationService(
+    new NotificationGenerationRepository(prisma),
+  ),
 );
 
 const closeServer = (httpServer: Server): Promise<void> =>
@@ -32,6 +40,7 @@ const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
 
   try {
     clearInterval(overdueJob);
+    clearInterval(notificationJob);
     await closeServer(server);
     await prisma.$disconnect();
     logger.info('API y conexión de base cerradas correctamente');

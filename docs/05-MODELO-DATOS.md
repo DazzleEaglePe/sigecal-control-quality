@@ -106,7 +106,11 @@ consumen una sola vez y revocan todas las sesiones activas del usuario.
 
 ### `Notification`
 
-`id` · `userId` → User · `type` · `title` · `message` · `entityType?` · `entityId?` · `isRead` · `createdAt`
+`id` · `userId` → User · `dedupeKey` (único, interno) · `type` · `title` ·
+`message` · `entityType?` · `entityId?` · `isRead` · `createdAt`
+
+> `dedupeKey` impide avisos duplicados cuando dos ejecuciones de la tarea
+> programada coinciden o el API se reinicia. No se expone al cliente.
 
 ---
 
