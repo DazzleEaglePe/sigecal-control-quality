@@ -56,7 +56,7 @@ debe incluir controles del servidor, persistencia, correo en Mailpit y pruebas a
 
 ## Evidencia técnica · 06/09/2026
 
-- 214 pruebas unitarias/contrato aprobadas: API 146, web 33 y shared 35.
+- 215 pruebas unitarias/contrato aprobadas: API 147, web 33 y shared 35.
 - 11 pruebas de integración aprobadas contra PostgreSQL 16 desechable.
 - ESLint, TypeScript, Prettier, OpenAPI y build de producción aprobados.
 - Migraciones aplicadas al entorno local; seed idempotente verificado con 4 usuarios,

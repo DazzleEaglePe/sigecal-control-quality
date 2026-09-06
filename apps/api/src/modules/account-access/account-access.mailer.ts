@@ -9,6 +9,12 @@ const accountUrl = (path: string, token: string): string => {
   return url.toString();
 };
 
+export const accountEmailText = (
+  introduction: string,
+  url: string,
+  closing: string,
+): string => `${introduction}:\n${url}\n\n${closing}`;
+
 export class SmtpAccountMailer implements AccountMailPort {
   private readonly transport: Transporter;
 
@@ -28,7 +34,11 @@ export class SmtpAccountMailer implements AccountMailPort {
     await this.send(
       target,
       'Active su cuenta de SIGECAL',
-      `Hola ${target.firstName}. Defina su contraseña de SIGECAL en ${url}. Este enlace es temporal y de un solo uso.`,
+      accountEmailText(
+        `Hola ${target.firstName}. Defina su contraseña de SIGECAL`,
+        url,
+        'Este enlace es temporal y de un solo uso.',
+      ),
     );
   }
 
@@ -40,7 +50,11 @@ export class SmtpAccountMailer implements AccountMailPort {
     await this.send(
       target,
       'Restablezca su contraseña de SIGECAL',
-      `Hola ${target.firstName}. Restablezca su contraseña de SIGECAL en ${url}. Si no solicitó el cambio, ignore este mensaje.`,
+      accountEmailText(
+        `Hola ${target.firstName}. Restablezca su contraseña de SIGECAL`,
+        url,
+        'Si no solicitó el cambio, ignore este mensaje.',
+      ),
     );
   }
 

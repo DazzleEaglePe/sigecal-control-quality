@@ -34,6 +34,10 @@ El seed crea cuatro usuarios técnicos, catálogos base y un conjunto controlado
 
 La contraseña inicial se toma exclusivamente de `SEED_DEFAULT_PASSWORD`; los usuarios técnicos del seed ya figuran con correo verificado y deben cambiarla al primer ingreso. Ejecutar el seed nuevamente no duplica registros.
 
+Si la base ya existía y luego se cambia `SEED_DEFAULT_PASSWORD`, el seed conserva
+la contraseña almacenada para no sobrescribir credenciales. En ese caso se debe
+usar “¿Olvidó su contraseña?” y abrir el enlace capturado por Mailpit.
+
 Las cuentas creadas desde Administración no reciben una contraseña por correo: Mailpit captura una invitación con un enlace temporal para que cada usuario defina la suya. La recuperación funciona del mismo modo y siempre responde de forma genérica para no revelar si un correo existe.
 
 ## Estado funcional
