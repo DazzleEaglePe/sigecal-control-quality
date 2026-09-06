@@ -8,6 +8,7 @@ import type {
 } from '@sigecal/shared';
 import {
   ApiErrorSchema,
+  type BatchItem,
   ReportsDashboardResponseSchema,
 } from '@sigecal/shared';
 
@@ -20,7 +21,12 @@ import type {
   RefreshResult,
 } from '../auth/auth.types.js';
 import { ReportsService } from './reports.service.js';
-import type { ReportsDataset, ReportsRepositoryPort } from './reports.types.js';
+import type {
+  ReportExportRepositoryPort,
+  ReportsDataset,
+  ReportsRepositoryPort,
+  ReportTraceabilityPort,
+} from './reports.types.js';
 
 class RoleAuth implements AuthUseCases {
   public constructor(private readonly role: Role) {}
@@ -62,16 +68,41 @@ class EmptyReportsRepository implements ReportsRepositoryPort {
   }
 }
 
+class TraceabilityStub implements ReportTraceabilityPort {
+  public get(): Promise<BatchItem> {
+    return Promise.resolve({ code: 'LT-2026-0001' } as BatchItem);
+  }
+  public timeline() {
+    return Promise.resolve([]);
+  }
+}
+
+class ExportStub implements ReportExportRepositoryPort {
+  public generator() {
+    return Promise.resolve({
+      fullName: 'Analista Prueba',
+      email: 'analista@sigecal.demo',
+    });
+  }
+  public recordExport(): Promise<void> {
+    return Promise.resolve();
+  }
+}
+
 const appFor = (role: Role) =>
   createApp({
     authService: new RoleAuth(role),
     reportsService: new ReportsService(
       new EmptyReportsRepository(),
       () => new Date('2026-09-20T17:00:00.000Z'),
+      new TraceabilityStub(),
+      new ExportStub(),
+      () => Promise.resolve(Buffer.from('%PDF-1.7 prueba')),
     ),
   });
 const bearer = { Authorization: 'Bearer prueba' };
 const path = `${env.API_PREFIX}/reports/dashboard?dateFrom=2026-09-01&dateTo=2026-09-30`;
+const batchId = '22222222-2222-4222-a222-222222222222';
 
 describe('rutas de indicadores', () => {
   it('entrega el contrato consolidado a un usuario autenticado', async () => {
@@ -105,5 +136,20 @@ describe('rutas de indicadores', () => {
     expect(ApiErrorSchema.parse(response.body).error.code).toBe(
       'INSUFFICIENT_PERMISSIONS',
     );
+  });
+});
+
+describe('ruta de reporte PDF', () => {
+  it('entrega el PDF a roles autorizados y rechaza al operario', async () => {
+    const pdfPath = `${env.API_PREFIX}/reports/traceability/${batchId}/pdf`;
+    const response = await request(appFor('ANALISTA'))
+      .get(pdfPath)
+      .set(bearer)
+      .expect(200);
+    expect(response.headers['content-type']).toContain('application/pdf');
+    expect(response.headers['content-disposition']).toContain(
+      'trazabilidad-LT-2026-0001.pdf',
+    );
+    await request(appFor('OPERARIO')).get(pdfPath).set(bearer).expect(403);
   });
 });

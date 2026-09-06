@@ -1,13 +1,18 @@
 import { Router } from 'express';
+import { Role } from '@sigecal/shared';
 
 import { validate } from '../../middleware/validate.js';
 import {
   authenticate,
+  authorize,
   requirePasswordChanged,
 } from '../auth/auth.middleware.js';
 import type { AuthUseCases } from '../auth/auth.types.js';
 import { ReportsController } from './reports.controller.js';
-import { ReportsDashboardQuerySchema } from './reports.schema.js';
+import {
+  ReportBatchParamsSchema,
+  ReportsDashboardQuerySchema,
+} from './reports.schema.js';
 import type { ReportsUseCases } from './reports.types.js';
 
 export const createReportsRouter = (
@@ -21,6 +26,12 @@ export const createReportsRouter = (
     '/dashboard',
     validate({ query: ReportsDashboardQuerySchema }),
     controller.dashboard,
+  );
+  router.get(
+    '/traceability/:batchId/pdf',
+    authorize(Role.ADMIN, Role.JEFE_CALIDAD, Role.ANALISTA),
+    validate({ params: ReportBatchParamsSchema }),
+    controller.traceabilityPdf,
   );
   return router;
 };

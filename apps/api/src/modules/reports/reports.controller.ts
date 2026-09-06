@@ -25,4 +25,25 @@ export class ReportsController {
       next(error);
     }
   };
+
+  public readonly traceabilityPdf: RequestHandler = async (
+    request,
+    response,
+    next,
+  ) => {
+    try {
+      const batchId = String(request.params.batchId);
+      const file = await this.reports.traceabilityPdf(
+        batchId,
+        actorFrom(request),
+        request.ip,
+      );
+      response
+        .set('Content-Type', file.mimeType)
+        .set('Content-Disposition', `attachment; filename="${file.fileName}"`)
+        .send(file.content);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

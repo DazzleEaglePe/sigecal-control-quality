@@ -51,6 +51,43 @@ export const reportPaths = {
       },
     },
   },
+  '/reports/traceability/{batchId}/pdf': {
+    get: {
+      security: [{ bearerAuth: [] }],
+      tags: ['Reportes'],
+      operationId: 'downloadTraceabilityPdf',
+      summary: 'Descarga la trazabilidad completa de un lote en PDF',
+      parameters: [
+        {
+          name: 'batchId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'PDF con identificación, composición y etapas.',
+          headers: {
+            'Content-Disposition': { schema: { type: 'string' } },
+          },
+          content: {
+            'application/pdf': {
+              schema: { type: 'string', format: 'binary' },
+            },
+          },
+        },
+        '403': {
+          description: 'El rol no puede exportar reportes.',
+          content: json('ApiError'),
+        },
+        '404': {
+          description: 'El lote no existe o no está a su alcance.',
+          content: json('ApiError'),
+        },
+      },
+    },
+  },
 };
 
 export const reportSchemas = {

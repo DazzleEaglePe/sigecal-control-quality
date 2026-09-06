@@ -27,7 +27,8 @@ Fecha de corte: 06/09/2026.
 - [x] Registrar la acción que reemplaza a otra declarada no eficaz, conservando ambas en la trazabilidad.
 - [x] Notificaciones internas, contador, lectura y tareas idempotentes de aviso.
 - [x] KPI calculados en servidor, con exclusión `DEMO` por defecto y pruebas de bordes.
-- [ ] Reporte PDF de trazabilidad y exportaciones Excel filtradas.
+- [x] Reporte PDF de trazabilidad con autorización, auditoría y descarga desde el lote.
+- [ ] Exportaciones Excel filtradas.
 - [ ] Búsqueda global con permisos y pantalla de consulta de auditoría.
 - [ ] Versión piloto y credenciales controladas, después del pre-test y datos reales aprobados.
 
@@ -58,7 +59,7 @@ debe incluir controles del servidor, persistencia, correo en Mailpit y pruebas a
 
 ## Evidencia técnica · 06/09/2026
 
-- 226 pruebas unitarias/contrato aprobadas: API 155, web 34 y shared 37.
+- 228 pruebas unitarias/contrato aprobadas: API 157, web 34 y shared 37.
 - 11 pruebas de integración aprobadas contra PostgreSQL 16 desechable.
 - ESLint, TypeScript, Prettier, OpenAPI y build de producción aprobados.
 - Migraciones aplicadas al entorno local; seed idempotente verificado con 4 usuarios,

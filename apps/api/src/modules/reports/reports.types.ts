@@ -1,5 +1,7 @@
 import type {
   BatchStatus,
+  BatchItem,
+  BatchTimelineEntry,
   DataOrigin,
   InspectionStatus,
   NCSeverity,
@@ -73,9 +75,44 @@ export interface ReportsRepositoryPort {
   loadDashboard(range: ReportRange): Promise<ReportsDataset>;
 }
 
+export interface ReportGenerator {
+  readonly email: string;
+  readonly fullName: string;
+}
+
+export interface ReportFile {
+  readonly content: Buffer;
+  readonly fileName: string;
+  readonly mimeType: string;
+}
+
+export interface ReportExportRepositoryPort {
+  generator(userId: string): Promise<ReportGenerator>;
+  recordExport(input: {
+    readonly actorId: string;
+    readonly entity: string;
+    readonly entityId: string;
+    readonly fileName: string;
+    readonly ipAddress?: string;
+  }): Promise<void>;
+}
+
+export interface ReportTraceabilityPort {
+  get(id: string, actor: ReportActor): Promise<BatchItem>;
+  timeline(
+    id: string,
+    actor: ReportActor,
+  ): Promise<readonly BatchTimelineEntry[]>;
+}
+
 export interface ReportsUseCases {
   dashboard(
     query: ReportsDashboardQuery,
     actor: ReportActor,
   ): Promise<ReportsDashboard>;
+  traceabilityPdf(
+    batchId: string,
+    actor: ReportActor,
+    ipAddress?: string,
+  ): Promise<ReportFile>;
 }

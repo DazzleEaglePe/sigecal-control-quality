@@ -18,6 +18,7 @@ const authValue = (
   clearNotice: vi.fn(),
   request: vi.fn(),
   requestText: vi.fn(),
+  requestBlob: vi.fn(),
 });
 
 const renderLogin = (value: AuthContextValue): void => {

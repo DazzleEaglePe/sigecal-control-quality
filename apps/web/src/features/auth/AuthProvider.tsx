@@ -12,12 +12,14 @@ import type { ChangePasswordRequest, LoginRequest } from '@sigecal/shared';
 import {
   ApiClientError,
   requestJson,
+  requestBlob,
   requestText,
 } from '../../lib/api-client.js';
 import * as authApi from './auth-api.js';
 import {
   AuthContext,
   type AuthContextValue,
+  type AuthorizedBlobRequest,
   type AuthorizedRequest,
   type AuthorizedTextRequest,
 } from './auth-context.js';
@@ -113,6 +115,34 @@ const useAuthorizedText = (
     [session, setSession],
   );
 
+const useAuthorizedBlob = (
+  session: Session,
+  setSession: Dispatch<SetStateAction<Session>>,
+): AuthorizedBlobRequest =>
+  useCallback<AuthorizedBlobRequest>(
+    (path, accept) =>
+      withRefresh(session, setSession, (accessToken) =>
+        requestBlob(path, { accessToken, accept }),
+      ),
+    [session, setSession],
+  );
+
+const useAuthorizedClients = (
+  session: Session,
+  setSession: Dispatch<SetStateAction<Session>>,
+  setNotice: Dispatch<SetStateAction<string | undefined>>,
+) => {
+  const clearNotice = useCallback(() => {
+    setNotice(undefined);
+  }, [setNotice]);
+  return {
+    clearNotice,
+    request: useAuthorizedRequest(session, setSession),
+    requestBlob: useAuthorizedBlob(session, setSession),
+    requestText: useAuthorizedText(session, setSession),
+  };
+};
+
 const useAuthActions = (
   session: Session,
   setSession: Dispatch<SetStateAction<Session>>,
@@ -144,12 +174,13 @@ const useAuthActions = (
     },
     [session, setNotice, setSession],
   );
-  const clearNotice = useCallback(() => {
-    setNotice(undefined);
-  }, [setNotice]);
-  const request = useAuthorizedRequest(session, setSession);
-  const requestText = useAuthorizedText(session, setSession);
-  return { signIn, signOut, updatePassword, clearNotice, request, requestText };
+  const clients = useAuthorizedClients(session, setSession, setNotice);
+  return {
+    signIn,
+    signOut,
+    updatePassword,
+    ...clients,
+  };
 };
 
 const useAuthValue = (): AuthContextValue => {

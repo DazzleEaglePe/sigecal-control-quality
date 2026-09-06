@@ -16,6 +16,7 @@ import {
 import { batchStatusLabel } from '../features/batches/batches-labels.js';
 import { useBatchDetail } from '../features/batches/useBatches.js';
 import { useAuth } from '../features/auth/useAuth.js';
+import { TraceabilityDownloadButton } from '../features/reports/TraceabilityDownloadButton.js';
 
 type DetailTab = 'data' | 'timeline' | 'inspections' | 'nonconformities';
 const tabs: readonly { readonly id: DetailTab; readonly label: string }[] = [
@@ -26,7 +27,13 @@ const tabs: readonly { readonly id: DetailTab; readonly label: string }[] = [
 ];
 const isDetailTab = (value: string | null): value is DetailTab =>
   tabs.some((item) => item.id === value);
-const DetailHeader = ({ batch }: { readonly batch: BatchItem }) => (
+const DetailHeader = ({
+  batch,
+  canExport,
+}: {
+  readonly batch: BatchItem;
+  readonly canExport: boolean;
+}) => (
   <header className="page-heading batch-heading">
     <div>
       <p className="eyebrow">Trazabilidad de lote</p>
@@ -36,6 +43,7 @@ const DetailHeader = ({ batch }: { readonly batch: BatchItem }) => (
       </p>
     </div>
     <div className="heading-actions">
+      {canExport ? <TraceabilityDownloadButton batch={batch} /> : null}
       <span className={`state-pill batch-status-${batch.status.toLowerCase()}`}>
         {batchStatusLabel[batch.status]}
       </span>
@@ -165,7 +173,12 @@ export const BatchDetailPage = (): React.JSX.Element => {
     );
   return (
     <div className="page-stack">
-      <DetailHeader batch={detail.batch} />
+      <DetailHeader
+        batch={detail.batch}
+        canExport={Boolean(
+          user?.permissions.includes(Permission.REPORTS_EXPORT),
+        )}
+      />
       <BatchLifecycleActions batch={detail.batch} completed={detail.reload} />
       <DetailTabs selected={tab} change={changeTab} />
       <TabContent

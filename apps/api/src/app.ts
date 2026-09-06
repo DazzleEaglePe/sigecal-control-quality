@@ -204,8 +204,15 @@ const resolveTemplates = (dependencies: AppDependencies) =>
   defaultInspectionTemplatesService();
 const resolveNonConformities = (dependencies: AppDependencies) =>
   dependencies.nonConformitiesService ?? defaultNonConformitiesService();
-const defaultReportsService = (): ReportsUseCases =>
-  new ReportsService(new ReportsRepository(prisma));
+const defaultReportsService = (): ReportsUseCases => {
+  const repository = new ReportsRepository(prisma);
+  return new ReportsService(
+    repository,
+    undefined,
+    defaultBatchesService(),
+    repository,
+  );
+};
 
 const resolveServices = (dependencies: AppDependencies): ResolvedServices => ({
   accountAccess:

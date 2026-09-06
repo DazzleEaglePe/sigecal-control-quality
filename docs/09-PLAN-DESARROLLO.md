@@ -187,7 +187,7 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [x] Tareas programadas de aviso
 - [x] Tablero con todos los indicadores
 - [x] Exclusión por defecto de datos `DEMO`
-- [ ] Reporte de trazabilidad en PDF
+- [x] Reporte de trazabilidad en PDF
 - [ ] Exportaciones a Excel con filtros configurables
 - [x] Pantallas: listado y detalle de no conformidad
 - [x] Pantalla: tablero consolidado con filtros y gráficos

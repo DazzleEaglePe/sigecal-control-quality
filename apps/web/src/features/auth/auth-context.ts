@@ -13,6 +13,10 @@ export type AuthorizedRequest = <Result>(
   options?: Omit<RequestOptions, 'accessToken'>,
 ) => Promise<Result>;
 export type AuthorizedTextRequest = (path: string) => Promise<string>;
+export type AuthorizedBlobRequest = (
+  path: string,
+  accept: string,
+) => Promise<Blob>;
 
 export interface AuthContextValue {
   readonly status: AuthStatus;
@@ -23,6 +27,7 @@ export interface AuthContextValue {
   readonly updatePassword: (input: ChangePasswordRequest) => Promise<void>;
   readonly clearNotice: () => void;
   readonly request: AuthorizedRequest;
+  readonly requestBlob: AuthorizedBlobRequest;
   readonly requestText: AuthorizedTextRequest;
 }
 

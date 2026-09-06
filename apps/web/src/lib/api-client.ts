@@ -117,5 +117,10 @@ export const requestText = async (
   options: RequestOptions = {},
 ): Promise<string> => (await requestResponse(path, options)).text();
 
+export const requestBlob = async (
+  path: string,
+  options: RequestOptions = {},
+): Promise<Blob> => (await requestResponse(path, options)).blob();
+
 export const getJson = (path: string, signal?: AbortSignal): Promise<unknown> =>
   requestJson(path, signal ? { signal } : {});

@@ -15,6 +15,7 @@ const authValue = (signOut: AuthContextValue['signOut']): AuthContextValue => ({
   clearNotice: vi.fn(),
   request: vi.fn(),
   requestText: vi.fn(),
+  requestBlob: vi.fn(),
 });
 
 describe('ChangePasswordPage', () => {
