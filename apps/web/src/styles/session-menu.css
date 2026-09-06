@@ -1,0 +1,94 @@
+.session-menu-panel {
+  width: min(20rem, calc(100vw - 2rem));
+  padding: 0;
+  border-radius: 1rem;
+}
+
+.session-menu-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--secondary) 58%, var(--popover));
+}
+
+.session-menu-avatar.avatar {
+  flex: 0 0 auto;
+  width: 3rem;
+  height: 3rem;
+  font-size: 0.8rem;
+}
+
+.session-menu-user {
+  display: grid;
+  min-width: 0;
+  gap: 0.12rem;
+}
+
+.session-menu-user strong,
+.session-menu-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-menu-user strong {
+  font-size: 0.86rem;
+}
+
+.session-menu-email {
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+}
+
+.session-role-badge {
+  width: fit-content;
+  margin-top: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  color: var(--success);
+  background: color-mix(in oklab, var(--success) 12%, transparent);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.session-menu-label {
+  padding: 0.85rem 1rem 0.35rem;
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.session-menu-action {
+  min-height: 3.65rem;
+  margin: 0.15rem 0.35rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.session-menu-action-copy {
+  display: grid;
+  flex: 1;
+  gap: 0.15rem;
+}
+
+.session-menu-action-copy small {
+  color: var(--muted-foreground);
+  font-size: 0.69rem;
+}
+
+.session-menu-action-chevron {
+  margin-left: auto;
+}
+
+.session-menu-logout {
+  min-height: 3rem;
+  margin: 0.2rem 0.35rem 0.35rem;
+  padding: 0.65rem 0.75rem;
+}
+
+@media (max-width: 420px) {
+  .session-menu-panel {
+    width: calc(100vw - 1rem);
+  }
+}

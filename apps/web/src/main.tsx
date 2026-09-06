@@ -30,6 +30,7 @@ import './styles/auth-form-refresh.css';
 import './styles/state-colors.css';
 import './styles/sidebar-collapse.css';
 import './styles/notifications.css';
+import './styles/session-menu.css';
 
 const rootElement = document.querySelector('#root');
 
