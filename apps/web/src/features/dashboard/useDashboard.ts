@@ -1,50 +1,100 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { AuthorizedRequest } from '../auth/auth-context.js';
-import { listBatches } from '../batches/batches-api.js';
-import {
-  listInspections,
-  listPendingInspections,
-} from '../inspections/inspections-api.js';
-import {
-  loadAllPages,
-  summarizeDashboard,
-  type DashboardData,
-} from './dashboard-data.js';
+import type {
+  InspectionItem,
+  ReportsDashboard,
+  ReportsDashboardQuery,
+} from '@sigecal/shared';
 
-export type { DashboardData } from './dashboard-data.js';
+import type { AuthorizedRequest } from '../auth/auth-context.js';
+import { listPendingInspections } from '../inspections/inspections-api.js';
+import { getDashboard } from './dashboard-api.js';
+
+export type DashboardFilters = ReportsDashboardQuery;
 
 export interface DashboardState {
-  readonly data: DashboardData | undefined;
+  readonly data: ReportsDashboard | undefined;
   readonly error: string | undefined;
+  readonly filters: DashboardFilters;
   readonly loading: boolean;
+  readonly pending: readonly InspectionItem[];
+  readonly setFilters: (filters: DashboardFilters) => void;
   readonly reload: () => void;
 }
 
+interface LoadedDashboard {
+  readonly data: ReportsDashboard | undefined;
+  readonly error: string | undefined;
+  readonly loading: boolean;
+  readonly pending: readonly InspectionItem[];
+  readonly setLoading: (loading: boolean) => void;
+}
+
+const limaDate = (): string =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Lima',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+
+const initialFilters = (): DashboardFilters => {
+  const dateTo = limaDate();
+  return {
+    dateFrom: `${dateTo.slice(0, 4)}-01-01`,
+    dateTo,
+    includeDemo: false,
+  };
+};
+
 const loadDashboard = async (
   request: AuthorizedRequest,
-): Promise<DashboardData> => {
-  const [inspections, batches, pending] = await Promise.all([
-    loadAllPages((page, pageSize) =>
-      listInspections(request, { page, pageSize }),
-    ),
-    loadAllPages((page, pageSize) => listBatches(request, { page, pageSize })),
-    listPendingInspections(request, { page: 1, pageSize: 1 }),
+  filters: DashboardFilters,
+): Promise<{
+  readonly data: ReportsDashboard;
+  readonly pending: readonly InspectionItem[];
+}> => {
+  const [data, pending] = await Promise.all([
+    getDashboard(request, filters),
+    listPendingInspections(request, { page: 1, pageSize: 5 }),
   ]);
-  return summarizeDashboard(inspections, batches, pending.total);
+  return { data, pending: pending.data };
 };
 
 export const useDashboard = (request: AuthorizedRequest): DashboardState => {
-  const [data, setData] = useState<DashboardData>();
+  const [filters, setFilters] = useState(initialFilters);
+  const [nonce, setNonce] = useState(0);
+  const loaded = useDashboardLoader(request, filters, nonce);
+  const { setLoading, ...dashboard } = loaded;
+  const reload = useCallback(() => {
+    setLoading(true);
+    setNonce((value) => value + 1);
+  }, [setLoading]);
+  const applyFilters = useCallback(
+    (next: DashboardFilters) => {
+      setLoading(true);
+      setFilters(next);
+    },
+    [setLoading],
+  );
+  return { ...dashboard, filters, reload, setFilters: applyFilters };
+};
+
+const useDashboardLoader = (
+  request: AuthorizedRequest,
+  filters: DashboardFilters,
+  nonce: number,
+): LoadedDashboard => {
+  const [data, setData] = useState<ReportsDashboard>();
+  const [pending, setPending] = useState<readonly InspectionItem[]>([]);
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(true);
-  const [nonce, setNonce] = useState(0);
-
   useEffect(() => {
     let active = true;
-    void loadDashboard(request)
-      .then((summary) => {
+    void loadDashboard(request, filters)
+      .then((result) => {
         if (!active) return;
-        setData(summary);
+        setData(result.data);
+        setPending(result.pending);
         setError(undefined);
       })
       .catch(() => {
@@ -56,11 +106,6 @@ export const useDashboard = (request: AuthorizedRequest): DashboardState => {
     return () => {
       active = false;
     };
-  }, [nonce, request]);
-
-  const reload = useCallback(() => {
-    setLoading(true);
-    setNonce((value) => value + 1);
-  }, []);
-  return { data, error, loading, reload };
+  }, [filters, nonce, request]);
+  return { data, error, loading, pending, setLoading };
 };

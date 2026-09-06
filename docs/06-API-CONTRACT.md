@@ -418,6 +418,8 @@ POST /nonconformities/actions/:actionId/verify
 GET /reports/dashboard?dateFrom=2026-09-01&dateTo=2026-12-31
 200
 { "success": true, "data": {
+    "period": { "dateFrom": "2026-09-01", "dateTo": "2026-12-31", "timeZone": "America/Lima" },
+    "includesDemo": false,
     "conformityRate": { "value": 92.4, "conforming": 85, "total": 92, "physchem": 93.1, "sensory": 88.9 },
     "scheduleCompliance": { "value": 87.5, "onTime": 21, "due": 24, "late": 2, "overdue": 1 },
     "avgResponseTime": { "hours": 3.2, "attended": 8, "unattended": 1, "oldestUnattendedHours": 9.4 },
@@ -429,6 +431,10 @@ GET /reports/dashboard?dateFrom=2026-09-01&dateTo=2026-12-31
 ```
 
 Cada KPI sigue exactamente la fórmula de `02-REQUERIMIENTOS-FUNCIONALES.md`. Una serie temporal incluye `sampleSize`; los valores sin denominador se devuelven como `null`.
+`conformityRate` incluye además `standardCoverage` (`covered`, `total`, `value`).
+Cada elemento de `activeBatchesByStage` expone `inObservation` separado de
+`count`, como exige el guardarraíl del KPI. `dateTo` se interpreta hasta el fin
+del día en `America/Lima`.
 
 > Todo extremo de reporte acepta los filtros aplicables de `RF-M8-13`. Las exportaciones devuelven el archivo binario con la cabecera `Content-Disposition` correspondiente y registran un evento de auditoría de tipo `EXPORT`. `dataOrigin=DEMO` queda excluido por defecto.
 

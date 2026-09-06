@@ -3,15 +3,16 @@ import {
   BarChart,
   CartesianGrid,
   LabelList,
-  Pie,
-  PieChart,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
 
-import { EmptyState } from '../../components/ui/empty-state.js';
+import type { ReportsDashboard } from '@sigecal/shared';
+
 import {
   Card,
   CardContent,
@@ -19,20 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../../components/ui/card.js';
-import type {
-  DashboardData,
-  StageDatum,
-  StatusDatum,
-} from './dashboard-data.js';
-
-const statusColors: Readonly<Record<StatusDatum['status'], string>> = {
-  PROGRAMADA: 'var(--foreground)',
-  EN_PROCESO: 'var(--warning)',
-  COMPLETADA: 'var(--success)',
-  VENCIDA: 'var(--destructive)',
-  CANCELADA: 'var(--muted-foreground)',
-  REPROGRAMADA: 'var(--input)',
-};
+import { EmptyState } from '../../components/ui/empty-state.js';
 
 const tooltipStyle = {
   background: 'var(--popover)',
@@ -42,15 +30,46 @@ const tooltipStyle = {
   fontSize: '0.75rem',
 } as const;
 
-const StageBars = ({ data }: { readonly data: readonly StageDatum[] }) => (
+const stageData = (data: ReportsDashboard['activeBatchesByStage']) =>
+  data.map((item) => ({
+    ...item,
+    name: item.stageName,
+    observation: item.inObservation,
+  }));
+
+const ncData = (data: ReportsDashboard['ncByStage']) =>
+  data.map((item) => ({ ...item, name: item.stageName }));
+
+const trendData = (data: ReportsDashboard['conformityTrend']) =>
+  data.map((item) => ({
+    ...item,
+    label: new Intl.DateTimeFormat('es-PE', {
+      month: 'short',
+      timeZone: 'UTC',
+    }).format(new Date(`${item.month}-01T00:00:00.000Z`)),
+  }));
+
+const Grid = (): React.JSX.Element => (
+  <CartesianGrid
+    vertical={false}
+    stroke="var(--border)"
+    strokeDasharray="3 3"
+  />
+);
+
+const StageChart = ({
+  data,
+}: {
+  readonly data: ReportsDashboard['activeBatchesByStage'];
+}) => (
   <ResponsiveContainer width="100%" height="100%">
     <BarChart
       accessibilityLayer
-      data={[...data]}
+      data={stageData(data)}
       layout="vertical"
-      margin={{ top: 8, right: 38, bottom: 8, left: 10 }}
+      margin={{ top: 8, right: 40, bottom: 8, left: 12 }}
     >
-      <CartesianGrid horizontal={false} stroke="var(--border)" />
+      <Grid />
       <XAxis
         type="number"
         allowDecimals={false}
@@ -60,7 +79,7 @@ const StageBars = ({ data }: { readonly data: readonly StageDatum[] }) => (
       <YAxis
         type="category"
         dataKey="name"
-        width={105}
+        width={108}
         axisLine={false}
         tickLine={false}
       />
@@ -68,9 +87,8 @@ const StageBars = ({ data }: { readonly data: readonly StageDatum[] }) => (
       <Bar
         dataKey="count"
         name="Lotes activos"
-        fill="var(--foreground)"
+        fill="var(--success)"
         radius={[0, 5, 5, 0]}
-        isAnimationActive={false}
       >
         <LabelList dataKey="count" position="right" fill="var(--foreground)" />
       </Bar>
@@ -78,89 +96,91 @@ const StageBars = ({ data }: { readonly data: readonly StageDatum[] }) => (
   </ResponsiveContainer>
 );
 
-const StagePanel = ({ data }: { readonly data: readonly StageDatum[] }) => (
-  <Card className="dashboard-chart-card">
-    <CardHeader>
-      <CardTitle className="text-base">Lotes activos por etapa</CardTitle>
-      <CardDescription>
-        Distribución actual del proceso productivo accesible al usuario.
-      </CardDescription>
-    </CardHeader>
-    <CardContent>
-      {data.length === 0 ? (
-        <EmptyState
-          title="Sin lotes activos"
-          description="Los lotes cerrados o rechazados no forman parte de esta distribución."
-        />
-      ) : (
-        <div
-          className="dashboard-chart-body"
-          aria-label="Lotes activos por etapa"
-        >
-          <StageBars data={data} />
-        </div>
-      )}
-    </CardContent>
-  </Card>
-);
-
-const StatusLegend = ({ data }: { readonly data: readonly StatusDatum[] }) => (
-  <ul className="dashboard-chart-legend" aria-label="Detalle por estado">
-    {data.map((item) => (
-      <li key={item.status}>
-        <span
-          style={{ background: statusColors[item.status] }}
-          aria-hidden="true"
-        />
-        <span>{item.label}</span>
-        <strong>{item.count}</strong>
-      </li>
-    ))}
-  </ul>
-);
-
-const StatusDonut = ({ data }: { readonly data: readonly StatusDatum[] }) => (
+const NonConformityChart = ({
+  data,
+}: {
+  readonly data: ReportsDashboard['ncByStage'];
+}) => (
   <ResponsiveContainer width="100%" height="100%">
-    <PieChart accessibilityLayer>
-      <Tooltip contentStyle={tooltipStyle} />
-      <Pie
-        data={data.map((item) => ({
-          ...item,
-          fill: statusColors[item.status],
-        }))}
+    <BarChart
+      accessibilityLayer
+      data={ncData(data)}
+      margin={{ top: 12, right: 12, left: -20 }}
+    >
+      <Grid />
+      <XAxis dataKey="name" axisLine={false} tickLine={false} />
+      <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
+      <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'var(--muted)' }} />
+      <Bar
         dataKey="count"
-        nameKey="label"
-        innerRadius="58%"
-        outerRadius="86%"
-        paddingAngle={3}
-        stroke="var(--card)"
-        strokeWidth={3}
-        isAnimationActive={false}
+        name="No conformidades"
+        fill="var(--destructive)"
+        radius={[5, 5, 0, 0]}
       />
-    </PieChart>
+    </BarChart>
   </ResponsiveContainer>
 );
 
-const StatusPanel = ({ data }: { readonly data: readonly StatusDatum[] }) => (
+const ConformityTrendChart = ({
+  data,
+}: {
+  readonly data: ReportsDashboard['conformityTrend'];
+}) => (
+  <ResponsiveContainer width="100%" height="100%">
+    <LineChart
+      accessibilityLayer
+      data={trendData(data)}
+      margin={{ top: 16, right: 18, left: -14 }}
+    >
+      <Grid />
+      <XAxis dataKey="label" axisLine={false} tickLine={false} />
+      <YAxis domain={[0, 100]} unit="%" axisLine={false} tickLine={false} />
+      <Tooltip
+        contentStyle={tooltipStyle}
+        formatter={(value) => [`${String(value)}%`, 'Conformidad']}
+      />
+      <Line
+        type="monotone"
+        dataKey="rate"
+        name="Conformidad"
+        stroke="var(--success)"
+        strokeWidth={2.5}
+        connectNulls={false}
+        dot={{ r: 3, fill: 'var(--background)', strokeWidth: 2 }}
+      />
+    </LineChart>
+  </ResponsiveContainer>
+);
+
+interface ChartPanelProps {
+  readonly children: React.ReactNode;
+  readonly description: string;
+  readonly empty: boolean;
+  readonly emptyDescription: string;
+  readonly title: string;
+}
+
+const ChartPanel = ({
+  children,
+  description,
+  empty,
+  emptyDescription,
+  title,
+}: ChartPanelProps): React.JSX.Element => (
   <Card className="dashboard-chart-card">
     <CardHeader>
-      <CardTitle className="text-base">Estado de las inspecciones</CardTitle>
-      <CardDescription>
-        Composición de todas las inspecciones visibles para el usuario.
-      </CardDescription>
+      <CardTitle className="text-base">{title}</CardTitle>
+      <CardDescription>{description}</CardDescription>
     </CardHeader>
     <CardContent>
-      {data.length === 0 ? (
+      {empty ? (
         <EmptyState
-          title="Sin inspecciones"
-          description="Programe una inspección para visualizar su distribución."
+          title="Sin datos para el periodo"
+          description={emptyDescription}
         />
       ) : (
-        <div className="dashboard-status-chart">
-          <div className="dashboard-donut" aria-label="Inspecciones por estado">
-            <StatusDonut data={data} />
-          </div>
-          <StatusLegend data={data} />
+        <div className="dashboard-chart-body" aria-label={title}>
+          {children}
         </div>
       )}
     </CardContent>
@@ -170,10 +190,32 @@ const StatusPanel = ({ data }: { readonly data: readonly StatusDatum[] }) => (
 export const DashboardCharts = ({
   data,
 }: {
-  readonly data: DashboardData;
+  readonly data: ReportsDashboard;
 }): React.JSX.Element => (
   <section className="dashboard-chart-grid" aria-label="Indicadores visuales">
-    <StagePanel data={data.activeBatchesByStage} />
-    <StatusPanel data={data.inspectionStatuses} />
+    <ChartPanel
+      title="Lotes activos por etapa"
+      description="Estado del proceso al cierre del periodo; observaciones incluidas en el detalle."
+      empty={data.activeBatchesByStage.length === 0}
+      emptyDescription="No existen lotes activos visibles al cierre seleccionado."
+    >
+      <StageChart data={data.activeBatchesByStage} />
+    </ChartPanel>
+    <ChartPanel
+      title="No conformidades por etapa"
+      description="Hallazgos detectados durante el periodo seleccionado."
+      empty={data.ncByStage.length === 0}
+      emptyDescription="No se detectaron no conformidades en este periodo."
+    >
+      <NonConformityChart data={data.ncByStage} />
+    </ChartPanel>
+    <ChartPanel
+      title="Tendencia mensual de conformidad"
+      description="Porcentaje mensual de resultados finales conformes."
+      empty={data.conformityTrend.length === 0}
+      emptyDescription="No existen resultados finales para construir la tendencia."
+    >
+      <ConformityTrendChart data={data.conformityTrend} />
+    </ChartPanel>
   </section>
 );

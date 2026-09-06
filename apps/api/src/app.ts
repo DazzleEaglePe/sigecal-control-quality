@@ -73,6 +73,10 @@ import { NotificationRepository } from './modules/notifications/notifications.re
 import { createNotificationsRouter } from './modules/notifications/notifications.routes.js';
 import { NotificationsService } from './modules/notifications/notifications.service.js';
 import type { NotificationsUseCases } from './modules/notifications/notifications.types.js';
+import { ReportsRepository } from './modules/reports/reports.repository.js';
+import { createReportsRouter } from './modules/reports/reports.routes.js';
+import { ReportsService } from './modules/reports/reports.service.js';
+import type { ReportsUseCases } from './modules/reports/reports.types.js';
 
 export interface AppDependencies {
   readonly accountAccessService?: AccountAccessUseCases;
@@ -86,6 +90,7 @@ export interface AppDependencies {
   readonly inspectionsService?: InspectionsUseCases;
   readonly inspectionTemplatesService?: InspectionTemplatesUseCases;
   readonly physChemService?: PhysChemUseCases;
+  readonly reportsService?: ReportsUseCases;
   readonly sensoryService?: SensoryUseCases;
   readonly standardsService?: StandardsUseCases;
   readonly usersService?: UsersUseCases;
@@ -189,6 +194,7 @@ interface ResolvedServices {
   readonly sensory: SensoryUseCases;
   readonly nonConformities: NonConformitiesUseCases;
   readonly notifications: NotificationsUseCases;
+  readonly reports: ReportsUseCases;
   readonly standards: StandardsUseCases;
   readonly users: UsersUseCases;
 }
@@ -198,6 +204,8 @@ const resolveTemplates = (dependencies: AppDependencies) =>
   defaultInspectionTemplatesService();
 const resolveNonConformities = (dependencies: AppDependencies) =>
   dependencies.nonConformitiesService ?? defaultNonConformitiesService();
+const defaultReportsService = (): ReportsUseCases =>
+  new ReportsService(new ReportsRepository(prisma));
 
 const resolveServices = (dependencies: AppDependencies): ResolvedServices => ({
   accountAccess:
@@ -214,6 +222,7 @@ const resolveServices = (dependencies: AppDependencies): ResolvedServices => ({
   nonConformities: resolveNonConformities(dependencies),
   notifications:
     dependencies.notificationsService ?? defaultNotificationsService(),
+  reports: dependencies.reportsService ?? defaultReportsService(),
   standards: dependencies.standardsService ?? defaultStandardsService(),
   users: dependencies.usersService ?? defaultUsersService(),
 });
@@ -262,6 +271,10 @@ const mountRoutes = (app: Express, services: ResolvedServices): void => {
   app.use(
     `${env.API_PREFIX}/notifications`,
     createNotificationsRouter(services.auth, services.notifications),
+  );
+  app.use(
+    `${env.API_PREFIX}/reports`,
+    createReportsRouter(services.auth, services.reports),
   );
   app.use(
     `${env.API_PREFIX}/users`,

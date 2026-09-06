@@ -7,7 +7,7 @@ export interface StatCardProps {
   readonly icon: LucideIcon;
   readonly label: string;
   readonly loading: boolean;
-  readonly value: number;
+  readonly value: number | string;
 }
 
 export const StatCard = ({

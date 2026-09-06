@@ -1,7 +1,6 @@
 import { lazy, Suspense } from 'react';
 import {
   ArrowUpRight,
-  CalendarClock,
   ClipboardCheck,
   FlaskConical,
   Info,
@@ -12,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { Permission, type InspectionItem } from '@sigecal/shared';
+import { Permission, Role, type InspectionItem } from '@sigecal/shared';
 
 import { Badge } from '../components/ui/badge.js';
 import { Button } from '../components/ui/button.js';
@@ -23,7 +22,8 @@ import {
   CardHeader,
   CardTitle,
 } from '../components/ui/card.js';
-import { StatCard } from '../features/dashboard/StatCard.js';
+import { DashboardFilters } from '../features/dashboard/DashboardFilters.js';
+import { DashboardStats } from '../features/dashboard/DashboardStats.js';
 import {
   useDashboard,
   type DashboardState,
@@ -34,12 +34,6 @@ const DashboardCharts = lazy(async () => {
   const module = await import('../features/dashboard/DashboardCharts.js');
   return { default: module.DashboardCharts };
 });
-
-const DATE_FORMAT: Intl.DateTimeFormatOptions = {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-};
 
 const statusLabel: Record<InspectionItem['status'], string> = {
   PROGRAMADA: 'Programada',
@@ -53,11 +47,13 @@ const statusLabel: Record<InspectionItem['status'], string> = {
 const DashboardHeader = ({
   name,
   state,
+  canIncludeDemo,
 }: {
+  readonly canIncludeDemo: boolean;
   readonly name: string;
   readonly state: DashboardState;
 }): React.JSX.Element => (
-  <header className="flex flex-wrap items-start justify-between gap-4">
+  <header className="grid gap-4 xl:grid-cols-[1fr_auto] xl:items-end">
     <div className="space-y-1">
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
         Hola de nuevo, {name}
@@ -66,54 +62,18 @@ const DashboardHeader = ({
         Resumen operativo de la trazabilidad y el control de calidad.
       </p>
     </div>
-    <div className="flex items-center gap-2">
-      <Badge variant="outline">
-        <CalendarClock aria-hidden="true" />
-        {new Date().toLocaleDateString('es-PE', DATE_FORMAT)}
-      </Badge>
-      <Button variant="outline" size="sm" onClick={state.reload}>
+    <div className="flex flex-wrap items-end gap-2 xl:justify-end">
+      <DashboardFilters
+        canIncludeDemo={canIncludeDemo}
+        filters={state.filters}
+        onApply={state.setFilters}
+      />
+      <Button variant="ghost" size="sm" onClick={state.reload}>
         <RefreshCw aria-hidden="true" /> Actualizar
       </Button>
     </div>
   </header>
 );
-
-const StatRow = ({ state }: { readonly state: DashboardState }) => {
-  const data = state.data;
-  const cards: readonly Omit<Parameters<typeof StatCard>[0], 'loading'>[] = [
-    {
-      icon: PackageSearch,
-      label: 'Lotes registrados',
-      value: data?.batches ?? 0,
-      hint: 'Con trazabilidad activa',
-    },
-    {
-      icon: ClipboardCheck,
-      label: 'Inspecciones',
-      value: data?.inspections ?? 0,
-      hint: 'Programadas en total',
-    },
-    {
-      icon: FlaskConical,
-      label: 'Completadas',
-      value: data?.completed ?? 0,
-      hint: 'Con cobertura total de parámetros',
-    },
-    {
-      icon: CalendarClock,
-      label: 'Mis pendientes',
-      value: data?.pending ?? 0,
-      hint: 'Asignadas y sin ejecutar',
-    },
-  ];
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {cards.map((card) => (
-        <StatCard key={card.label} loading={state.loading} {...card} />
-      ))}
-    </div>
-  );
-};
 
 /** RF-M8-15 exige que los datos de demostración se declaren de forma visible
  * cuando se incluyen en un recuento. */
@@ -124,8 +84,8 @@ const DemoNotice = (): React.JSX.Element => (
       aria-hidden="true"
     />
     <p className="text-xs text-muted-foreground">
-      Los recuentos incluyen lotes e inspecciones de demostración. Los
-      indicadores del periodo los excluirán por defecto.
+      Vista de demostración activa. Estos indicadores no deben utilizarse como
+      evidencia del pre-test o post-test.
     </p>
   </div>
 );
@@ -181,8 +141,10 @@ const RecentPanel = ({
 }): React.JSX.Element => (
   <Card>
     <CardHeader>
-      <CardTitle className="text-base">Actividad reciente</CardTitle>
-      <CardDescription>Últimas inspecciones registradas.</CardDescription>
+      <CardTitle className="text-base">Mis inspecciones pendientes</CardTitle>
+      <CardDescription>
+        Próximas asignaciones que requieren atención.
+      </CardDescription>
     </CardHeader>
     <CardContent className="pt-0">
       {state.error ? (
@@ -190,12 +152,12 @@ const RecentPanel = ({
           {state.error}
         </p>
       ) : null}
-      {state.data?.recent.length === 0 && !state.loading ? (
+      {state.pending.length === 0 && !state.loading ? (
         <p className="text-sm text-muted-foreground">
-          Todavía no hay inspecciones registradas.
+          No tiene inspecciones pendientes asignadas.
         </p>
       ) : null}
-      {state.data?.recent.map((item) => (
+      {state.pending.map((item) => (
         <RecentRow item={item} key={item.id} />
       ))}
     </CardContent>
@@ -284,9 +246,15 @@ export const HomePage = (): React.JSX.Element => {
   const state = useDashboard(request);
   return (
     <div className="space-y-5">
-      <DashboardHeader name={user?.firstName ?? 'equipo'} state={state} />
-      <StatRow state={state} />
-      {state.data?.demo ? <DemoNotice /> : null}
+      <DashboardHeader
+        name={user?.firstName ?? 'equipo'}
+        state={state}
+        canIncludeDemo={
+          user?.role === Role.ADMIN || user?.role === Role.JEFE_CALIDAD
+        }
+      />
+      <DashboardStats state={state} />
+      {state.data?.includesDemo ? <DemoNotice /> : null}
       {state.data ? (
         <Suspense fallback={<ChartsLoading />}>
           <DashboardCharts data={state.data} />

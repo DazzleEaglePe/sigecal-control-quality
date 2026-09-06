@@ -9,6 +9,7 @@ export * from './api/inspections.schemas.js';
 export * from './api/nonconformities.schemas.js';
 export * from './api/notifications.schemas.js';
 export * from './api/physchem.schemas.js';
+export * from './api/reports.schemas.js';
 export * from './api/sensory.schemas.js';
 export * from './api/standards.schemas.js';
 export * from './domain/enums.js';

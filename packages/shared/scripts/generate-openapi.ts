@@ -36,6 +36,7 @@ import {
   notificationPaths,
   notificationSchemas,
 } from './openapi/notifications.openapi.js';
+import { reportPaths, reportSchemas } from './openapi/reports.openapi.js';
 
 const outputPath = fileURLToPath(
   new URL('../../../docs/openapi.yaml', import.meta.url),
@@ -100,6 +101,10 @@ const document = {
       name: 'Notificaciones',
       description: 'Avisos internos y lectura aislada por usuario.',
     },
+    {
+      name: 'Reportes',
+      description: 'Indicadores consolidados y exportaciones del sistema.',
+    },
   ],
   paths: {
     '/health': {
@@ -156,6 +161,7 @@ const document = {
     ...sensoryPaths,
     ...nonConformityPaths,
     ...notificationPaths,
+    ...reportPaths,
   },
   components: {
     securitySchemes: {
@@ -183,6 +189,7 @@ const document = {
       ...sensorySchemas,
       ...nonConformitySchemas,
       ...notificationSchemas,
+      ...reportSchemas,
     },
   },
 };
