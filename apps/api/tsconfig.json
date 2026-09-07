@@ -6,7 +6,8 @@
     "moduleResolution": "NodeNext",
     "noEmit": true,
     "paths": {
-      "@sigecal/shared": ["../../packages/shared/dist/index.d.ts"]
+      "@sigecal/shared": ["../../packages/shared/dist/index.d.ts"],
+      "@excel.js/exceljs": ["../../node_modules/@excel.js/exceljs/index.d.ts"]
     },
     "rootDir": ".",
     "types": ["node"]

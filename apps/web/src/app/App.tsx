@@ -105,6 +105,9 @@ const NonConformityDetailPage = lazy(async () => ({
   default: (await import('../pages/NonConformityDetailPage.js'))
     .NonConformityDetailPage,
 }));
+const ReportsPage = lazy(async () => ({
+  default: (await import('../pages/ReportsPage.js')).ReportsPage,
+}));
 const deferred = (element: React.JSX.Element): React.JSX.Element => (
   <Suspense fallback={<p>Cargando módulo…</p>}>{element}</Suspense>
 );
@@ -182,6 +185,11 @@ const protectedRoutes = (
         <Route path="lotes" element={deferred(<BatchesPage />)} />
         <Route path="lotes/:id" element={deferred(<BatchDetailPage />)} />
         {qualityRoutes}
+        <Route
+          element={<PermissionRoute permission={Permission.REPORTS_EXPORT} />}
+        >
+          <Route path="reportes" element={deferred(<ReportsPage />)} />
+        </Route>
         <Route
           element={<PermissionRoute permission={Permission.BATCHES_OPERATE} />}
         >

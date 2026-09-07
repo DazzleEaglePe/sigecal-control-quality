@@ -401,18 +401,18 @@ POST /nonconformities/actions/:actionId/verify
 
 ## 11. Reportes e indicadores — `/reports`
 
-| Método | Ruta                                 | Descripción                                                       | Acceso |
-| ------ | ------------------------------------ | ----------------------------------------------------------------- | ------ |
-| GET    | `/reports/dashboard`                 | Indicadores. Query: `dateFrom`, `dateTo`; `includeDemo` solo A/J  | todos  |
-| GET    | `/reports/conformity-rate`           | Porcentaje de conformidad, con desglose                           | A J N  |
-| GET    | `/reports/schedule-compliance`       | Cumplimiento de la programación                                   | A J N  |
-| GET    | `/reports/response-time`             | Tiempo promedio de respuesta ante no conformidades                | A J N  |
-| GET    | `/reports/nc-by-stage`               | No conformidades por etapa                                        | A J N  |
-| GET    | `/reports/conformity-trend`          | Evolución mensual de la conformidad                               | A J N  |
-| GET    | `/reports/traceability/:batchId/pdf` | Reporte de trazabilidad en PDF                                    | A J N  |
-| GET    | `/reports/inspections/excel`         | Inspecciones en Excel. Acepta todos los filtros de `/inspections` | A J N  |
-| GET    | `/reports/nonconformities/excel`     | No conformidades y acciones en Excel                              | A J N  |
-| GET    | `/reports/results/excel`             | Resultados por parámetro en Excel                                 | A J N  |
+| Método | Ruta                                 | Descripción                                                                                                                                                          | Acceso |
+| ------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| GET    | `/reports/dashboard`                 | Indicadores. Query: `dateFrom`, `dateTo`; `includeDemo` solo A/J                                                                                                     | todos  |
+| GET    | `/reports/conformity-rate`           | Porcentaje de conformidad, con desglose                                                                                                                              | A J N  |
+| GET    | `/reports/schedule-compliance`       | Cumplimiento de la programación                                                                                                                                      | A J N  |
+| GET    | `/reports/response-time`             | Tiempo promedio de respuesta ante no conformidades                                                                                                                   | A J N  |
+| GET    | `/reports/nc-by-stage`               | No conformidades por etapa                                                                                                                                           | A J N  |
+| GET    | `/reports/conformity-trend`          | Evolución mensual de la conformidad                                                                                                                                  | A J N  |
+| GET    | `/reports/traceability/:batchId/pdf` | Reporte de trazabilidad en PDF                                                                                                                                       | A J N  |
+| GET    | `/reports/inspections/excel`         | Excel. Query: `dateFrom?`, `dateTo?`, `batchId?`, `stageId?`, `responsibleId?`, `status?`, `type?`, `includeDemo?`                                                   | A J N  |
+| GET    | `/reports/nonconformities/excel`     | Excel de NC y acciones. Query: `dateFrom?`, `dateTo?`, `batchId?`, `stageId?`, `assignedToId?`, `assignedAreaId?`, `status?`, `severity?`, `origin?`, `includeDemo?` | A J N  |
+| GET    | `/reports/results/excel`             | Excel fisicoquímico por parámetro. Query: `dateFrom?`, `dateTo?`, `batchId?`, `inspectionId?`, `parameterId?`, `status?`, `includeDemo?`                             | A J N  |
 
 ```
 GET /reports/dashboard?dateFrom=2026-09-01&dateTo=2026-12-31
@@ -436,7 +436,13 @@ Cada elemento de `activeBatchesByStage` expone `inObservation` separado de
 `count`, como exige el guardarraíl del KPI. `dateTo` se interpreta hasta el fin
 del día en `America/Lima`.
 
-> Todo extremo de reporte acepta los filtros aplicables de `RF-M8-13`. Las exportaciones devuelven el archivo binario con la cabecera `Content-Disposition` correspondiente y registran un evento de auditoría de tipo `EXPORT`. `dataOrigin=DEMO` queda excluido por defecto.
+> Las fechas de las exportaciones son ISO 8601 con zona horaria. Todo extremo
+> acepta los filtros aplicables de `RF-M8-13`; si se omiten las fechas, consulta
+> todo el historial disponible. Las exportaciones devuelven el archivo binario
+> con la cabecera `Content-Disposition` correspondiente y registran un evento de
+> auditoría de tipo `EXPORT`, incluido el conjunto de filtros aplicado.
+> `dataOrigin=DEMO` queda excluido por defecto y `includeDemo=true` solo puede
+> utilizarse con rol A o J.
 
 ---
 

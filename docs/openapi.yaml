@@ -3224,6 +3224,152 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+  /reports/inspections/excel:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Reportes
+      operationId: downloadInspectionsExcel
+      summary: Exporta inspecciones filtradas en Excel
+      parameters:
+        - &a32
+          name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - &a33
+          name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: batchId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: stageId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: responsibleId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - &a34
+          name: includeDemo
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Solo ADMIN y JEFE_CALIDAD pueden activarlo.
+      responses: &a35
+        '200':
+          description: Libro Excel generado con los filtros aplicados.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: El rol no puede exportar o incluir datos DEMO.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /reports/nonconformities/excel:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Reportes
+      operationId: downloadNonConformitiesExcel
+      summary: Exporta no conformidades y acciones filtradas en Excel
+      parameters:
+        - *a32
+        - *a33
+        - name: batchId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: stageId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: assignedToId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: assignedAreaId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: severity
+          in: query
+          schema:
+            type: string
+        - name: origin
+          in: query
+          schema:
+            type: string
+        - *a34
+      responses: *a35
+  /reports/results/excel:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Reportes
+      operationId: downloadResultsExcel
+      summary: Exporta resultados fisicoquímicos filtrados en Excel
+      parameters:
+        - *a32
+        - *a33
+        - name: batchId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: inspectionId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: parameterId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+        - *a34
+      responses: *a35
 components:
   securitySchemes:
     bearerAuth:

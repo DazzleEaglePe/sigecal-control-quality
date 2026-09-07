@@ -23,6 +23,7 @@ import type {
 import { ReportsService } from './reports.service.js';
 import type {
   ReportExportRepositoryPort,
+  ReportExcelRenderers,
   ReportsDataset,
   ReportsRepositoryPort,
   ReportTraceabilityPort,
@@ -87,7 +88,22 @@ class ExportStub implements ReportExportRepositoryPort {
   public recordExport(): Promise<void> {
     return Promise.resolve();
   }
+  public inspections() {
+    return Promise.resolve([]);
+  }
+  public nonConformities() {
+    return Promise.resolve([]);
+  }
+  public results() {
+    return Promise.resolve([]);
+  }
 }
+
+const excelRenderers: ReportExcelRenderers = {
+  inspections: () => Promise.resolve(Buffer.from('PK inspecciones')),
+  nonConformities: () => Promise.resolve(Buffer.from('PK no conformidades')),
+  results: () => Promise.resolve(Buffer.from('PK resultados')),
+};
 
 const appFor = (role: Role) =>
   createApp({
@@ -98,6 +114,7 @@ const appFor = (role: Role) =>
       new TraceabilityStub(),
       new ExportStub(),
       () => Promise.resolve(Buffer.from('%PDF-1.7 prueba')),
+      excelRenderers,
     ),
   });
 const bearer = { Authorization: 'Bearer prueba' };
@@ -151,5 +168,31 @@ describe('ruta de reporte PDF', () => {
       'trazabilidad-LT-2026-0001.pdf',
     );
     await request(appFor('OPERARIO')).get(pdfPath).set(bearer).expect(403);
+  });
+});
+
+describe('rutas de reportes Excel', () => {
+  it.each([
+    ['inspections', 'inspecciones-202609201700.xlsx'],
+    ['nonconformities', 'no-conformidades-202609201700.xlsx'],
+    ['results', 'resultados-202609201700.xlsx'],
+  ])('entrega %s como XLSX', async (report, fileName) => {
+    const response = await request(appFor('ANALISTA'))
+      .get(`${env.API_PREFIX}/reports/${report}/excel`)
+      .set(bearer)
+      .expect(200);
+    expect(response.headers['content-type']).toContain(
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    expect(response.headers['content-disposition']).toContain(fileName);
+  });
+
+  it('rechaza al operario y el uso de DEMO por un analista', async () => {
+    const excelPath = `${env.API_PREFIX}/reports/inspections/excel`;
+    await request(appFor('OPERARIO')).get(excelPath).set(bearer).expect(403);
+    await request(appFor('ANALISTA'))
+      .get(`${excelPath}?includeDemo=true`)
+      .set(bearer)
+      .expect(403);
   });
 });

@@ -1,5 +1,10 @@
 import type { Request, RequestHandler } from 'express';
-import type { ReportsDashboardQuery } from '@sigecal/shared';
+import type {
+  InspectionExportQuery,
+  NonConformityExportQuery,
+  ReportsDashboardQuery,
+  ResultExportQuery,
+} from '@sigecal/shared';
 
 import { UnauthorizedError } from '../../errors/app-error.js';
 import type { ReportActor, ReportsUseCases } from './reports.types.js';
@@ -35,6 +40,69 @@ export class ReportsController {
       const batchId = String(request.params.batchId);
       const file = await this.reports.traceabilityPdf(
         batchId,
+        actorFrom(request),
+        request.ip,
+      );
+      response
+        .set('Content-Type', file.mimeType)
+        .set('Content-Disposition', `attachment; filename="${file.fileName}"`)
+        .send(file.content);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public readonly inspectionsExcel: RequestHandler = async (
+    request,
+    response,
+    next,
+  ) => {
+    try {
+      const query = request.query as unknown as InspectionExportQuery;
+      const file = await this.reports.inspectionsExcel(
+        query,
+        actorFrom(request),
+        request.ip,
+      );
+      response
+        .set('Content-Type', file.mimeType)
+        .set('Content-Disposition', `attachment; filename="${file.fileName}"`)
+        .send(file.content);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public readonly nonConformitiesExcel: RequestHandler = async (
+    request,
+    response,
+    next,
+  ) => {
+    try {
+      const query = request.query as unknown as NonConformityExportQuery;
+      const file = await this.reports.nonConformitiesExcel(
+        query,
+        actorFrom(request),
+        request.ip,
+      );
+      response
+        .set('Content-Type', file.mimeType)
+        .set('Content-Disposition', `attachment; filename="${file.fileName}"`)
+        .send(file.content);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public readonly resultsExcel: RequestHandler = async (
+    request,
+    response,
+    next,
+  ) => {
+    try {
+      const query = request.query as unknown as ResultExportQuery;
+      const file = await this.reports.resultsExcel(
+        query,
         actorFrom(request),
         request.ip,
       );

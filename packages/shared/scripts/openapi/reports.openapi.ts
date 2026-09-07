@@ -11,6 +11,36 @@ const schema = (value: z.ZodType): Record<string, unknown> => {
 const json = (name: string) => ({
   'application/json': { schema: { $ref: `#/components/schemas/${name}` } },
 });
+const queryParameter = (name: string, format?: string) => ({
+  name,
+  in: 'query',
+  schema: { type: 'string', ...(format ? { format } : {}) },
+});
+const includeDemoParameter = {
+  name: 'includeDemo',
+  in: 'query',
+  schema: { type: 'boolean', default: false },
+  description: 'Solo ADMIN y JEFE_CALIDAD pueden activarlo.',
+};
+const reportDates = [
+  queryParameter('dateFrom', 'date-time'),
+  queryParameter('dateTo', 'date-time'),
+];
+const excelResponses = {
+  '200': {
+    description: 'Libro Excel generado con los filtros aplicados.',
+    headers: { 'Content-Disposition': { schema: { type: 'string' } } },
+    content: {
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+        schema: { type: 'string', format: 'binary' },
+      },
+    },
+  },
+  '403': {
+    description: 'El rol no puede exportar o incluir datos DEMO.',
+    content: json('ApiError'),
+  },
+};
 
 export const reportPaths = {
   '/reports/dashboard': {
@@ -86,6 +116,60 @@ export const reportPaths = {
           content: json('ApiError'),
         },
       },
+    },
+  },
+  '/reports/inspections/excel': {
+    get: {
+      security: [{ bearerAuth: [] }],
+      tags: ['Reportes'],
+      operationId: 'downloadInspectionsExcel',
+      summary: 'Exporta inspecciones filtradas en Excel',
+      parameters: [
+        ...reportDates,
+        ...['batchId', 'stageId', 'responsibleId'].map((name) =>
+          queryParameter(name, 'uuid'),
+        ),
+        queryParameter('status'),
+        queryParameter('type'),
+        includeDemoParameter,
+      ],
+      responses: excelResponses,
+    },
+  },
+  '/reports/nonconformities/excel': {
+    get: {
+      security: [{ bearerAuth: [] }],
+      tags: ['Reportes'],
+      operationId: 'downloadNonConformitiesExcel',
+      summary: 'Exporta no conformidades y acciones filtradas en Excel',
+      parameters: [
+        ...reportDates,
+        ...['batchId', 'stageId', 'assignedToId', 'assignedAreaId'].map(
+          (name) => queryParameter(name, 'uuid'),
+        ),
+        queryParameter('status'),
+        queryParameter('severity'),
+        queryParameter('origin'),
+        includeDemoParameter,
+      ],
+      responses: excelResponses,
+    },
+  },
+  '/reports/results/excel': {
+    get: {
+      security: [{ bearerAuth: [] }],
+      tags: ['Reportes'],
+      operationId: 'downloadResultsExcel',
+      summary: 'Exporta resultados fisicoquímicos filtrados en Excel',
+      parameters: [
+        ...reportDates,
+        ...['batchId', 'inspectionId', 'parameterId'].map((name) =>
+          queryParameter(name, 'uuid'),
+        ),
+        queryParameter('status'),
+        includeDemoParameter,
+      ],
+      responses: excelResponses,
     },
   },
 };

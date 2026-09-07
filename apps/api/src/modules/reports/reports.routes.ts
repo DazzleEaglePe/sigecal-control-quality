@@ -11,7 +11,10 @@ import type { AuthUseCases } from '../auth/auth.types.js';
 import { ReportsController } from './reports.controller.js';
 import {
   ReportBatchParamsSchema,
+  InspectionExportQuerySchema,
+  NonConformityExportQuerySchema,
   ReportsDashboardQuerySchema,
+  ResultExportQuerySchema,
 } from './reports.schema.js';
 import type { ReportsUseCases } from './reports.types.js';
 
@@ -32,6 +35,24 @@ export const createReportsRouter = (
     authorize(Role.ADMIN, Role.JEFE_CALIDAD, Role.ANALISTA),
     validate({ params: ReportBatchParamsSchema }),
     controller.traceabilityPdf,
+  );
+  router.get(
+    '/inspections/excel',
+    authorize(Role.ADMIN, Role.JEFE_CALIDAD, Role.ANALISTA),
+    validate({ query: InspectionExportQuerySchema }),
+    controller.inspectionsExcel,
+  );
+  router.get(
+    '/nonconformities/excel',
+    authorize(Role.ADMIN, Role.JEFE_CALIDAD, Role.ANALISTA),
+    validate({ query: NonConformityExportQuerySchema }),
+    controller.nonConformitiesExcel,
+  );
+  router.get(
+    '/results/excel',
+    authorize(Role.ADMIN, Role.JEFE_CALIDAD, Role.ANALISTA),
+    validate({ query: ResultExportQuerySchema }),
+    controller.resultsExcel,
   );
   return router;
 };

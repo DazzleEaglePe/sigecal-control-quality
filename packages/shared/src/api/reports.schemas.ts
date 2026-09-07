@@ -1,9 +1,59 @@
 import { z } from 'zod';
 
-import { NCSeveritySchema } from '../domain/enums.js';
+import {
+  InspectionStatusSchema,
+  InspectionTypeSchema,
+  NCOriginSchema,
+  NCSeveritySchema,
+  NCStatusSchema,
+  ResultStatusSchema,
+} from '../domain/enums.js';
 import { createApiSuccessSchema } from './contracts.js';
 
 const NullableMetricSchema = z.number().nonnegative().nullable();
+const IdSchema = z.uuid();
+const DateTimeSchema = z.iso.datetime({ offset: true });
+const IncludeDemoSchema = z
+  .enum(['true', 'false'])
+  .transform((value) => value === 'true')
+  .default(false);
+
+const ExportRangeSchema = z
+  .object({
+    dateFrom: DateTimeSchema.optional(),
+    dateTo: DateTimeSchema.optional(),
+    includeDemo: IncludeDemoSchema,
+  })
+  .refine(
+    (value) =>
+      !value.dateFrom || !value.dateTo || value.dateFrom <= value.dateTo,
+    { path: ['dateTo'], message: 'El final no puede ser anterior al inicio.' },
+  );
+
+export const InspectionExportQuerySchema = ExportRangeSchema.extend({
+  batchId: IdSchema.optional(),
+  stageId: IdSchema.optional(),
+  responsibleId: IdSchema.optional(),
+  status: InspectionStatusSchema.optional(),
+  type: InspectionTypeSchema.optional(),
+}).strict();
+
+export const NonConformityExportQuerySchema = ExportRangeSchema.extend({
+  batchId: IdSchema.optional(),
+  stageId: IdSchema.optional(),
+  assignedToId: IdSchema.optional(),
+  assignedAreaId: IdSchema.optional(),
+  status: NCStatusSchema.optional(),
+  severity: NCSeveritySchema.optional(),
+  origin: NCOriginSchema.optional(),
+}).strict();
+
+export const ResultExportQuerySchema = ExportRangeSchema.extend({
+  batchId: IdSchema.optional(),
+  inspectionId: IdSchema.optional(),
+  parameterId: IdSchema.optional(),
+  status: ResultStatusSchema.optional(),
+}).strict();
 
 export const ReportsDashboardQuerySchema = z
   .object({
@@ -111,3 +161,8 @@ export const ReportsDashboardResponseSchema = createApiSuccessSchema(
 
 export type ReportsDashboardQuery = z.infer<typeof ReportsDashboardQuerySchema>;
 export type ReportsDashboard = z.infer<typeof ReportsDashboardSchema>;
+export type InspectionExportQuery = z.infer<typeof InspectionExportQuerySchema>;
+export type NonConformityExportQuery = z.infer<
+  typeof NonConformityExportQuerySchema
+>;
+export type ResultExportQuery = z.infer<typeof ResultExportQuerySchema>;

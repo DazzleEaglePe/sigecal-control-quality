@@ -74,6 +74,7 @@ import { createNotificationsRouter } from './modules/notifications/notifications
 import { NotificationsService } from './modules/notifications/notifications.service.js';
 import type { NotificationsUseCases } from './modules/notifications/notifications.types.js';
 import { ReportsRepository } from './modules/reports/reports.repository.js';
+import { ReportsExportRepository } from './modules/reports/reports.export.repository.js';
 import { createReportsRouter } from './modules/reports/reports.routes.js';
 import { ReportsService } from './modules/reports/reports.service.js';
 import type { ReportsUseCases } from './modules/reports/reports.types.js';
@@ -206,11 +207,12 @@ const resolveNonConformities = (dependencies: AppDependencies) =>
   dependencies.nonConformitiesService ?? defaultNonConformitiesService();
 const defaultReportsService = (): ReportsUseCases => {
   const repository = new ReportsRepository(prisma);
+  const exportRepository = new ReportsExportRepository(prisma);
   return new ReportsService(
     repository,
     undefined,
     defaultBatchesService(),
-    repository,
+    exportRepository,
   );
 };
 

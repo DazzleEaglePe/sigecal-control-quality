@@ -1,6 +1,6 @@
 # Checklist Sprint 6 — No conformidades y respuesta al feedback
 
-Fecha de corte: 06/09/2026.
+Fecha de corte: 07/09/2026.
 
 ## Qué pidió demostrar el ingeniero
 
@@ -28,7 +28,7 @@ Fecha de corte: 06/09/2026.
 - [x] Notificaciones internas, contador, lectura y tareas idempotentes de aviso.
 - [x] KPI calculados en servidor, con exclusión `DEMO` por defecto y pruebas de bordes.
 - [x] Reporte PDF de trazabilidad con autorización, auditoría y descarga desde el lote.
-- [ ] Exportaciones Excel filtradas.
+- [x] Exportaciones Excel filtradas, auditadas y descargables desde la interfaz.
 - [ ] Búsqueda global con permisos y pantalla de consulta de auditoría.
 - [ ] Versión piloto y credenciales controladas, después del pre-test y datos reales aprobados.
 
@@ -53,15 +53,19 @@ se limitará a caché de vistas de consulta según el plan aprobado.
 8. Asignar una NC o acción, abrir la campana y demostrar contador, enlace y lectura.
 9. Filtrar el tablero por periodo, demostrar denominadores vacíos y activar `DEMO`
    con un rol autorizado para comprobar su señalización visible.
+10. Descargar los tres reportes Excel, revisar la hoja de filtros y comprobar que
+    el rol `ANALISTA` no puede incluir datos `DEMO`.
 
 El login y la seguridad no se consideran únicamente una apariencia visual: la evidencia
 debe incluir controles del servidor, persistencia, correo en Mailpit y pruebas automatizadas.
 
-## Evidencia técnica · 06/09/2026
+## Evidencia técnica · 07/09/2026
 
-- 228 pruebas unitarias/contrato aprobadas: API 157, web 34 y shared 37.
+- 239 pruebas unitarias/contrato aprobadas: API 164, web 36 y shared 39.
 - 11 pruebas de integración aprobadas contra PostgreSQL 16 desechable.
 - ESLint, TypeScript, Prettier, OpenAPI y build de producción aprobados.
-- Migraciones aplicadas al entorno local; seed idempotente verificado con 4 usuarios,
+- Migraciones aplicadas al entorno local; seed idempotente verificado con 5 usuarios,
   5 lotes DEMO, 8 resultados, 1 sesión sensorial y 2 no conformidades DEMO.
 - PostgreSQL y Mailpit saludables; API SIGECAL saludable en el puerto local configurado.
+- Tres exportaciones reales verificadas como libros Excel 2007+: inspecciones,
+  no conformidades con acciones y resultados fisicoquímicos por parámetro.

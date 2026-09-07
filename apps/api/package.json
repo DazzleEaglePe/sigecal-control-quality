@@ -23,6 +23,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@excel.js/exceljs": "0.15.0",
     "@prisma/adapter-pg": "7.9.1",
     "@prisma/client": "7.9.1",
     "@sigecal/shared": "0.1.0",

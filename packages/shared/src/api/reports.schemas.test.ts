@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  InspectionExportQuerySchema,
+  NonConformityExportQuerySchema,
   ReportsDashboardQuerySchema,
   ReportsDashboardResponseSchema,
+  ResultExportQuerySchema,
 } from './reports.schemas.js';
 
 const emptyMetricResponse = {
@@ -62,5 +65,34 @@ describe('contratos de indicadores', () => {
     expect(
       ReportsDashboardResponseSchema.safeParse(emptyMetricResponse).success,
     ).toBe(true);
+  });
+});
+
+describe('filtros de exportación', () => {
+  it('excluye DEMO por defecto y acepta filtros aplicables', () => {
+    expect(
+      InspectionExportQuerySchema.parse({ status: 'COMPLETADA' }).includeDemo,
+    ).toBe(false);
+    expect(
+      NonConformityExportQuerySchema.parse({ severity: 'CRITICA' }).severity,
+    ).toBe('CRITICA');
+    expect(
+      ResultExportQuerySchema.parse({
+        dateFrom: '2026-09-01T00:00:00-05:00',
+        dateTo: '2026-09-30T23:59:59-05:00',
+      }).dateTo,
+    ).toBe('2026-09-30T23:59:59-05:00');
+  });
+
+  it('rechaza rangos invertidos y parámetros desconocidos', () => {
+    expect(
+      InspectionExportQuerySchema.safeParse({
+        dateFrom: '2026-09-02T00:00:00-05:00',
+        dateTo: '2026-09-01T00:00:00-05:00',
+      }).success,
+    ).toBe(false);
+    expect(ResultExportQuerySchema.safeParse({ hidden: 'value' }).success).toBe(
+      false,
+    );
   });
 });

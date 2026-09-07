@@ -188,10 +188,10 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [x] Tablero con todos los indicadores
 - [x] Exclusión por defecto de datos `DEMO`
 - [x] Reporte de trazabilidad en PDF
-- [ ] Exportaciones a Excel con filtros configurables
+- [x] Exportaciones a Excel con filtros configurables
 - [x] Pantallas: listado y detalle de no conformidad
 - [x] Pantalla: tablero consolidado con filtros y gráficos
-- [ ] Pantallas: consulta y descarga de reportes
+- [x] Pantallas: consulta y descarga de reportes
 - [ ] Búsqueda global con permisos y alcance por pertenencia
 - [ ] Despliegue de una versión piloto estable y entrega controlada de credenciales
 - [x] Pruebas unitarias: cálculo de tiempos, reglas de cierre, transiciones

@@ -19,15 +19,10 @@ import {
 import { createContext, use } from 'react';
 import { NavLink, type NavLinkRenderProps } from 'react-router-dom';
 
-import { Permission, type Permission as PermissionName } from '@sigecal/shared';
+import { Permission } from '@sigecal/shared';
 
 import { useAuth } from '../features/auth/useAuth.js';
 
-interface NavigationItem {
-  readonly name: string;
-  readonly icon: LucideIcon;
-  readonly permission: PermissionName;
-}
 interface LinkProps {
   readonly action: () => void;
   readonly icon: LucideIcon;
@@ -42,13 +37,6 @@ interface SidebarProps {
   readonly toggleCollapsed: () => void;
 }
 
-const pendingModules: readonly NavigationItem[] = [
-  {
-    name: 'Reportes',
-    icon: ChartNoAxesCombined,
-    permission: Permission.REPORTS_EXPORT,
-  },
-];
 /* El tooltip por CSS quedaría recortado por el `overflow` del contenedor de
    navegación, así que al colapsar se usa el título nativo del navegador. */
 const CollapsedContext = createContext(false);
@@ -72,67 +60,45 @@ const NavigationLink = ({ action, icon: Icon, label, to }: LinkProps) => (
   </NavLink>
 );
 
-const PendingItem = ({
-  icon: Icon,
-  name,
-}: Pick<NavigationItem, 'icon' | 'name'>): React.JSX.Element => (
-  <span
-    className="nav-item is-disabled"
-    aria-disabled="true"
-    {...useTooltip(name)}
-  >
-    <Icon className="nav-symbol" aria-hidden="true" />
-    <span>{name}</span>
-    <small>Pronto</small>
-  </span>
-);
-
-const PendingNavigation = (): React.JSX.Element => {
+const QualityNavigation = ({ action }: { readonly action: () => void }) => {
   const { user } = useAuth();
   return (
     <>
-      {pendingModules
-        .filter((module) => user?.permissions.includes(module.permission))
-        .map((module) => (
-          <PendingItem
-            icon={module.icon}
-            key={module.name}
-            name={module.name}
-          />
-        ))}
+      <NavigationLink
+        action={action}
+        icon={ClipboardCheck}
+        label="Inspecciones"
+        to="/inspecciones"
+      />
+      <NavigationLink
+        action={action}
+        icon={FlaskConical}
+        label="Análisis"
+        to="/analisis"
+      />
+      <NavigationLink
+        action={action}
+        icon={Wine}
+        label="Organoléptico"
+        to="/organoleptico"
+      />
+      <NavigationLink
+        action={action}
+        icon={TriangleAlert}
+        label="No conformidades"
+        to="/no-conformidades"
+      />
+      {user?.permissions.includes(Permission.REPORTS_EXPORT) ? (
+        <NavigationLink
+          action={action}
+          icon={ChartNoAxesCombined}
+          label="Reportes"
+          to="/reportes"
+        />
+      ) : null}
     </>
   );
 };
-
-const QualityNavigation = ({ action }: { readonly action: () => void }) => (
-  <>
-    <NavigationLink
-      action={action}
-      icon={ClipboardCheck}
-      label="Inspecciones"
-      to="/inspecciones"
-    />
-    <NavigationLink
-      action={action}
-      icon={FlaskConical}
-      label="Análisis"
-      to="/analisis"
-    />
-    <NavigationLink
-      action={action}
-      icon={Wine}
-      label="Organoléptico"
-      to="/organoleptico"
-    />
-    <NavigationLink
-      action={action}
-      icon={TriangleAlert}
-      label="No conformidades"
-      to="/no-conformidades"
-    />
-    <PendingNavigation />
-  </>
-);
 
 const PrimaryNavigation = ({ action }: { readonly action: () => void }) => {
   const { user } = useAuth();

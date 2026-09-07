@@ -8,7 +8,6 @@ import type {
   ReportActor,
   ReportRange,
   ReportsDataset,
-  ReportExportRepositoryPort,
   ReportsRepositoryPort,
 } from './reports.types.js';
 
@@ -106,9 +105,7 @@ const batchStageRecord = (row: BatchStageSource): BatchStageMetricRecord => ({
   stageSequence: row.stage.sequence,
 });
 
-export class ReportsRepository
-  implements ReportsRepositoryPort, ReportExportRepositoryPort
-{
+export class ReportsRepository implements ReportsRepositoryPort {
   public constructor(private readonly client: PrismaClient) {}
 
   public async loadDashboard(range: ReportRange): Promise<ReportsDataset> {
@@ -133,36 +130,6 @@ export class ReportsRepository
       nonConformities: nonConformities.map(nonConformityRecord),
       batchStages: batchStages.map(batchStageRecord),
     };
-  }
-
-  public async generator(userId: string) {
-    const user = await this.client.user.findUniqueOrThrow({
-      where: { id: userId },
-      select: { firstName: true, lastName: true, email: true },
-    });
-    return {
-      fullName: `${user.firstName} ${user.lastName}`,
-      email: user.email,
-    };
-  }
-
-  public async recordExport(input: {
-    readonly actorId: string;
-    readonly entity: string;
-    readonly entityId: string;
-    readonly fileName: string;
-    readonly ipAddress?: string;
-  }): Promise<void> {
-    await this.client.auditLog.create({
-      data: {
-        userId: input.actorId,
-        action: 'EXPORT',
-        entity: input.entity,
-        entityId: input.entityId,
-        after: { fileName: input.fileName, format: 'PDF' },
-        ...(input.ipAddress ? { ipAddress: input.ipAddress } : {}),
-      },
-    });
   }
 
   private physchem(range: ReportRange) {
