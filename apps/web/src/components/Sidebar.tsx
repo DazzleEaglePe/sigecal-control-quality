@@ -1,6 +1,7 @@
 import {
   Building2,
   ChartNoAxesCombined,
+  FileClock,
   PanelLeftClose,
   PanelLeftOpen,
   ClipboardCheck,
@@ -156,6 +157,14 @@ const ConfigurationNavigation = ({
         label="Estándares"
         to="/configuracion/estandares"
       />
+      {user.permissions.includes(Permission.AUDIT_VIEW) ? (
+        <NavigationLink
+          action={action}
+          icon={FileClock}
+          label="Auditoría"
+          to="/auditoria"
+        />
+      ) : null}
     </>
   );
 };

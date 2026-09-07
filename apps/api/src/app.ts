@@ -78,6 +78,10 @@ import { ReportsExportRepository } from './modules/reports/reports.export.reposi
 import { createReportsRouter } from './modules/reports/reports.routes.js';
 import { ReportsService } from './modules/reports/reports.service.js';
 import type { ReportsUseCases } from './modules/reports/reports.types.js';
+import { DiscoveryRepository } from './modules/discovery/discovery.repository.js';
+import { createDiscoveryRouter } from './modules/discovery/discovery.routes.js';
+import { DiscoveryService } from './modules/discovery/discovery.service.js';
+import type { DiscoveryUseCases } from './modules/discovery/discovery.types.js';
 
 export interface AppDependencies {
   readonly accountAccessService?: AccountAccessUseCases;
@@ -92,6 +96,7 @@ export interface AppDependencies {
   readonly inspectionTemplatesService?: InspectionTemplatesUseCases;
   readonly physChemService?: PhysChemUseCases;
   readonly reportsService?: ReportsUseCases;
+  readonly discoveryService?: DiscoveryUseCases;
   readonly sensoryService?: SensoryUseCases;
   readonly standardsService?: StandardsUseCases;
   readonly usersService?: UsersUseCases;
@@ -196,6 +201,7 @@ interface ResolvedServices {
   readonly nonConformities: NonConformitiesUseCases;
   readonly notifications: NotificationsUseCases;
   readonly reports: ReportsUseCases;
+  readonly discovery: DiscoveryUseCases;
   readonly standards: StandardsUseCases;
   readonly users: UsersUseCases;
 }
@@ -215,6 +221,8 @@ const defaultReportsService = (): ReportsUseCases => {
     exportRepository,
   );
 };
+const defaultDiscoveryService = (): DiscoveryUseCases =>
+  new DiscoveryService(new DiscoveryRepository(prisma));
 
 const resolveServices = (dependencies: AppDependencies): ResolvedServices => ({
   accountAccess:
@@ -232,6 +240,7 @@ const resolveServices = (dependencies: AppDependencies): ResolvedServices => ({
   notifications:
     dependencies.notificationsService ?? defaultNotificationsService(),
   reports: dependencies.reportsService ?? defaultReportsService(),
+  discovery: dependencies.discoveryService ?? defaultDiscoveryService(),
   standards: dependencies.standardsService ?? defaultStandardsService(),
   users: dependencies.usersService ?? defaultUsersService(),
 });
@@ -284,6 +293,10 @@ const mountRoutes = (app: Express, services: ResolvedServices): void => {
   app.use(
     `${env.API_PREFIX}/reports`,
     createReportsRouter(services.auth, services.reports),
+  );
+  app.use(
+    env.API_PREFIX,
+    createDiscoveryRouter(services.auth, services.discovery),
   );
   app.use(
     `${env.API_PREFIX}/users`,

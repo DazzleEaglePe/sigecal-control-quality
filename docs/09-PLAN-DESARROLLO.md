@@ -192,7 +192,7 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [x] Pantallas: listado y detalle de no conformidad
 - [x] Pantalla: tablero consolidado con filtros y gráficos
 - [x] Pantallas: consulta y descarga de reportes
-- [ ] Búsqueda global con permisos y alcance por pertenencia
+- [x] Búsqueda global con permisos y alcance por pertenencia
 - [ ] Despliegue de una versión piloto estable y entrega controlada de credenciales
 - [x] Pruebas unitarias: cálculo de tiempos, reglas de cierre, transiciones
 - [x] Pruebas de KPI: denominador cero, exclusión `DEMO`, inspección tardía, NC sin atención y corte mensual en `America/Lima`

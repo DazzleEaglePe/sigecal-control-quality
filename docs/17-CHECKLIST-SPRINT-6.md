@@ -29,7 +29,7 @@ Fecha de corte: 07/09/2026.
 - [x] KPI calculados en servidor, con exclusión `DEMO` por defecto y pruebas de bordes.
 - [x] Reporte PDF de trazabilidad con autorización, auditoría y descarga desde el lote.
 - [x] Exportaciones Excel filtradas, auditadas y descargables desde la interfaz.
-- [ ] Búsqueda global con permisos y pantalla de consulta de auditoría.
+- [x] Búsqueda global con permisos y pantalla de consulta de auditoría.
 - [ ] Versión piloto y credenciales controladas, después del pre-test y datos reales aprobados.
 
 ## Alcance aclarado frente al feedback
@@ -55,13 +55,17 @@ se limitará a caché de vistas de consulta según el plan aprobado.
    con un rol autorizado para comprobar su señalización visible.
 10. Descargar los tres reportes Excel, revisar la hoja de filtros y comprobar que
     el rol `ANALISTA` no puede incluir datos `DEMO`.
+11. Buscar un mismo código con Administrador y Operario para demostrar que el
+    servidor excluye los registros fuera de pertenencia.
+12. Abrir Auditoría con Jefe de Calidad, filtrar una exportación y comprobar que
+    no existen acciones de edición o eliminación.
 
 El login y la seguridad no se consideran únicamente una apariencia visual: la evidencia
 debe incluir controles del servidor, persistencia, correo en Mailpit y pruebas automatizadas.
 
 ## Evidencia técnica · 07/09/2026
 
-- 239 pruebas unitarias/contrato aprobadas: API 164, web 36 y shared 39.
+- 249 pruebas unitarias/contrato aprobadas: API 169, web 38 y shared 42.
 - 11 pruebas de integración aprobadas contra PostgreSQL 16 desechable.
 - ESLint, TypeScript, Prettier, OpenAPI y build de producción aprobados.
 - Migraciones aplicadas al entorno local; seed idempotente verificado con 5 usuarios,
@@ -69,3 +73,7 @@ debe incluir controles del servidor, persistencia, correo en Mailpit y pruebas a
 - PostgreSQL y Mailpit saludables; API SIGECAL saludable en el puerto local configurado.
 - Tres exportaciones reales verificadas como libros Excel 2007+: inspecciones,
   no conformidades con acciones y resultados fisicoquímicos por parámetro.
+- Búsqueda real verificada con resultados agrupados de lotes, inspecciones y no
+  conformidades; prueba específica confirma que la pertenencia del Operario se
+  combina con el texto antes de aplicar el límite.
+- Bitácora consultada con Jefe de Calidad y filtro `EXPORT`; Operario recibe `403`.

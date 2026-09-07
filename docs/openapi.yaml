@@ -31,6 +31,10 @@ tags:
     description: Avisos internos y lectura aislada por usuario.
   - name: Reportes
     description: Indicadores consolidados y exportaciones del sistema.
+  - name: Búsqueda
+    description: Consulta transversal limitada por rol y pertenencia.
+  - name: Auditoría
+    description: Lectura administrativa de la bitácora inmutable.
 paths:
   /health:
     get:
@@ -3370,6 +3374,115 @@ paths:
             type: string
         - *a34
       responses: *a35
+  /search:
+    get:
+      security: &a36
+        - bearerAuth: []
+      tags:
+        - Búsqueda
+      operationId: globalSearch
+      summary: Busca registros dentro del alcance del usuario
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 100
+        - name: types
+          in: query
+          schema:
+            type: string
+            example: BATCH,INSPECTION
+        - name: limitPerType
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 8
+      responses:
+        '200':
+          description: Resultados accesibles agrupados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          description: Consulta inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /audit:
+    get:
+      security: *a36
+      tags:
+        - Auditoría
+      operationId: listAuditLog
+      summary: Consulta la bitácora inmutable
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: userId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: entity
+          in: query
+          schema:
+            type: string
+        - name: entityId
+          in: query
+          schema:
+            type: string
+        - name: action
+          in: query
+          schema:
+            type: string
+            enum:
+              - CREATE
+              - UPDATE
+              - STATE_CHANGE
+              - LOGIN
+              - LOGOUT
+              - EXPORT
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Eventos paginados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditListResponse'
+        '403':
+          description: Rol sin permiso de auditoría.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
 components:
   securitySchemes:
     bearerAuth:
@@ -13984,6 +14097,239 @@ components:
             - ncByStage
             - conformityTrend
           additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    SearchResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          properties:
+            batches:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  type:
+                    type: string
+                    enum:
+                      - BATCH
+                      - INSPECTION
+                      - NONCONFORMITY
+                  code:
+                    type: string
+                    minLength: 1
+                  status:
+                    type: string
+                    minLength: 1
+                  context:
+                    type: string
+                    minLength: 1
+                required:
+                  - id
+                  - type
+                  - code
+                  - status
+                  - context
+                additionalProperties: false
+            inspections:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  type:
+                    type: string
+                    enum:
+                      - BATCH
+                      - INSPECTION
+                      - NONCONFORMITY
+                  code:
+                    type: string
+                    minLength: 1
+                  status:
+                    type: string
+                    minLength: 1
+                  context:
+                    type: string
+                    minLength: 1
+                required:
+                  - id
+                  - type
+                  - code
+                  - status
+                  - context
+                additionalProperties: false
+            nonConformities:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                  type:
+                    type: string
+                    enum:
+                      - BATCH
+                      - INSPECTION
+                      - NONCONFORMITY
+                  code:
+                    type: string
+                    minLength: 1
+                  status:
+                    type: string
+                    minLength: 1
+                  context:
+                    type: string
+                    minLength: 1
+                required:
+                  - id
+                  - type
+                  - code
+                  - status
+                  - context
+                additionalProperties: false
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - batches
+            - inspections
+            - nonConformities
+            - total
+          additionalProperties: false
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            pageSize:
+              type: integer
+              minimum: 1
+              maximum: 100
+            total:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - page
+            - pageSize
+            - total
+          additionalProperties: false
+      required:
+        - success
+        - data
+      additionalProperties: false
+    AuditListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+              user:
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                    required:
+                      - id
+                      - firstName
+                      - lastName
+                    additionalProperties: false
+                  - type: 'null'
+              action:
+                type: string
+                enum:
+                  - CREATE
+                  - UPDATE
+                  - STATE_CHANGE
+                  - LOGIN
+                  - LOGOUT
+                  - EXPORT
+              entity:
+                type: string
+              entityId:
+                type: string
+              before:
+                anyOf:
+                  - {}
+                  - type: 'null'
+              after:
+                anyOf:
+                  - {}
+                  - type: 'null'
+              ipAddress:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+            required:
+              - id
+              - user
+              - action
+              - entity
+              - entityId
+              - before
+              - after
+              - ipAddress
+              - createdAt
+            additionalProperties: false
         meta:
           type: object
           properties:

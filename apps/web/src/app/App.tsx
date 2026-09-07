@@ -108,6 +108,12 @@ const NonConformityDetailPage = lazy(async () => ({
 const ReportsPage = lazy(async () => ({
   default: (await import('../pages/ReportsPage.js')).ReportsPage,
 }));
+const SearchPage = lazy(async () => ({
+  default: (await import('../pages/SearchPage.js')).SearchPage,
+}));
+const AuditPage = lazy(async () => ({
+  default: (await import('../pages/AuditPage.js')).AuditPage,
+}));
 const deferred = (element: React.JSX.Element): React.JSX.Element => (
   <Suspense fallback={<p>Cargando módulo…</p>}>{element}</Suspense>
 );
@@ -182,6 +188,7 @@ const protectedRoutes = (
       <Route element={<AppShell />}>
         <Route index element={<HomePage />} />
         <Route path="ajustes" element={deferred(<SettingsPage />)} />
+        <Route path="buscar" element={deferred(<SearchPage />)} />
         <Route path="lotes" element={deferred(<BatchesPage />)} />
         <Route path="lotes/:id" element={deferred(<BatchDetailPage />)} />
         {qualityRoutes}
@@ -189,6 +196,9 @@ const protectedRoutes = (
           element={<PermissionRoute permission={Permission.REPORTS_EXPORT} />}
         >
           <Route path="reportes" element={deferred(<ReportsPage />)} />
+        </Route>
+        <Route element={<PermissionRoute permission={Permission.AUDIT_VIEW} />}>
+          <Route path="auditoria" element={deferred(<AuditPage />)} />
         </Route>
         <Route
           element={<PermissionRoute permission={Permission.BATCHES_OPERATE} />}

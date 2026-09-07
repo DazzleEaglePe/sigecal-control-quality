@@ -191,6 +191,13 @@ La barra superior busca por código o texto y agrupa resultados en lotes, inspec
 
 El contador abre un panel con título, fecha, estado de lectura y enlace al registro relacionado. Incluye “Marcar todas como leídas”. Las inspecciones y acciones vencidas conservan texto e ícono, no solo color.
 
+### 2.12 Auditoría `/auditoria`
+
+Vista exclusiva de Administrador y Jefe de Calidad. Presenta filtros por acción,
+entidad, identificador y periodo, una tabla paginada ordenada desde el evento más
+reciente y un detalle desplegable de los valores anterior y posterior. No ofrece
+acciones para editar o eliminar eventos.
+
 ---
 
 ## 3. Flujos principales

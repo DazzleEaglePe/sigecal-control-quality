@@ -37,6 +37,10 @@ import {
   notificationSchemas,
 } from './openapi/notifications.openapi.js';
 import { reportPaths, reportSchemas } from './openapi/reports.openapi.js';
+import {
+  discoveryPaths,
+  discoverySchemas,
+} from './openapi/discovery.openapi.js';
 
 const outputPath = fileURLToPath(
   new URL('../../../docs/openapi.yaml', import.meta.url),
@@ -105,6 +109,14 @@ const document = {
       name: 'Reportes',
       description: 'Indicadores consolidados y exportaciones del sistema.',
     },
+    {
+      name: 'Búsqueda',
+      description: 'Consulta transversal limitada por rol y pertenencia.',
+    },
+    {
+      name: 'Auditoría',
+      description: 'Lectura administrativa de la bitácora inmutable.',
+    },
   ],
   paths: {
     '/health': {
@@ -162,6 +174,7 @@ const document = {
     ...nonConformityPaths,
     ...notificationPaths,
     ...reportPaths,
+    ...discoveryPaths,
   },
   components: {
     securitySchemes: {
@@ -190,6 +203,7 @@ const document = {
       ...nonConformitySchemas,
       ...notificationSchemas,
       ...reportSchemas,
+      ...discoverySchemas,
     },
   },
 };

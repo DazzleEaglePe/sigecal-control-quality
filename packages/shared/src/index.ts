@@ -1,4 +1,5 @@
 export * from './api/contracts.js';
+export * from './api/discovery.schemas.js';
 export * from './api/auth.schemas.js';
 export * from './api/batches.schemas.js';
 export * from './api/admin.schemas.js';

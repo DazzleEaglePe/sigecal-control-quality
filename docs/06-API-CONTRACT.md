@@ -466,6 +466,19 @@ aceptan `userId`. Tipos emitidos: `INSPECTION_DUE_SOON`,
 `ACTION_DUE_SOON`. El cliente recibe `entityType` y `entityId` para navegar al
 registro relacionado; la clave interna de deduplicación no forma parte del DTO.
 
+`GET /search` exige `q` de 2 a 100 caracteres. `types` admite una lista separada
+por comas con `BATCH`, `INSPECTION` y `NONCONFORMITY`; `limitPerType` acepta de
+1 a 20 y vale 8 por defecto. La respuesta agrupa `batches`, `inspections` y
+`nonConformities`; cada elemento expone `id`, `type`, `code`, `status` y
+`context`. El servidor aplica el alcance por pertenencia antes de limitar los
+resultados, por lo que un registro no autorizado nunca aparece.
+
+`GET /audit` se pagina con `page` y `pageSize`, ordena de más reciente a más
+antiguo y admite los filtros documentados en la tabla. Devuelve usuario, acción,
+entidad, identificador, valores anterior/posterior ya sanitizados, IP y fecha.
+La ruta está protegida por rol `ADMIN` o `JEFE_CALIDAD` y no existen operaciones
+de escritura sobre la bitácora.
+
 ---
 
 ## 13. Catálogo de códigos de error de negocio
