@@ -203,9 +203,9 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 
 ## Sprint 7 · Calidad
 
-- [ ] Configuración de PWA: manifiesto, service worker, caché de vistas de consulta
+- [x] Configuración inicial de PWA: manifiesto, service worker y caché segura del shell
 - [ ] Validación de uso en campo desde móvil como web responsiva/PWA; no aplicación nativa
-- [ ] Indicador de estado sin conexión
+- [x] Indicador de estado sin conexión
 - [ ] Auditoría de accesibilidad con Lighthouse y corrección de hallazgos
 - [ ] Navegación completa por teclado verificada
 - [ ] Revisión de contrastes

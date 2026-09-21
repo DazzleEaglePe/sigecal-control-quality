@@ -9,6 +9,7 @@ import { useSidebarWidth } from '../features/shell/useSidebarWidth.js';
 import { SessionMenu } from './SessionMenu.js';
 import { NotificationsMenu } from './NotificationsMenu.js';
 import { Sidebar } from './Sidebar.js';
+import { ConnectivityNotice } from './ConnectivityNotice.js';
 
 interface MenuProps {
   readonly open: boolean;
@@ -114,6 +115,7 @@ export const AppShell = (): React.JSX.Element => {
         startResize={shell.startDrag}
       />
       <div className="workspace">
+        <ConnectivityNotice />
         <Topbar
           open={shell.menuOpen}
           action={shell.toggleMenu}

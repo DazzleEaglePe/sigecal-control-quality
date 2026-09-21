@@ -66,6 +66,11 @@ export const DashboardFilters = ({
   const update = (values: Partial<Filters>) => {
     setDraft({ ...draft, ...values });
   };
+  const toggleDemo = (): void => {
+    const next = { ...draft, includeDemo: !draft.includeDemo };
+    setDraft(next);
+    onApply(next);
+  };
   return (
     <form
       className="flex flex-wrap items-end gap-2"
@@ -78,6 +83,7 @@ export const DashboardFilters = ({
         canIncludeDemo={canIncludeDemo}
         draft={draft}
         update={update}
+        toggleDemo={toggleDemo}
       />
       <Button type="submit" variant="outline" size="sm">
         <Filter aria-hidden="true" /> Aplicar periodo
@@ -89,10 +95,12 @@ export const DashboardFilters = ({
 const FilterFields = ({
   canIncludeDemo,
   draft,
+  toggleDemo,
   update,
 }: {
   readonly canIncludeDemo: boolean;
   readonly draft: Filters;
+  readonly toggleDemo: () => void;
   readonly update: (values: Partial<Filters>) => void;
 }) => (
   <>
@@ -113,12 +121,7 @@ const FilterFields = ({
       }}
     />
     {canIncludeDemo ? (
-      <DemoButton
-        active={draft.includeDemo}
-        onToggle={() => {
-          update({ includeDemo: !draft.includeDemo });
-        }}
-      />
+      <DemoButton active={draft.includeDemo} onToggle={toggleDemo} />
     ) : null}
   </>
 );
