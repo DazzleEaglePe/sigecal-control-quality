@@ -13,7 +13,7 @@
 }
 
 @media (max-width: 700px) {
-  .topbar-actions,
+  .topbar-help,
   .session-chevron {
     display: none;
   }

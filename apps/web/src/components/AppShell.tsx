@@ -10,6 +10,7 @@ import { SessionMenu } from './SessionMenu.js';
 import { NotificationsMenu } from './NotificationsMenu.js';
 import { Sidebar } from './Sidebar.js';
 import { ConnectivityNotice } from './ConnectivityNotice.js';
+import { PwaInstallButton } from './PwaInstallButton.js';
 
 interface MenuProps {
   readonly open: boolean;
@@ -19,7 +20,7 @@ interface MenuProps {
 const TopbarActions = (): React.JSX.Element => (
   <div className="topbar-actions">
     <button
-      className="icon-button"
+      className="icon-button topbar-help"
       type="button"
       disabled
       title="Ayuda disponible próximamente"
@@ -28,6 +29,7 @@ const TopbarActions = (): React.JSX.Element => (
       <CircleHelp />
     </button>
     <NotificationsMenu />
+    <PwaInstallButton />
   </div>
 );
 
