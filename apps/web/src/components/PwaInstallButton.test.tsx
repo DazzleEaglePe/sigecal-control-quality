@@ -20,7 +20,9 @@ describe('PwaInstallButton', () => {
   it('muestra y ejecuta el aviso de instalación disponible', async () => {
     render(<PwaInstallButton />);
     expect(
-      screen.queryByRole('button', { name: 'Instalar SIGECAL en este dispositivo' }),
+      screen.queryByRole('button', {
+        name: 'Instalar SIGECAL en este dispositivo',
+      }),
     ).not.toBeInTheDocument();
 
     const event = installPromptEvent();
@@ -35,7 +37,9 @@ describe('PwaInstallButton', () => {
       expect(event.prompt).toHaveBeenCalledOnce();
     });
     expect(
-      screen.queryByRole('button', { name: 'Instalar SIGECAL en este dispositivo' }),
+      screen.queryByRole('button', {
+        name: 'Instalar SIGECAL en este dispositivo',
+      }),
     ).not.toBeInTheDocument();
   });
 });

@@ -45,7 +45,27 @@ export default defineConfig(({ mode }) => {
       port: Number(environment.WEB_PORT ?? 5173),
       strictPort: true,
     },
-    build: { chunkSizeWarningLimit: 550 },
+    build: {
+      chunkSizeWarningLimit: 550,
+      rolldownOptions: {
+        output: {
+          manualChunks(moduleId) {
+            if (!moduleId.includes('node_modules')) return;
+            if (moduleId.includes('/recharts/')) return 'charts';
+            if (moduleId.includes('/lucide-react/')) return 'icons';
+            if (
+              moduleId.includes('/react/') ||
+              moduleId.includes('/react-dom/') ||
+              moduleId.includes('/react-router')
+            ) {
+              return 'react';
+            }
+            if (moduleId.includes('/@radix-ui/')) return 'ui';
+            return null;
+          },
+        },
+      },
+    },
     preview: { port: 4173, strictPort: true },
     test: {
       environment: 'jsdom',

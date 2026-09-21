@@ -5,8 +5,12 @@ import { AppShell } from '../components/AppShell.js';
 import { ProtectedRoute } from '../features/auth/ProtectedRoute.js';
 import { PermissionRoute } from '../features/auth/PermissionRoute.js';
 import { Permission } from '@sigecal/shared';
-import { HomePage } from '../pages/HomePage.js';
 import { NotFoundPage } from '../pages/NotFoundPage.js';
+
+const HomePage = lazy(async () => {
+  const module = await import('../pages/HomePage.js');
+  return { default: module.HomePage };
+});
 
 const LoginPage = lazy(async () => {
   const module = await import('../pages/LoginPage.js');
@@ -115,7 +119,9 @@ const AuditPage = lazy(async () => ({
   default: (await import('../pages/AuditPage.js')).AuditPage,
 }));
 const deferred = (element: React.JSX.Element): React.JSX.Element => (
-  <Suspense fallback={<p>Cargando módulo…</p>}>{element}</Suspense>
+  <Suspense fallback={<p role="status">Cargando módulo…</p>}>
+    {element}
+  </Suspense>
 );
 
 const qualityRoutes = (
@@ -186,7 +192,7 @@ const protectedRoutes = (
     <Route element={<ProtectedRoute />}>
       <Route path="password" element={deferred(<ChangePasswordPage />)} />
       <Route element={<AppShell />}>
-        <Route index element={<HomePage />} />
+        <Route index element={deferred(<HomePage />)} />
         <Route path="ajustes" element={deferred(<SettingsPage />)} />
         <Route path="buscar" element={deferred(<SearchPage />)} />
         <Route path="lotes" element={deferred(<BatchesPage />)} />
