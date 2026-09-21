@@ -211,8 +211,12 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [ ] Revisión de contrastes
 - [ ] Revisión de los cuatro estados en todas las vistas
 - [ ] Revisión de todos los mensajes de error
-- [ ] Índices de base de datos verificados
-- [ ] Revisión de rendimiento de listados
+- [x] Índices de base de datos verificados (21/09/2026): los filtros y
+      ordenamientos operativos cuentan con índices en Prisma; se mantienen
+      paginados en el servidor.
+- [x] Revisión de rendimiento de listados (21/09/2026): los listados
+      operativos usan paginación de servidor y el build separa React, UI y
+      gráficos para reducir la carga inicial de la PWA.
 - [ ] Lista de verificación de seguridad de `07`
 - [ ] Corrección de la deuda técnica acumulada
 - [ ] Pruebas de recorrido completo de los flujos A, B y C
