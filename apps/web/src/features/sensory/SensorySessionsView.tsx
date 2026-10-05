@@ -54,7 +54,7 @@ const SessionsTable = ({
   readonly selected: readonly string[];
   readonly toggle: (id: string, checked: boolean) => void;
 }) => (
-  <div className="table-shell">
+  <div className="table-scroll">
     <table>
       <thead>
         <tr>

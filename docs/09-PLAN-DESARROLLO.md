@@ -213,6 +213,9 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [ ] Revisión de contrastes
 - [ ] Revisión de los cuatro estados en todas las vistas
 - [ ] Revisión de todos los mensajes de error
+- [x] Correcciones y pasada responsive parcial en viewports simulados de
+      móvil/tableta (05/10/2026): foco visible en campos, menú móvil oculto al
+      cerrarse y tablas contenidas; no reemplaza validación en teléfono real.
 - [x] Pasada autenticada parcial de módulos con cuentas `ADMIN` y `OPERARIO`
       (05/10/2026): tablero, lotes, inspecciones, análisis, organoléptico, no
       conformidades, reportes y usuarios revisados en PostgreSQL desechable;
@@ -243,10 +246,12 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
       precachea recursos estáticos y excluye respuestas `/api` autenticadas.
 
 **Estado al 05/10/2026:** apto para demostración y revisión técnica; cierre
-condicionado. Build, lint, tipos, formato, OpenAPI, 265 pruebas generales y 11
+condicionado. Build, lint, tipos, formato, OpenAPI, 269 pruebas generales y 11
 de integración PostgreSQL pasan. Se revisó una pasada parcial de módulos
 autenticados con dos roles en base desechable; no equivale a recorrer todos los
-flujos y estados ni a validar el API desde el navegador. Lighthouse obtuvo
+flujos y estados ni a validar el API desde el navegador. Las 52 pruebas web y
+la revisión responsive parcial (390 px/768 px) pasan; ello no sustituye la
+prueba en teléfono real ni el recorrido completo de teclado. Lighthouse obtuvo
 100/100 en acceso público, no en todas las vistas. Mantener abiertos los
 controles manuales de teclado, contraste, estados/mensajes, la conformidad de
 Nicolle y el piloto/onboarding real. Los requisitos productivos de `07` pasan a

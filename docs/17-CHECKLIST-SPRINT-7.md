@@ -20,18 +20,18 @@ realizadas desde este entorno.
 
 ## 2. Evidencia ejecutada
 
-| Comprobación                                                | Resultado                                                                                                         |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `npm run db:verify-seed`                                    | ✅ `users: 5`, `demoBatches: 5`, `demoResults: 8`, `demoSensorySessions: 1`, `demoSensoryPending: 1`, `demoNC: 2` |
-| `npm run openapi:validate`                                  | ✅ Contrato OpenAPI válido                                                                                        |
-| `npm run test:integration`                                  | ✅ 11 pruebas PostgreSQL en un contenedor desechable; el entorno de desarrollo no fue modificado                  |
-| `npm run test`                                              | ✅ 265 pruebas generales aprobadas; 11 de integración se omiten allí porque tienen su comando aislado             |
-| `npm run lint`, `npm run typecheck`, `npm run format:check` | ✅ Sin advertencias, errores ni diferencias de formato                                                            |
-| `npm run build`                                             | ✅ API y frontend de producción compilados; PWA genera manifest, service worker y Workbox                         |
-| `npm run openapi:validate`                                  | ✅ Contrato OpenAPI válido                                                                                        |
-| Build web PWA                                               | ✅ Manifiesto, `sw.js`, Workbox y recursos precacheados generados                                                 |
-| Lighthouse sobre `http://localhost:5173/login`              | ✅ Accesibilidad **100/100**, sin hallazgos                                                                       |
-| Servicios locales                                           | ✅ PostgreSQL, Mailpit, API y web disponibles después de migración y seed idempotente                             |
+| Comprobación                                                | Resultado                                                                                                                   |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `npm run db:verify-seed`                                    | ✅ `users: 5`, `demoBatches: 5`, `demoResults: 8`, `demoSensorySessions: 1`, `demoSensoryPending: 1`, `demoNC: 2`           |
+| `npm run openapi:validate`                                  | ✅ Contrato OpenAPI válido                                                                                                  |
+| `npm run test:integration`                                  | ✅ 11 pruebas PostgreSQL en un contenedor desechable; el entorno de desarrollo no fue modificado                            |
+| `npm run test`                                              | ✅ 269 pruebas generales aprobadas (API 175, web 52 y shared 42); 11 de integración se omiten porque tienen comando aislado |
+| `npm run lint`, `npm run typecheck`, `npm run format:check` | ✅ Sin advertencias, errores ni diferencias de formato                                                                      |
+| `npm run build`                                             | ✅ API y frontend de producción compilados; PWA genera manifest, service worker y Workbox                                   |
+| `npm run openapi:validate`                                  | ✅ Contrato OpenAPI válido                                                                                                  |
+| Build web PWA                                               | ✅ Manifiesto, `sw.js`, Workbox y recursos precacheados generados                                                           |
+| Lighthouse sobre `http://localhost:5173/login`              | ✅ Accesibilidad **100/100**, sin hallazgos                                                                                 |
+| Servicios locales                                           | ✅ PostgreSQL, Mailpit, API y web disponibles después de migración y seed idempotente                                       |
 
 ## 3. Flujos A, B y C
 
@@ -145,6 +145,41 @@ aislado, pero no constituye aceptación funcional completa: no se cubrieron todo
 los estados por pantalla, contraste de cada componente, flujos de escritura ni
 la revisión de Nicolle. La instancia temporal fue eliminada tras la revisión.
 
+### Correcciones verificadas de teclado y diseño responsive (05/10/2026)
+
+En la pasada móvil se encontraron y corrigieron tres problemas de interfaz:
+
+- Algunos campos de fecha recibían foco de teclado sin un indicador visible.
+  Se agregó un contorno de foco de 3 px para inputs, selects y textareas; el
+  campo de fecha del tablero muestra ahora el contorno al recorrerlo con Tab.
+- El ancho reservado por el menú lateral de escritorio reducía el contenido
+  hasta provocar desplazamiento horizontal en viewport móvil. Se elimina esa
+  reserva hasta 850 px.
+- El menú lateral fuera de pantalla seguía disponible para teclado/tecnología
+  asistiva cuando estaba cerrado. En móvil ahora usa `visibility: hidden` y se
+  vuelve visible al abrirse; la comprobación de accesibilidad y el recorrido
+  por Tab confirman que el foco comienza en los controles visibles.
+- La tabla de sesiones organolépticas usaba un contenedor sin desplazamiento
+  horizontal. Se cambió al contenedor común `table-scroll`; la tabla conserva su
+  ancho dentro de su propia región desplazable y deja de ampliar la página.
+
+En navegador se probaron viewports simulados de 390×844 y 768×1024. En 390 px
+se recorrieron tablero, lotes, inspecciones, análisis, organoléptico, no
+conformidades, reportes y usuarios; en 768 px se revisaron lotes, organoléptico,
+no conformidades y reportes. Después de las correcciones ninguna de esas vistas
+amplía el ancho de documento más allá del viewport. Las tablas anchas permanecen
+desplazables dentro de su contenedor. Se recorrió por teclado la navegación del
+tablero y los controles del encabezado/filtros; esto sigue siendo una muestra,
+no el recorrido completo de todas las vistas ni una prueba en teléfono físico.
+También se filtró Lotes por un código inexistente y se confirmó el estado vacío
+con instrucciones para ajustar o limpiar los filtros; fue una consulta de solo
+lectura.
+
+Regresión verificada: 52 pruebas web aprobadas en 30 archivos, junto con lint,
+TypeScript y build PWA del frontend. Se mantienen abiertos el recorrido
+completo de teclado, la medición de contraste de todas las vistas/estados y la
+revisión de errores funcionales.
+
 ## 6. Hallazgos y seguimiento
 
 - [x] Se separó el bundle de entrada: React, UI, íconos y gráficos se cargan en
@@ -174,7 +209,7 @@ la revisión de Nicolle. La instancia temporal fue eliminada tras la revisión.
 ## 8. Conclusión
 
 La versión es apta para revisión técnica y demostración con datos `DEMO`; lint,
-tipos, formato, build, OpenAPI, las 265 pruebas generales y las 11 pruebas de
+tipos, formato, build, OpenAPI, las 269 pruebas generales y las 11 pruebas de
 integración pasaron en este corte. El Sprint 7 **no se declara aceptado ni
 cerrado integralmente** hasta completar la revisión manual de accesibilidad,
 obtener la conformidad/evidencia de Nicolle y realizar las actividades de piloto

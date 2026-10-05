@@ -146,6 +146,10 @@
   .sidebar-resize-handle {
     display: none;
   }
+
+  .workspace {
+    margin-left: 0;
+  }
 }
 
 /* El interruptor comparte fila con la marca; sin estos ajustes el subtítulo

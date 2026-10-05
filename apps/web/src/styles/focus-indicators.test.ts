@@ -91,6 +91,12 @@ const contrastRatio = (first: string, second: string): number => {
 };
 
 describe('focus ring theme contrast', () => {
+  it('aplica un indicador visible a todos los controles de formulario', () => {
+    expect(stylesheet).toMatch(
+      /button:focus-visible,\s*a:focus-visible,\s*input:focus,\s*select:focus,\s*textarea:focus,\s*\[tabindex\]:focus-visible\s*\{/,
+    );
+  });
+
   it.each([':root', '\\.light'])('mantiene contraste 3:1 en %s', (selector) => {
     const colors = themeColors(selector);
     const surfaces: ThemeToken[] = [
