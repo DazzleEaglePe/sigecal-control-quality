@@ -10,9 +10,11 @@ del alcance total ya está aprobada técnicamente.
 ## 1. Dictamen de entrega
 
 SIGECAL está listo para una **revisión de los Sprints 1 a 7**: los Sprints 1 a 6
-tienen su alcance funcional implementado y verificado, y el Sprint 7 cuenta con
-cierre técnico documentado. La revisión del Sprint 7 no sustituye las pruebas
-de campo ni el piloto académico.
+tienen su alcance funcional implementado y verificado. El Sprint 7 está apto
+para demostración y revisión técnica, pero su aceptación/cierre integral sigue
+condicionado a la revisión manual de accesibilidad, evidencia breve y
+conformidad de Nicolle. Esto no sustituye el uso en campo ni el piloto
+académico.
 
 No corresponde presentarla aún como entrega final ni iniciar el piloto con datos
 reales sin confirmación de parámetros, rangos y umbrales por la empresa. El
@@ -29,7 +31,7 @@ publicación, el piloto y la entrega formal.
 | 4      | Inspecciones, estándares y resultados fisicoquímicos        | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                    |
 | 5      | Evaluación organoléptica                                    | ✅ Cerrado              | Sí; sesión, corrección inmutable, perfiles y comparación respaldados por pruebas |
 | 6      | Ciclo completo de NC, acciones, indicadores y reportes      | ✅ Cerrado técnicamente | Sí; notificaciones, KPI, PDF, Excel y búsqueda global disponibles                |
-| 7      | PWA, accesibilidad, seguridad, rendimiento y piloto         | ✅ Cerrado técnicamente | Demostración técnica sí; validación móvil y piloto real pendientes               |
+| 7      | PWA, accesibilidad, seguridad, rendimiento y piloto         | 🟡 Cierre condicionado  | Demo técnica sí; revisión manual WCAG, evidencia/conformidad y piloto pendientes |
 | 8      | Despliegue, post-test y entrega formal                      | 🟡 Preparación técnica  | Imágenes y guía listas; dominio, proveedor, SMTP y datos reales pendientes       |
 
 ## 3. Funcionalidades aceptadas

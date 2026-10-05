@@ -207,8 +207,8 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [ ] Validación de uso en campo desde móvil como web responsiva/PWA; no aplicación nativa
 - [x] Indicador de estado sin conexión
 - [x] Auditoría inicial de accesibilidad con Lighthouse (05/10/2026): acceso
-      público con 100/100 y sin hallazgos; las vistas autenticadas se validarán
-      durante el uso móvil del piloto.
+      público con 100/100 y sin hallazgos; esto no acredita WCAG AA en todas las
+      vistas.
 - [ ] Navegación completa por teclado verificada
 - [ ] Revisión de contrastes
 - [ ] Revisión de los cuatro estados en todas las vistas
@@ -219,17 +219,34 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [x] Revisión de rendimiento de listados (21/09/2026): los listados
       operativos usan paginación de servidor y el build separa React, UI y
       gráficos para reducir la carga inicial de la PWA.
-- [ ] Lista de verificación de seguridad de `07`
-- [ ] Corrección de la deuda técnica acumulada
+- [ ] Lista de verificación de seguridad de `07`: controles de despliegue
+      quedan para Sprint 8; separar de los controles de aplicación ya cubiertos
+      por pruebas.
+- [ ] Seguimiento de deuda técnica: cuatro vulnerabilidades altas reportadas
+      por `npm audit` en Prisma CLI/dependencias; la remediación automática
+      requiere bajar de Prisma 7 a 6 y no se aplicó por incompatibilidad con el
+      stack aprobado.
 - [x] Pruebas de recorrido completo de los flujos A, B y C (05/10/2026):
       cubiertas por pruebas de dominio, rutas e integración PostgreSQL aislada;
       evidencia en `17-CHECKLIST-SPRINT-7.md`.
-- [ ] Sesión breve de onboarding operativo para participantes del piloto
-- [ ] Registro de incidencias y retroalimentación del piloto sin cambiar el alcance
+- [ ] Sesión breve de onboarding operativo para participantes del piloto,
+      coordinada con Nicolle antes del inicio del uso.
+- [ ] Registro de incidencias y retroalimentación del piloto sin cambiar el
+      alcance; requiere ejecución real con participantes.
 - [x] Verificación de aislamiento de caché (05/10/2026): Workbox solo
       precachea recursos estáticos y excluye respuestas `/api` autenticadas.
 
-**Criterio de cierre:** Lighthouse con accesibilidad ≥ 90; ninguna advertencia de ESLint; los tres flujos completos sin errores y participantes con uso real registrado.
+**Estado al 05/10/2026:** apto para demostración y revisión técnica; cierre
+condicionado. Build, lint, tipos, formato, OpenAPI, 258 pruebas generales y 11
+de integración PostgreSQL pasan. Lighthouse obtuvo 100/100 en acceso público,
+no en todas las vistas. Mantener abiertos los controles manuales de teclado,
+contraste, estados/mensajes, la conformidad de Nicolle y el piloto/onboarding
+real. Los requisitos productivos de `07` pasan a la puerta de Sprint 8.
+
+**Criterio de aceptación:** además de la evidencia automatizada, requiere
+revisión manual de accesibilidad/estados, evidencia breve y conformidad de la
+tesista. El uso de campo, onboarding y feedback se documentan cuando se ejecute
+el piloto aprobado; no se simulan con pruebas automatizadas.
 
 ---
 
