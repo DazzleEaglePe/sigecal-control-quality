@@ -83,7 +83,7 @@
 
 .auth-input-shell:focus-within {
   border-color: var(--border);
-  box-shadow: 0 0 0 4px rgb(13 112 77 / 16%);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .auth-input-shell.is-invalid {
@@ -93,7 +93,7 @@
 
 .auth-input-shell.is-invalid:focus-within {
   border-color: color-mix(in oklab, var(--destructive) 40%, var(--border));
-  box-shadow: 0 0 0 4px rgb(194 69 58 / 16%);
+  box-shadow: 0 0 0 3px var(--destructive);
 }
 
 .auth-input-shell:has(input:disabled) {
@@ -183,7 +183,7 @@
 
 .password-visibility:focus-visible,
 .auth-submit:focus-visible {
-  outline: 3px solid var(--border);
+  outline: 3px solid var(--ring);
   outline-offset: 2px;
 }
 

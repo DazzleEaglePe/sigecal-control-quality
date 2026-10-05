@@ -109,7 +109,7 @@ a {
 button:focus-visible,
 a:focus-visible,
 [tabindex]:focus-visible {
-  outline: 3px solid color-mix(in oklab, var(--warning) 40%, var(--border));
+  outline: 3px solid var(--ring);
   outline-offset: 3px;
 }
 .skip-link {
@@ -600,7 +600,8 @@ h3 {
 }
 .auth-form input:focus {
   border-color: var(--border);
-  outline: 3px solid var(--border);
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
 }
 .auth-submit {
   margin-inline: auto;

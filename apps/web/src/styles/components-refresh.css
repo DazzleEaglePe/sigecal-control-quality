@@ -77,7 +77,8 @@
 .batch-filters input:focus,
 .batch-filters select:focus {
   border-color: var(--border);
-  outline: 3px solid rgb(36 151 105 / 10%);
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .primary-button,
