@@ -118,6 +118,33 @@ integral. La siguiente sesión requiere que Nicolle ejecute el recorrido con una
 cuenta de QA vigente en su entorno, o que se habilite una sesión de QA segura;
 no se deben compartir contraseñas por el repositorio ni en esta documentación.
 
+### Pasada autenticada en entorno desechable (05/10/2026)
+
+Se levantaron API y web en puertos temporales contra PostgreSQL 16 desechable,
+con migraciones y seed DEMO. No se usó ni modificó la base de desarrollo. Al
+terminar la revisión se detuvieron los procesos temporales y se eliminó el
+contenedor; la instancia local habitual de PostgreSQL, Mailpit y Vite no se
+detuvo.
+
+| Recorrido observado              | Resultado                                                                                                                         | Límite de esta evidencia                                                                                                                                                                                                        |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Login con `ADMIN`                | Acceso al tablero; inicio sin filtro DEMO muestra datos vacíos                                                                    | Cuenta y contraseña eran exclusivas de la base desechable; no guardar ni reutilizar credenciales                                                                                                                                |
+| Tablero · Datos DEMO             | El botón activa `aria-pressed`, aparecen indicadores, gráficos y aviso visible de que los datos no sirven como pre-test/post-test | No valida por sí solo todos los filtros, roles ni periodos posibles                                                                                                                                                             |
+| Lotes                            | Lista paginada con 5 lotes identificados como “Demostración” y filtros disponibles                                                | No se enviaron formularios ni se cambiaron registros                                                                                                                                                                            |
+| Inspecciones                     | Lista con 10 registros, estados y filtros; vistas de listado y calendario disponibles                                             | Se observó el listado; no se recorrió cada detalle ni se cambió una inspección                                                                                                                                                  |
+| Organoléptico                    | Una sesión de demostración; la pantalla compara perfiles de producto y no presenta puntajes de panelistas                         | No se inició ni guardó una nueva evaluación                                                                                                                                                                                     |
+| Análisis fisicoquímico           | Filtros por parámetro, producto y etapa, y opción separada para incluir demostración                                              | No se ejecutó una consulta analítica                                                                                                                                                                                            |
+| No conformidades                 | Dos registros DEMO con estados, severidad, responsables y filtros                                                                 | No se crearon ni editaron incidencias/acciones                                                                                                                                                                                  |
+| Reportes                         | Tres formularios Excel muestran filtros y opción explícita de incluir DEMO                                                        | No se descargaron archivos en esta pasada                                                                                                                                                                                       |
+| Usuarios · `ADMIN`               | Formulario y listado muestran cuentas, rol, área, verificación y acciones                                                         | No se creó, editó, restableció ni desactivó una cuenta                                                                                                                                                                          |
+| Navegación · `OPERARIO`          | Se ocultan Usuarios y opciones de configuración; el tablero marca maestros como restringidos                                      | El acceso directo a `/usuarios` vuelve al tablero en la interfaz. La verificación de autorización del API queda respaldada por pruebas automatizadas, no se afirma que esta prueba de navegador haya ejercitado un `403` de API |
+| Cambio de contraseña provisional | El sistema detuvo el primer inicio de Operario y solicitó definir una contraseña propia                                           | Se cerró sesión sin cambiar la contraseña temporal; comportamiento verificado sin completar la operación                                                                                                                        |
+
+La pasada confirma datos de muestra y carga de módulos protegidos en un entorno
+aislado, pero no constituye aceptación funcional completa: no se cubrieron todos
+los estados por pantalla, contraste de cada componente, flujos de escritura ni
+la revisión de Nicolle. La instancia temporal fue eliminada tras la revisión.
+
 ## 6. Hallazgos y seguimiento
 
 - [x] Se separó el bundle de entrada: React, UI, íconos y gráficos se cargan en

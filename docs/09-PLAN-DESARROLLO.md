@@ -213,6 +213,10 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [ ] Revisión de contrastes
 - [ ] Revisión de los cuatro estados en todas las vistas
 - [ ] Revisión de todos los mensajes de error
+- [x] Pasada autenticada parcial de módulos con cuentas `ADMIN` y `OPERARIO`
+      (05/10/2026): tablero, lotes, inspecciones, análisis, organoléptico, no
+      conformidades, reportes y usuarios revisados en PostgreSQL desechable;
+      evidencia y límites en `17-CHECKLIST-SPRINT-7.md`.
 - [x] Índices de base de datos verificados (21/09/2026): los filtros y
       ordenamientos operativos cuentan con índices en Prisma; se mantienen
       paginados en el servidor.
@@ -240,10 +244,13 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 
 **Estado al 05/10/2026:** apto para demostración y revisión técnica; cierre
 condicionado. Build, lint, tipos, formato, OpenAPI, 265 pruebas generales y 11
-de integración PostgreSQL pasan. Lighthouse obtuvo 100/100 en acceso público,
-no en todas las vistas. Mantener abiertos los controles manuales de teclado,
-contraste, estados/mensajes, la conformidad de Nicolle y el piloto/onboarding
-real. Los requisitos productivos de `07` pasan a la puerta de Sprint 8.
+de integración PostgreSQL pasan. Se revisó una pasada parcial de módulos
+autenticados con dos roles en base desechable; no equivale a recorrer todos los
+flujos y estados ni a validar el API desde el navegador. Lighthouse obtuvo
+100/100 en acceso público, no en todas las vistas. Mantener abiertos los
+controles manuales de teclado, contraste, estados/mensajes, la conformidad de
+Nicolle y el piloto/onboarding real. Los requisitos productivos de `07` pasan a
+la puerta de Sprint 8.
 
 **Criterio de aceptación:** además de la evidencia automatizada, requiere
 revisión manual de accesibilidad/estados, evidencia breve y conformidad de la
