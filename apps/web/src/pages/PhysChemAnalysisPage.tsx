@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BarChart3, Database, FlaskConical, ShieldCheck } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
+import { FormError } from '../components/FormError.js';
 import { useAuth } from '../features/auth/useAuth.js';
 import {
   AnalysisFilters,
@@ -79,7 +80,11 @@ const InspectionResultsPanel = ({
       </div>
       <FlaskConical />
     </div>
-    {results.error ? <p className="form-error">{results.error}</p> : null}
+    {results.error ? (
+      <p className="form-error" role="alert">
+        {results.error}
+      </p>
+    ) : null}
     <PhysChemResultsTable items={results.items} />
   </section>
 );
@@ -95,7 +100,11 @@ const ConfigurationPanel = (
       </div>
       <Database />
     </div>
-    {props.error ? <p className="form-error">{props.error}</p> : null}
+    {props.error ? (
+      <p className="form-error" role="alert">
+        {props.error}
+      </p>
+    ) : null}
     <AnalysisFilters {...props} />
   </section>
 );
@@ -166,7 +175,7 @@ export const PhysChemAnalysisPage = (): React.JSX.Element => {
         submit={submit}
         error={masters.error}
       />
-      {analysis.error ? <p className="form-error">{analysis.error}</p> : null}
+      {analysis.error ? <FormError>{analysis.error}</FormError> : null}
       {analysis.loading ? (
         <section className="quality-panel">
           <p>Calculando gráfico de control…</p>

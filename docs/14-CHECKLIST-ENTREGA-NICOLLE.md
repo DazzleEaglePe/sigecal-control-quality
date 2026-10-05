@@ -107,8 +107,8 @@ publicación, el piloto y la entrega formal.
 | Formato Prettier       | ✅ Sin diferencias                                                               |
 | ESLint                 | ✅ API, web y shared sin errores ni advertencias                                 |
 | TypeScript estricto    | ✅ Tres workspaces aprobados                                                     |
-| Pruebas automatizadas  | ✅ 269 pruebas: 258 en la batería general y 11 de integración PostgreSQL aislada |
-| Archivos de prueba     | ✅ 88 archivos de prueba                                                         |
+| Pruebas automatizadas  | ✅ 270 pruebas: 259 en la batería general y 11 de integración PostgreSQL aislada |
+| Archivos de prueba     | ✅ 89 archivos de prueba                                                         |
 | Builds de producción   | ✅ API, web y shared generados                                                   |
 | Imágenes de despliegue | ✅ API, web y tarea temporal de migración construidas                            |
 | Dependencias API prod. | ✅ `npm ci` de runtime sin hallazgos; Prisma CLI excluido de la imagen API       |

@@ -151,7 +151,11 @@ export const StandardForm = ({
   const form = useStandardForm(added);
   return (
     <form className="admin-form" onSubmit={(event) => void form.submit(event)}>
-      {form.error ? <p className="form-error form-span">{form.error}</p> : null}
+      {form.error ? (
+        <p className="form-error form-span" role="alert">
+          {form.error}
+        </p>
+      ) : null}
       <ParameterField parameters={parameters} />
       <ContextFields piscoTypes={piscoTypes} stages={stages} />
       <LimitFields />

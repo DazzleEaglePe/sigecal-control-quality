@@ -5,6 +5,7 @@ import {
 } from '@sigecal/shared';
 
 import { NativeSelect } from '../../components/ui/native-select.js';
+import { FormError } from '../../components/FormError.js';
 import { Textarea } from '../../components/ui/textarea.js';
 import { errorMessage } from '../admin/admin-ui.js';
 import { useAuth } from '../auth/useAuth.js';
@@ -165,9 +166,7 @@ const AssignmentPanel = ({
           void edit.submit(event);
         }}
       >
-        {edit.error ? (
-          <p className="form-error form-span">{edit.error}</p>
-        ) : null}
+        {edit.error ? <FormError>{edit.error}</FormError> : null}
         <AssignmentFields nc={nc} masters={masters} disabled={disabled} />
         {!disabled ? (
           <button

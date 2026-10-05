@@ -36,7 +36,7 @@ const DetailUnavailable = ({
   readonly error: string | undefined;
 }): React.JSX.Element => (
   <section className="quality-panel">
-    <p className="form-error">
+    <p className="form-error" role="alert">
       {error ?? 'La no conformidad no está disponible.'}
     </p>
     <Link to="/no-conformidades">Volver al listado</Link>

@@ -4,6 +4,7 @@ import type { InspectionItem } from '@sigecal/shared';
 import { toast } from 'sonner';
 
 import { useConfirm } from '../../components/ui/use-confirm.js';
+import { FormError } from '../../components/FormError.js';
 import { Input } from '../../components/ui/input.js';
 import { Textarea } from '../../components/ui/textarea.js';
 import { errorMessage } from '../admin/admin-ui.js';
@@ -96,7 +97,7 @@ const TransitionForm = ({
       }}
     >
       <TransitionFields kind={kind} />
-      {error ? <p className="form-error">{error}</p> : null}
+      {error ? <FormError>{error}</FormError> : null}
       <TransitionSubmit kind={kind} saving={saving} />
     </form>
   );
@@ -219,7 +220,7 @@ export const InspectionActions = ({
   return (
     <section className="quality-panel transition-panel">
       <ActionsHeading />
-      {error ? <p className="form-error">{error}</p> : null}
+      {error ? <FormError>{error}</FormError> : null}
       <div className="transition-actions">
         <button
           className="primary-button"

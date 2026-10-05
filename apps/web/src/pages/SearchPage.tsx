@@ -83,7 +83,11 @@ const SearchFeedback = ({
   readonly query: string;
 }) => (
   <>
-    {error ? <p className="form-error">{error}</p> : null}
+    {error ? (
+      <p className="form-error" role="alert">
+        {error}
+      </p>
+    ) : null}
     {loading ? <p>Cargando resultados…</p> : null}
     {!loading && query.length < 2 ? (
       <EmptyState

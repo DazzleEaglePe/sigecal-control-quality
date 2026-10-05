@@ -117,7 +117,11 @@ export const CatalogForm = ({
   const form = useCatalogForm(kind, added);
   return (
     <form className="admin-form" onSubmit={(event) => void form.submit(event)}>
-      {form.error ? <p className="form-error form-span">{form.error}</p> : null}
+      {form.error ? (
+        <p className="form-error form-span" role="alert">
+          {form.error}
+        </p>
+      ) : null}
       <label>
         Código
         <input name="code" required maxLength={40} placeholder="EJ. CODIGO" />

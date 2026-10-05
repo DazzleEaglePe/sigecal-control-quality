@@ -129,7 +129,9 @@ const TabContent = ({
 
 const DetailError = ({ message }: { readonly message: string }) => (
   <div className="admin-panel">
-    <p className="form-error">{message}</p>
+    <p className="form-error" role="alert">
+      {message}
+    </p>
     <Link className="secondary-button" to="/lotes">
       Volver
     </Link>

@@ -27,8 +27,16 @@ export const NewNonConformityPage = (): React.JSX.Element => {
     <div className="page-stack quality-page">
       <Header />
       <section className="admin-panel">
-        {masters.error ? <p className="form-error">{masters.error}</p> : null}
-        {batches.error ? <p className="form-error">{batches.error}</p> : null}
+        {masters.error ? (
+          <p className="form-error" role="alert">
+            {masters.error}
+          </p>
+        ) : null}
+        {batches.error ? (
+          <p className="form-error" role="alert">
+            {batches.error}
+          </p>
+        ) : null}
         {batches.loading ? (
           <p>Cargando datos…</p>
         ) : (

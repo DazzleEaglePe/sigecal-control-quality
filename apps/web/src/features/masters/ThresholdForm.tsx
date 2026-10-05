@@ -106,7 +106,11 @@ export const ThresholdForm = ({
   const form = useThresholdForm(added);
   return (
     <form className="admin-form" onSubmit={(event) => void form.submit(event)}>
-      {form.error ? <p className="form-error form-span">{form.error}</p> : null}
+      {form.error ? (
+        <p className="form-error form-span" role="alert">
+          {form.error}
+        </p>
+      ) : null}
       <ThresholdFields piscoTypes={piscoTypes} />
       <ThresholdValidityFields />
       <button className="primary-button form-span" disabled={form.busy}>

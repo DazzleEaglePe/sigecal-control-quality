@@ -151,7 +151,11 @@ export const SensorySessionsView = (props: {
         <Plus /> Nueva sesión
       </Link>
     </header>
-    {props.error ? <p className="form-error">{props.error}</p> : null}
+    {props.error ? (
+      <p className="form-error" role="alert">
+        {props.error}
+      </p>
+    ) : null}
     <SessionsPanel {...props} />
     <ProfilePanel profiles={props.profiles} />
   </div>

@@ -158,7 +158,9 @@ const CreateActionForm = ({
         }}
       >
         {form.error ? (
-          <p className="form-error form-span">{form.error}</p>
+          <p className="form-error form-span" role="alert">
+            {form.error}
+          </p>
         ) : null}
         <ActionFormFields masters={masters} nc={nc} />
         <div className="form-actions form-span">

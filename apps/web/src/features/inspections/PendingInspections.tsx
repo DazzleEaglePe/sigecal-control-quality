@@ -52,7 +52,11 @@ export const PendingInspections = ({
 }: Props): React.JSX.Element => (
   <section className="quality-panel pending-panel">
     <PendingHeading />
-    {error ? <p className="form-error">{error}</p> : null}
+    {error ? (
+      <p className="form-error" role="alert">
+        {error}
+      </p>
+    ) : null}
     {loading ? <p>Cargando pendientes…</p> : null}
     {!loading && items.length === 0 ? (
       <div className="quality-empty-inline">

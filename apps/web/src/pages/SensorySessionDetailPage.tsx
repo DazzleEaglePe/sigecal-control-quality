@@ -1,4 +1,6 @@
 import { useParams } from 'react-router-dom';
+
+import { FormError } from '../components/FormError.js';
 import { useAuth } from '../features/auth/useAuth.js';
 import { SensorySessionDetailView } from '../features/sensory/SensorySessionDetailView.js';
 import {
@@ -14,9 +16,11 @@ export const SensorySessionDetailPage = (): React.JSX.Element => {
   if (!record.session)
     return (
       <section className="quality-panel">
-        <p className={record.error ? 'form-error' : undefined}>
-          {record.error ?? 'Cargando sesión…'}
-        </p>
+        {record.error ? (
+          <FormError>{record.error}</FormError>
+        ) : (
+          <p role="status">Cargando sesión…</p>
+        )}
       </section>
     );
   const canCorrect =

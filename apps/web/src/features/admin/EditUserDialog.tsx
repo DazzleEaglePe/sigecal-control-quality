@@ -101,7 +101,11 @@ const EditForm = ({
   };
   return (
     <form className="admin-form" onSubmit={submit}>
-      {edit.error ? <p className="form-error form-span">{edit.error}</p> : null}
+      {edit.error ? (
+        <p className="form-error form-span" role="alert">
+          {edit.error}
+        </p>
+      ) : null}
       <IdentityFields user={props.user} />
       <AccessFields areas={props.areas} user={props.user} />
       <div className="dialog-actions form-span">

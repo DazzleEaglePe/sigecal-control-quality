@@ -107,7 +107,9 @@ const SubmitAccess = ({
           : 'Guardar contraseña'}
     </button>
     {!token ? (
-      <p className="form-error">El enlace no contiene un token válido.</p>
+      <p className="form-error" role="alert">
+        El enlace no contiene un token válido.
+      </p>
     ) : null}
   </>
 );

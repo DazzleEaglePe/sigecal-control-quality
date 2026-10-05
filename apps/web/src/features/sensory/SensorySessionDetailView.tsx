@@ -157,7 +157,11 @@ export const SensorySessionDetailView = (props: Props): React.JSX.Element => (
         ) : null}
       </div>
     </header>
-    {props.error ? <p className="form-error">{props.error}</p> : null}
+    {props.error ? (
+      <p className="form-error" role="alert">
+        {props.error}
+      </p>
+    ) : null}
     <SummaryPanel session={props.session} />
     <ProfilePanel profile={props.profile} />
     {props.correcting ? (

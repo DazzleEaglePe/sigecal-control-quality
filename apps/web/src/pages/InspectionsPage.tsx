@@ -127,7 +127,11 @@ const InspectionListPanel = (props: ListPanelProps): React.JSX.Element => {
         masters={props.masters}
         apply={props.apply}
       />
-      {props.error ? <p className="form-error">{props.error}</p> : null}
+      {props.error ? (
+        <p className="form-error" role="alert">
+          {props.error}
+        </p>
+      ) : null}
       {props.loading ? (
         <p>Cargando inspecciones…</p>
       ) : (
@@ -253,7 +257,9 @@ const PageSummary = ({
       error={page.pending.error}
     />
     {page.masters.error ? (
-      <p className="form-error">{page.masters.error}</p>
+      <p className="form-error" role="alert">
+        {page.masters.error}
+      </p>
     ) : null}
   </>
 );

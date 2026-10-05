@@ -119,7 +119,9 @@ const DetailUnavailable = ({
   readonly error: string | undefined;
 }): React.JSX.Element => (
   <section className="quality-panel">
-    <p className="form-error">{error ?? 'La inspección no está disponible.'}</p>
+    <p className="form-error" role="alert">
+      {error ?? 'La inspección no está disponible.'}
+    </p>
     <Link to="/inspecciones">Volver al listado</Link>
   </section>
 );

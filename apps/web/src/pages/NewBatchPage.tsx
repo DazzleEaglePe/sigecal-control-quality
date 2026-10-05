@@ -27,7 +27,11 @@ export const NewBatchPage = (): React.JSX.Element => {
         <p className="section-copy">
           Todo lote creado desde esta pantalla queda marcado como dato REAL.
         </p>
-        {masters.error ? <p className="form-error">{masters.error}</p> : null}
+        {masters.error ? (
+          <p className="form-error" role="alert">
+            {masters.error}
+          </p>
+        ) : null}
         <BatchForm masters={masters.data} />
       </section>
     </div>

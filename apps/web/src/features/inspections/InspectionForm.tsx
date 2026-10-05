@@ -180,7 +180,9 @@ const ParameterPicker = ({
         ))}
       </div>
       {parameters.length === 0 ? (
-        <p className="form-error">No hay parámetros activos para este tipo.</p>
+        <p className="form-error" role="alert">
+          No hay parámetros activos para este tipo.
+        </p>
       ) : null}
     </fieldset>
   );

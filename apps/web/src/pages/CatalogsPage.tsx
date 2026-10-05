@@ -62,7 +62,11 @@ const CatalogPanel = (props: CatalogPanelProps): React.JSX.Element => (
       <h2>{catalogLabels[props.kind]}</h2>
       <span className="phase-badge">{props.items.length} visibles</span>
     </div>
-    {props.error ? <p className="form-error">{props.error}</p> : null}
+    {props.error ? (
+      <p className="form-error" role="alert">
+        {props.error}
+      </p>
+    ) : null}
     {props.loading ? (
       <p>Cargando catálogo…</p>
     ) : (

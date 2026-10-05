@@ -242,7 +242,11 @@ export const AuditPage = (): React.JSX.Element => {
             Página {query.page} de {pages}
           </span>
         </div>
-        {result.error ? <p className="form-error">{result.error}</p> : null}
+        {result.error ? (
+          <p className="form-error" role="alert">
+            {result.error}
+          </p>
+        ) : null}
         {result.loading ? (
           <p>Cargando bitácora…</p>
         ) : (

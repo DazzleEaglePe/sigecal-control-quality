@@ -237,7 +237,7 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
       precachea recursos estáticos y excluye respuestas `/api` autenticadas.
 
 **Estado al 05/10/2026:** apto para demostración y revisión técnica; cierre
-condicionado. Build, lint, tipos, formato, OpenAPI, 258 pruebas generales y 11
+condicionado. Build, lint, tipos, formato, OpenAPI, 259 pruebas generales y 11
 de integración PostgreSQL pasan. Lighthouse obtuvo 100/100 en acceso público,
 no en todas las vistas. Mantener abiertos los controles manuales de teclado,
 contraste, estados/mensajes, la conformidad de Nicolle y el piloto/onboarding

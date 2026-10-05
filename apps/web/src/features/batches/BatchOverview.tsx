@@ -191,7 +191,9 @@ const OperationalPanel = ({
         }}
       >
         {edit.error ? (
-          <p className="form-error form-span">{edit.error}</p>
+          <p className="form-error form-span" role="alert">
+            {edit.error}
+          </p>
         ) : null}
         <OperationalFields batch={batch} disabled={!canEdit || terminal} />
         {canEdit && !terminal ? (

@@ -8,6 +8,7 @@ import type {
   StandardItem,
 } from '@sigecal/shared';
 
+import { FormError } from '../components/FormError.js';
 import { useAuth } from '../features/auth/useAuth.js';
 import { StandardForm } from '../features/masters/StandardForm.js';
 import {
@@ -80,7 +81,7 @@ const StandardPanels = (props: StandardPanelsProps): React.JSX.Element => (
           ))}
         </select>
       </div>
-      {props.error ? <p className="form-error">{props.error}</p> : null}
+      {props.error ? <FormError>{props.error}</FormError> : null}
       <StandardsTable
         items={props.items}
         piscoTypes={props.piscoTypes}
@@ -111,7 +112,7 @@ const ThresholdPanels = ({
     </section>
     <section className="admin-panel">
       <h2>Historial de umbrales</h2>
-      {error ? <p className="form-error">{error}</p> : null}
+      {error ? <FormError>{error}</FormError> : null}
       <ThresholdsTable items={items} piscoTypes={piscoTypes} />
     </section>
   </>
@@ -135,9 +136,7 @@ export const StandardsPage = (): React.JSX.Element => {
   return (
     <div className="page-stack">
       <StandardsHeader />
-      {masterData.error ? (
-        <p className="form-error">{masterData.error}</p>
-      ) : null}
+      {masterData.error ? <FormError>{masterData.error}</FormError> : null}
       <StandardPanels
         parameters={activeParameters}
         piscoTypes={masterData.references.piscoTypes}

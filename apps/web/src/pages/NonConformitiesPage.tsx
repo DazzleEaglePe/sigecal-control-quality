@@ -123,7 +123,11 @@ export const NonConformitiesPage = (): React.JSX.Element => {
       />
       <section className="admin-panel">
         <h2>Filtros</h2>
-        {masters.error ? <p className="form-error">{masters.error}</p> : null}
+        {masters.error ? (
+          <p className="form-error" role="alert">
+            {masters.error}
+          </p>
+        ) : null}
         <NonConformityFilters
           masters={masters.data}
           query={query}

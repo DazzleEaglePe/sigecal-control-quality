@@ -242,7 +242,11 @@ export const InspectionCalendar = (props: Props): React.JSX.Element => {
   return (
     <section className="quality-panel calendar-panel">
       <CalendarToolbar {...props} mode={mode} changeMode={setMode} />
-      {props.error ? <p className="form-error">{props.error}</p> : null}
+      {props.error ? (
+        <p className="form-error" role="alert">
+          {props.error}
+        </p>
+      ) : null}
       {props.loading ? <p>Cargando calendario…</p> : null}
       {!props.loading && mode === 'month' ? (
         <MonthGrid items={props.items} month={props.month} year={props.year} />

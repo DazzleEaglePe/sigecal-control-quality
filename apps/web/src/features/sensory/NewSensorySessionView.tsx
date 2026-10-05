@@ -69,7 +69,11 @@ export const NewSensorySessionView = (props: {
 }): React.JSX.Element => (
   <div className="page-stack quality-page">
     <NewSessionHeader />
-    {props.error ? <p className="form-error">{props.error}</p> : null}
+    {props.error ? (
+      <p className="form-error" role="alert">
+        {props.error}
+      </p>
+    ) : null}
     <InspectionSelector
       id={props.inspectionId}
       items={props.inspections}
