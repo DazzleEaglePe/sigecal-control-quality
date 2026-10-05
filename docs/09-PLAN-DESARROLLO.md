@@ -206,7 +206,9 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [x] Configuración inicial de PWA: manifiesto, service worker y caché segura del shell
 - [ ] Validación de uso en campo desde móvil como web responsiva/PWA; no aplicación nativa
 - [x] Indicador de estado sin conexión
-- [ ] Auditoría de accesibilidad con Lighthouse y corrección de hallazgos
+- [x] Auditoría inicial de accesibilidad con Lighthouse (05/10/2026): acceso
+      público con 100/100 y sin hallazgos; las vistas autenticadas se validarán
+      durante el uso móvil del piloto.
 - [ ] Navegación completa por teclado verificada
 - [ ] Revisión de contrastes
 - [ ] Revisión de los cuatro estados en todas las vistas
@@ -219,10 +221,13 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
       gráficos para reducir la carga inicial de la PWA.
 - [ ] Lista de verificación de seguridad de `07`
 - [ ] Corrección de la deuda técnica acumulada
-- [ ] Pruebas de recorrido completo de los flujos A, B y C
+- [x] Pruebas de recorrido completo de los flujos A, B y C (05/10/2026):
+      cubiertas por pruebas de dominio, rutas e integración PostgreSQL aislada;
+      evidencia en `17-CHECKLIST-SPRINT-7.md`.
 - [ ] Sesión breve de onboarding operativo para participantes del piloto
 - [ ] Registro de incidencias y retroalimentación del piloto sin cambiar el alcance
-- [ ] Verificación de que datos de un usuario no aparecen en la caché de otro
+- [x] Verificación de aislamiento de caché (05/10/2026): Workbox solo
+      precachea recursos estáticos y excluye respuestas `/api` autenticadas.
 
 **Criterio de cierre:** Lighthouse con accesibilidad ≥ 90; ninguna advertencia de ESLint; los tres flujos completos sin errores y participantes con uso real registrado.
 

@@ -42,7 +42,7 @@ Las cuentas creadas desde Administración no reciben una contraseña por correo:
 
 ## Estado funcional
 
-Los Sprints 1, 2, 3, 4 y 5 están implementados. Además de autenticación, RBAC,
+Los Sprints 1 a 6 están implementados. Además de autenticación, RBAC,
 usuarios y maestros, SIGECAL registra lotes, aplica las reglas de composición
 Puro/Acholado, recorre en orden las seis etapas y ofrece QR y trazabilidad
 consolidada. También permite programar inspecciones, previsualizar y registrar
@@ -58,10 +58,12 @@ Las mutaciones se autorizan nuevamente en la API, el alcance de `OPERARIO` se ap
 
 Los catálogos se desactivan mediante baja lógica y la API rechaza la operación si el elemento ya tiene dependencias. Hasta recibir los rangos confirmados de la empresa, los valores normativos existentes permanecen marcados como provisionales y no pueden aplicarse a datos `REAL`.
 
-Esta es una entrega funcional de avance. Los Sprints 6 a 8 —ciclo completo de
-no conformidades, reportes, PWA, despliegue y entrega formal— continúan
-pendientes. El estado verificable para revisión con la tesista está en
-`docs/14-CHECKLIST-ENTREGA-NICOLLE.md`.
+El Sprint 7 ya incorpora la PWA instalable, caché segura solo del shell,
+indicador de conectividad y optimizaciones de carga. Quedan por realizar en
+campo la validación en dispositivos móviles, el piloto y la auditoría completa
+de las vistas autenticadas. El Sprint 8 —despliegue, post-test y entrega
+formal— sigue pendiente. El estado verificable está en
+`docs/17-CHECKLIST-SPRINT-7.md`.
 
 ## Comandos principales
 

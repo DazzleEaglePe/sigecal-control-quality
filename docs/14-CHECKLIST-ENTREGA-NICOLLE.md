@@ -1,6 +1,6 @@
 # 14 · CHECKLIST DE ENTREGA FUNCIONAL PARA NICOLLE
 
-**Corte verificado:** 02/09/2026
+**Corte verificado:** 05/10/2026
 
 **Rama evaluada:** `feature/sprint-4-ui-foundation`
 
@@ -9,14 +9,14 @@ del alcance total ya está aprobada técnicamente.
 
 ## 1. Dictamen de entrega
 
-SIGECAL está listo para una **revisión funcional de los Sprints 1 a 5**. La
+SIGECAL está listo para una **revisión funcional de los Sprints 1 a 6**. La
 versión incluye cimientos, seguridad y maestros, lotes y trazabilidad,
-programación de inspecciones, análisis fisicoquímico y evaluación
-organoléptica.
+programación de inspecciones, análisis fisicoquímico, evaluación organoléptica,
+no conformidades, tablero, reportes, notificaciones y búsqueda global.
 
 No corresponde presentarla aún como entrega final ni iniciar el piloto con datos
-reales: los Sprints 6 a 8 siguen pendientes y los parámetros, rangos y umbrales
-definitivos deben ser entregados y aprobados por la empresa.
+reales sin confirmación de parámetros, rangos y umbrales por la empresa. El
+Sprint 7 está en cierre técnico y Sprint 8 depende del despliegue y del piloto.
 
 ## 2. Estado por sprint
 
@@ -27,8 +27,8 @@ definitivos deben ser entregados y aprobados por la empresa.
 | 3      | Lotes, seis etapas, QR y trazabilidad                       | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                    |
 | 4      | Inspecciones, estándares y resultados fisicoquímicos        | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                    |
 | 5      | Evaluación organoléptica                                    | ✅ Cerrado              | Sí; sesión, corrección inmutable, perfiles y comparación respaldados por pruebas |
-| 6      | Ciclo completo de NC, acciones, indicadores y reportes      | 🟡 En curso             | Ciclo y pantallas de NC disponibles; faltan notificaciones, KPI y exportaciones  |
-| 7      | PWA, accesibilidad, seguridad, rendimiento y piloto         | ⏳ Pendiente            | No disponible                                                                    |
+| 6      | Ciclo completo de NC, acciones, indicadores y reportes      | ✅ Cerrado técnicamente | Sí; notificaciones, KPI, PDF, Excel y búsqueda global disponibles                |
+| 7      | PWA, accesibilidad, seguridad, rendimiento y piloto         | 🟡 Cierre técnico       | PWA y pruebas técnicas sí; piloto móvil y usuarios reales pendientes             |
 | 8      | Despliegue, post-test y entrega formal                      | ⏳ Pendiente            | No disponible                                                                    |
 
 ## 3. Funcionalidades aceptadas
@@ -99,24 +99,24 @@ definitivos deben ser entregados y aprobados por la empresa.
 
 ## 4. Evaluación funcional del corte actual
 
-| Evaluación             | Resultado                                                   |
-| ---------------------- | ----------------------------------------------------------- |
-| Formato Prettier       | ✅ Sin diferencias                                          |
-| ESLint                 | ✅ API, web y shared sin errores ni advertencias            |
-| TypeScript estricto    | ✅ Tres workspaces aprobados                                |
-| Pruebas automatizadas  | ✅ 207 unitarias/contrato + 10 de integración PostgreSQL    |
-| Archivos de prueba     | ✅ 64/64 aprobados                                          |
-| Builds de producción   | ✅ API, web y shared generados                              |
-| Modelo Prisma          | ✅ Formateado y válido                                      |
-| Contrato OpenAPI       | ✅ Válido                                                   |
-| Integridad del seed    | ✅ Incluye sesión y captura organoléptica pendientes `DEMO` |
-| Salud de API           | ✅ HTTP 200 y base conectada                                |
-| Frontend local         | ✅ HTTP 200                                                 |
-| Login responsivo       | ✅ 1440 px, 1024 px y 390 px, sin desbordamiento horizontal |
-| Protección de rutas    | ✅ `/inspecciones` redirige a `/login` sin sesión           |
-| Consola del navegador  | ✅ Sin errores ni advertencias en el acceso                 |
-| Login HTTP y sesión    | ✅ `ANALISTA` autenticado y `/auth/me` responde 200         |
-| Contraseña provisional | ✅ Las rutas operativas quedan bloqueadas hasta cambiarla   |
+| Evaluación             | Resultado                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| Formato Prettier       | ✅ Sin diferencias                                                               |
+| ESLint                 | ✅ API, web y shared sin errores ni advertencias                                 |
+| TypeScript estricto    | ✅ Tres workspaces aprobados                                                     |
+| Pruebas automatizadas  | ✅ 263 pruebas: 252 en la batería general y 11 de integración PostgreSQL aislada |
+| Archivos de prueba     | ✅ 88 archivos de prueba                                                         |
+| Builds de producción   | ✅ API, web y shared generados                                                   |
+| Modelo Prisma          | ✅ Formateado y válido                                                           |
+| Contrato OpenAPI       | ✅ Válido                                                                        |
+| Integridad del seed    | ✅ Incluye sesión y captura organoléptica pendientes `DEMO`                      |
+| Salud de API           | ✅ HTTP 200 y base conectada                                                     |
+| Frontend local         | ✅ HTTP 200                                                                      |
+| Login responsivo       | ✅ 1440 px, 1024 px y 390 px, sin desbordamiento horizontal                      |
+| Protección de rutas    | ✅ `/inspecciones` redirige a `/login` sin sesión                                |
+| Consola del navegador  | ✅ Sin errores ni advertencias en el acceso                                      |
+| Login HTTP y sesión    | ✅ `ANALISTA` autenticado y `/auth/me` responde 200                              |
+| Contraseña provisional | ✅ Las rutas operativas quedan bloqueadas hasta cambiarla                        |
 
 Los recorridos que mutan lotes e inspecciones no se repitieron en este corte para
 no alterar los cinco lotes del seed. Sus evidencias de aceptación están
@@ -153,10 +153,9 @@ de `.env.example`.
 - [x] Pantalla de ajustes de apariencia.
 - [x] Vistas de calidad adaptadas a escritorio, tableta y móvil.
 
-Estas mejoras no sustituyen funcionalidades pendientes de los Sprints 6 a 8.
-Las alertas anteriores corresponden a retroalimentación de interfaz; el centro
-de notificaciones operativas de RF-NOT-01 a RF-NOT-03 continúa pendiente dentro
-del Sprint 6.
+Estas mejoras no sustituyen las condiciones del Sprint 8 ni las validaciones de
+campo. El centro de notificaciones operativas de RF-NOT-01 a RF-NOT-03, los KPI
+y las exportaciones ya están disponibles como parte del Sprint 6.
 
 ## 7. Condiciones antes de la demostración
 
@@ -166,13 +165,12 @@ del Sprint 6.
 - [ ] Se explica que resultados y sesiones finales no se editan: se versionan.
 - [ ] Se explica que las evaluaciones sensoriales califican el producto, nunca a los panelistas.
 - [ ] Se comunica que UML, manual formal y video formal continúan fuera del alcance aprobado.
-- [ ] Se confirma que la revisión es de Sprints 1–5, no la entrega final del sistema.
+- [ ] Se confirma que la revisión es de Sprints 1–7, no la entrega final del sistema.
 
 ## 8. Prioridad inmediata
 
-1. Sprint 6: completar notificaciones, indicadores y reportes; el ciclo de no conformidades y acciones ya está implementado.
-2. Sprint 7: PWA, accesibilidad, seguridad, rendimiento y piloto.
-3. Sprint 8: despliegue, evidencia, post-test y traspaso formal.
+1. Sprint 7: finalizar la validación móvil y el piloto controlado.
+2. Sprint 8: despliegue, evidencia, post-test y traspaso formal.
 
 Los rangos reales de la empresa y las correcciones metodológicas de la tesis
 continúan como dependencias externas; no deben resolverse inventando datos ni
