@@ -57,9 +57,13 @@ sustituyen con pruebas automatizadas.
       762 kB a 218 kB sin comprimir.
 - [x] Los listados operativos son paginados en servidor y los índices del
       esquema Prisma cubren filtros y ordenamientos usados.
-- [ ] `npm audit --omit=dev` reporta 5 vulnerabilidades transitivas de Prisma y
-      `qs`. La actualización automática propone un cambio mayor de Prisma; se
-      tratará como actualización controlada en lugar de aplicarse a ciegas.
+- [x] Se actualizaron dependencias transitivas compatibles (`fast-uri`,
+      `ip-address`, `qs`) y Nodemailer a 10.0.14; el API de producción usa una
+      instalación aislada sin Prisma CLI y reportó cero vulnerabilidades npm.
+- [ ] El audit del repositorio aún reporta cuatro hallazgos altos en Prisma
+      CLI 7.9.1 y sus dependencias. El CLI se excluye de la imagen API, pero
+      sigue en desarrollo y en la imagen temporal de migraciones; revisar al
+      contar con una versión de Prisma compatible con el stack aprobado.
 
 ## 6. Pendiente externo antes del cierre académico
 

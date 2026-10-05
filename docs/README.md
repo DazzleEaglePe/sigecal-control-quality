@@ -40,7 +40,7 @@ Trabajar un sprint a la vez según `09-PLAN-DESARROLLO.md`.
 
 - ✅ Planificación revisada y decisiones críticas cerradas
 - ⏳ Correcciones metodológicas de la tesis: tesista + asesor
-- ✅ Desarrollo: Sprints 1 a 6 implementados y verificados
+- ✅ Desarrollo técnico: Sprints 1 a 7 implementados y verificados; pruebas de campo/piloto pendientes
 - ▶️ Siguiente foco técnico: despliegue reproducible de Sprint 8; piloto requiere autorización e insumos reales
 - ⏳ Datos reales de empresa: pendientes; los estándares provisionales solo sirven para `DEMO`
 - ⏳ UML, manual de usuario y video demo: add-on **no aprobado**, no generar

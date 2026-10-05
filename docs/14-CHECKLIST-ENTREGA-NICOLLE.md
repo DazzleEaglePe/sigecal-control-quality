@@ -9,14 +9,15 @@ del alcance total ya está aprobada técnicamente.
 
 ## 1. Dictamen de entrega
 
-SIGECAL está listo para una **revisión funcional de los Sprints 1 a 6**. La
-versión incluye cimientos, seguridad y maestros, lotes y trazabilidad,
-programación de inspecciones, análisis fisicoquímico, evaluación organoléptica,
-no conformidades, tablero, reportes, notificaciones y búsqueda global.
+SIGECAL está listo para una **revisión de los Sprints 1 a 7**: los Sprints 1 a 6
+tienen su alcance funcional implementado y verificado, y el Sprint 7 cuenta con
+cierre técnico documentado. La revisión del Sprint 7 no sustituye las pruebas
+de campo ni el piloto académico.
 
 No corresponde presentarla aún como entrega final ni iniciar el piloto con datos
 reales sin confirmación de parámetros, rangos y umbrales por la empresa. El
-Sprint 7 está en cierre técnico y Sprint 8 depende del despliegue y del piloto.
+Sprint 8 tiene artefactos reproducibles preparados, pero sigue pendiente su
+publicación, el piloto y la entrega formal.
 
 ## 2. Estado por sprint
 
@@ -28,8 +29,8 @@ Sprint 7 está en cierre técnico y Sprint 8 depende del despliegue y del piloto
 | 4      | Inspecciones, estándares y resultados fisicoquímicos        | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                    |
 | 5      | Evaluación organoléptica                                    | ✅ Cerrado              | Sí; sesión, corrección inmutable, perfiles y comparación respaldados por pruebas |
 | 6      | Ciclo completo de NC, acciones, indicadores y reportes      | ✅ Cerrado técnicamente | Sí; notificaciones, KPI, PDF, Excel y búsqueda global disponibles                |
-| 7      | PWA, accesibilidad, seguridad, rendimiento y piloto         | 🟡 Cierre técnico       | PWA y pruebas técnicas sí; piloto móvil y usuarios reales pendientes             |
-| 8      | Despliegue, post-test y entrega formal                      | ⏳ Pendiente            | No disponible                                                                    |
+| 7      | PWA, accesibilidad, seguridad, rendimiento y piloto         | ✅ Cerrado técnicamente | Demostración técnica sí; validación móvil y piloto real pendientes               |
+| 8      | Despliegue, post-test y entrega formal                      | 🟡 Preparación técnica  | Imágenes y guía listas; dominio, proveedor, SMTP y datos reales pendientes       |
 
 ## 3. Funcionalidades aceptadas
 
@@ -107,6 +108,9 @@ Sprint 7 está en cierre técnico y Sprint 8 depende del despliegue y del piloto
 | Pruebas automatizadas  | ✅ 263 pruebas: 252 en la batería general y 11 de integración PostgreSQL aislada |
 | Archivos de prueba     | ✅ 88 archivos de prueba                                                         |
 | Builds de producción   | ✅ API, web y shared generados                                                   |
+| Imágenes de despliegue | ✅ API, web y tarea temporal de migración construidas                            |
+| Dependencias API prod. | ✅ `npm ci` de runtime sin hallazgos; Prisma CLI excluido de la imagen API       |
+| SMTP API               | ✅ Nodemailer 10.0.14 inicializa; envío real pendiente de SMTP autorizado        |
 | Modelo Prisma          | ✅ Formateado y válido                                                           |
 | Contrato OpenAPI       | ✅ Válido                                                                        |
 | Integridad del seed    | ✅ Incluye sesión y captura organoléptica pendientes `DEMO`                      |
@@ -169,8 +173,8 @@ y las exportaciones ya están disponibles como parte del Sprint 6.
 
 ## 8. Prioridad inmediata
 
-1. Sprint 7: finalizar la validación móvil y el piloto controlado.
-2. Sprint 8: despliegue, evidencia, post-test y traspaso formal.
+1. Sprint 7: validar en teléfono real y realizar el piloto controlado.
+2. Sprint 8: obtener dominio/SMTP, desplegar, reunir evidencia, aplicar post-test y formalizar el traspaso.
 
 Los rangos reales de la empresa y las correcciones metodológicas de la tesis
 continúan como dependencias externas; no deben resolverse inventando datos ni
