@@ -88,6 +88,13 @@ TLS gestionado, salida SMTP autorizada y espacio persistente para PostgreSQL.
    docker compose --env-file .env.production -f docker-compose.production.yml ps
    ```
 
+   Verificar conexión, TLS y autenticación SMTP sin enviar mensajes:
+
+   ```bash
+   docker compose --env-file .env.production -f docker-compose.production.yml \
+     exec -T api node apps/api/dist/scripts/verify-smtp.js
+   ```
+
 9. Comprobar `https://<dominio>/`, `https://<dominio>/api/v1/health`, el
    ingreso, renovación y salida de sesión. Revisar que la cookie de refresh
    aparezca como `Secure`, `HttpOnly`, `SameSite=Strict` y con ruta

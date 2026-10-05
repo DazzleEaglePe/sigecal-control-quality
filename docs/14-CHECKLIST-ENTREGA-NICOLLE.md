@@ -110,7 +110,7 @@ publicación, el piloto y la entrega formal.
 | Builds de producción   | ✅ API, web y shared generados                                                   |
 | Imágenes de despliegue | ✅ API, web y tarea temporal de migración construidas                            |
 | Dependencias API prod. | ✅ `npm ci` de runtime sin hallazgos; Prisma CLI excluido de la imagen API       |
-| SMTP API               | ✅ Auth y STARTTLS obligatorios en producción; envío real pendiente de proveedor |
+| SMTP API               | ✅ Auth/STARTTLS y verificador probados con Mailpit; proveedor real pendiente    |
 | Modelo Prisma          | ✅ Formateado y válido                                                           |
 | Contrato OpenAPI       | ✅ Válido                                                                        |
 | Integridad del seed    | ✅ Incluye sesión y captura organoléptica pendientes `DEMO`                      |
