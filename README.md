@@ -58,12 +58,11 @@ Las mutaciones se autorizan nuevamente en la API, el alcance de `OPERARIO` se ap
 
 Los catálogos se desactivan mediante baja lógica y la API rechaza la operación si el elemento ya tiene dependencias. Hasta recibir los rangos confirmados de la empresa, los valores normativos existentes permanecen marcados como provisionales y no pueden aplicarse a datos `REAL`.
 
-El Sprint 7 ya incorpora la PWA instalable, caché segura solo del shell,
-indicador de conectividad y optimizaciones de carga. Quedan por realizar en
-campo la validación en dispositivos móviles, el piloto y la auditoría completa
-de las vistas autenticadas. El Sprint 8 —despliegue, post-test y entrega
-formal— sigue pendiente. El estado verificable está en
-`docs/17-CHECKLIST-SPRINT-7.md`.
+El Sprint 7 cuenta con cierre técnico documentado; la validación de campo y el
+piloto siguen pendientes. Para Sprint 8 el repositorio incluye Dockerfiles de
+producción, proxy del mismo origen y guía de despliegue. La publicación aún
+depende de dominio, proveedor, SMTP y credenciales de Tacama. Consulta
+`docs/17-CHECKLIST-SPRINT-7.md` y `docs/18-GUIA-DESPLIEGUE-SPRINT-8.md`.
 
 ## Comandos principales
 

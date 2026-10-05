@@ -26,6 +26,8 @@ Plan Completo (COT-2026-VT-001) · 8 módulos · Setiembre–diciembre 2026
 | 14  | [Entrega funcional para Nicolle](14-CHECKLIST-ENTREGA-NICOLLE.md)    | Estado verificable, servicios y condiciones de demostración          |
 | 15  | [Checklist Sprint 5](15-CHECKLIST-SPRINT-5.md)                       | Evaluación organoléptica, perfiles e inmutabilidad                   |
 | 16  | [Checklist Sprint 2.1](16-CHECKLIST-SPRINT-2-1.md)                   | Cuentas internas, invitaciones y recuperación                        |
+| 17  | [Checklist Sprint 7](17-CHECKLIST-SPRINT-7.md)                       | Cierre técnico, calidad, PWA y pendientes de piloto                  |
+| 18  | [Guía de despliegue Sprint 8](18-GUIA-DESPLIEGUE-SPRINT-8.md)        | Compose, TLS, migraciones, respaldos y traspaso                      |
 | —   | [OpenAPI](openapi.yaml)                                              | Contrato ejecutable generado desde los esquemas Zod                  |
 | —   | [AGENTS.md](../AGENTS.md)                                            | Reglas para el agente de desarrollo                                  |
 
@@ -38,8 +40,8 @@ Trabajar un sprint a la vez según `09-PLAN-DESARROLLO.md`.
 
 - ✅ Planificación revisada y decisiones críticas cerradas
 - ⏳ Correcciones metodológicas de la tesis: tesista + asesor
-- ✅ Desarrollo: Sprints 1 a 5 implementados y verificados
-- ▶️ Siguiente foco técnico: Sprint 6, no conformidades y reportes
+- ✅ Desarrollo: Sprints 1 a 6 implementados y verificados
+- ▶️ Siguiente foco técnico: despliegue reproducible de Sprint 8; piloto requiere autorización e insumos reales
 - ⏳ Datos reales de empresa: pendientes; los estándares provisionales solo sirven para `DEMO`
 - ⏳ UML, manual de usuario y video demo: add-on **no aprobado**, no generar
 

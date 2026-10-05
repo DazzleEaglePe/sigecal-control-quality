@@ -1,0 +1,15 @@
+.git
+.github
+.claude
+.codebase-memory
+node_modules
+**/node_modules
+**/dist
+**/coverage
+**/.vite
+output
+tmp
+.env
+.env.*
+!.env.example
+*.log

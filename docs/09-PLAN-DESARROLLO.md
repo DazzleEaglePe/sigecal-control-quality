@@ -235,6 +235,10 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 
 ## Sprint 8 · Entrega
 
+- [x] Preparar artefactos de despliegue reproducible (05/10/2026): Dockerfiles
+      de API/web, Compose de producción, proxy del mismo origen y guía en
+      `18-GUIA-DESPLIEGUE-SPRINT-8.md`. Configuración e imágenes construidas
+      localmente; esto no equivale a publicación en un dominio.
 - [ ] Despliegue del API y de la base de datos
 - [ ] Despliegue del frontend
 - [ ] Variables de entorno de producción
