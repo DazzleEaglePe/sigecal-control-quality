@@ -7,7 +7,27 @@ const stylesheet = readFileSync(
   'utf8',
 );
 type ThemeToken =
-  'ring' | 'background' | 'card' | 'secondary' | 'muted' | 'border' | 'input';
+  | 'ring'
+  | 'background'
+  | 'foreground'
+  | 'card'
+  | 'card-foreground'
+  | 'popover'
+  | 'popover-foreground'
+  | 'primary'
+  | 'primary-foreground'
+  | 'secondary'
+  | 'secondary-foreground'
+  | 'muted'
+  | 'muted-foreground'
+  | 'accent'
+  | 'accent-foreground'
+  | 'destructive'
+  | 'destructive-foreground'
+  | 'success'
+  | 'warning'
+  | 'border'
+  | 'input';
 
 const themeColors = (selector: string): Record<ThemeToken, string> => {
   const declarations = new RegExp(`${selector}\\s*\\{([^}]+)\\}`).exec(
@@ -18,15 +38,30 @@ const themeColors = (selector: string): Record<ThemeToken, string> => {
   const names: ThemeToken[] = [
     'ring',
     'background',
+    'foreground',
     'card',
+    'card-foreground',
+    'popover',
+    'popover-foreground',
+    'primary',
+    'primary-foreground',
     'secondary',
+    'secondary-foreground',
     'muted',
+    'muted-foreground',
+    'accent',
+    'accent-foreground',
+    'destructive',
+    'destructive-foreground',
+    'success',
+    'warning',
     'border',
     'input',
   ];
   const tokens = Object.fromEntries(
     names.map((name) => {
-      const value = new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`).exec(
+      const tokenName = name.replace('-', '\\-');
+      const value = new RegExp(`--${tokenName}:\\s*(#[0-9a-fA-F]{6})`).exec(
         declarations,
       )?.[1];
       if (!value) throw new Error(`Falta el token --${name} en ${selector}.`);
@@ -73,4 +108,36 @@ describe('focus ring theme contrast', () => {
       ).toBeGreaterThanOrEqual(3);
     }
   });
+});
+
+describe('theme text contrast', () => {
+  const textPairs: [ThemeToken, ThemeToken][] = [
+    ['foreground', 'background'],
+    ['foreground', 'card'],
+    ['card-foreground', 'card'],
+    ['popover-foreground', 'popover'],
+    ['primary-foreground', 'primary'],
+    ['secondary-foreground', 'secondary'],
+    ['muted-foreground', 'muted'],
+    ['muted-foreground', 'card'],
+    ['accent-foreground', 'accent'],
+    ['destructive-foreground', 'destructive'],
+    ['destructive', 'card'],
+    ['success', 'card'],
+    ['warning', 'card'],
+  ];
+
+  it.each([':root', '\\.light'])(
+    'mantiene contraste de texto AA en %s',
+    (selector) => {
+      const colors = themeColors(selector);
+
+      for (const [text, surface] of textPairs) {
+        expect(
+          contrastRatio(colors[text], colors[surface]),
+          `--${text} sobre --${surface} en ${selector}`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    },
+  );
 });

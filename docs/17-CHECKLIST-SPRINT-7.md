@@ -25,7 +25,7 @@ realizadas desde este entorno.
 | `npm run db:verify-seed`                                    | ✅ `users: 5`, `demoBatches: 5`, `demoResults: 8`, `demoSensorySessions: 1`, `demoSensoryPending: 1`, `demoNC: 2` |
 | `npm run openapi:validate`                                  | ✅ Contrato OpenAPI válido                                                                                        |
 | `npm run test:integration`                                  | ✅ 11 pruebas PostgreSQL en un contenedor desechable; el entorno de desarrollo no fue modificado                  |
-| `npm run test`                                              | ✅ 263 pruebas generales aprobadas; 11 de integración se omiten allí porque tienen su comando aislado             |
+| `npm run test`                                              | ✅ 265 pruebas generales aprobadas; 11 de integración se omiten allí porque tienen su comando aislado             |
 | `npm run lint`, `npm run typecheck`, `npm run format:check` | ✅ Sin advertencias, errores ni diferencias de formato                                                            |
 | `npm run build`                                             | ✅ API y frontend de producción compilados; PWA genera manifest, service worker y Workbox                         |
 | `npm run openapi:validate`                                  | ✅ Contrato OpenAPI válido                                                                                        |
@@ -100,12 +100,12 @@ La revisión de estilos encontró indicadores translúcidos de solo 1.13:1 en el
 campo de autenticación oscuro y hasta 1.77:1 en superficies claras para el
 anillo global. Se sustituyeron por el token opaco `--ring` en controles,
 formularios de acceso, campos administrativos, selectores, botones y
-componentes UI. La regresión automatizada exige 3:1 frente a seis superficies
-de ambos temas; los mínimos actuales son 9.16:1 (oscuro) y 13.20:1 (claro).
-En navegador se verificó el estilo computado de foco visible del campo y
-botones del login y de un campo de activación. Esta comprobación mejora los
-indicadores compartidos, pero no reemplaza medir los colores de todos los
-componentes ni revisar cada estado visual.
+componentes UI. La regresión automatizada exige 3:1 para el foco frente a seis
+superficies y 4.5:1 para 13 combinaciones de texto/estado en ambos temas; las
+combinaciones actuales pasan. En navegador se verificó el estilo computado de
+foco visible del campo y botones del login y de un campo de activación. Esta
+comprobación protege los tokens compartidos, pero no reemplaza medir colores
+locales, gradientes, componentes y estados de cada vista.
 
 Esta pasada no completa la aceptación del Sprint 7: las vistas protegidas, sus
 estados de carga/vacío/error/éxito y sus contrastes siguen sin revisión manual
@@ -142,7 +142,7 @@ no se deben compartir contraseñas por el repositorio ni en esta documentación.
 ## 8. Conclusión
 
 La versión es apta para revisión técnica y demostración con datos `DEMO`; lint,
-tipos, formato, build, OpenAPI, las 263 pruebas generales y las 11 pruebas de
+tipos, formato, build, OpenAPI, las 265 pruebas generales y las 11 pruebas de
 integración pasaron en este corte. El Sprint 7 **no se declara aceptado ni
 cerrado integralmente** hasta completar la revisión manual de accesibilidad,
 obtener la conformidad/evidencia de Nicolle y realizar las actividades de piloto

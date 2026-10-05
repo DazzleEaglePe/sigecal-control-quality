@@ -107,7 +107,7 @@ publicación, el piloto y la entrega formal.
 | Formato Prettier       | ✅ Sin diferencias                                                               |
 | ESLint                 | ✅ API, web y shared sin errores ni advertencias                                 |
 | TypeScript estricto    | ✅ Tres workspaces aprobados                                                     |
-| Pruebas automatizadas  | ✅ 274 pruebas: 263 en la batería general y 11 de integración PostgreSQL aislada |
+| Pruebas automatizadas  | ✅ 276 pruebas: 265 en la batería general y 11 de integración PostgreSQL aislada |
 | Archivos de prueba     | ✅ 91 archivos de prueba                                                         |
 | Builds de producción   | ✅ API, web y shared generados                                                   |
 | Imágenes de despliegue | ✅ API, web y tarea temporal de migración construidas                            |
