@@ -82,6 +82,24 @@ lateral se puede ajustar con flechas izquierda/derecha y Home/End, expone sus
 límites por ARIA y conserva foco visible; tiene pruebas del componente, pero
 esto no reemplaza recorrer todas las pantallas con teclado.
 
+### Pasada manual adicional — formularios públicos (05/10/2026)
+
+Se validó la interfaz local sin iniciar sesión ni enviar correo, cambiar
+contraseñas o modificar datos:
+
+| Vista                               | Evidencia observada                                                                                                                                                                                                                                                                                          | Alcance pendiente                                                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `/login`                            | Tab recorre correo, contraseña, mostrar contraseña, recuperación e ingreso. El foco del campo cambia visualmente (anillo verde). Al intentar enviar vacío, el correo recibe `aria-invalid="true"`, `aria-describedby="email-issue"` y foco; el texto asociado es “Ingrese el correo institucional asignado.” | No se probó respuesta con credenciales válidas/incorrectas para evitar bloqueos sin una cuenta vigente de QA confirmada. |
+| `/recuperar-contrasena`             | Tab recorre correo, enviar instrucciones y volver al ingreso.                                                                                                                                                                                                                                                | No se envió una solicitud porque eso genera un correo y requiere una cuenta de prueba designada.                         |
+| `/activar-cuenta` sin token         | El mensaje “El enlace no contiene un token válido.” está expuesto como `role="alert"`; el botón de activación permanece deshabilitado.                                                                                                                                                                       | Falta probar el flujo con token de invitación de prueba no expirado.                                                     |
+| `/restablecer-contrasena` sin token | El mensaje “El enlace no contiene un token válido.” está expuesto como `role="alert"`; el botón para guardar permanece deshabilitado.                                                                                                                                                                        | Falta probar el flujo con token de recuperación de prueba no expirado.                                                   |
+
+Esta pasada no completa la aceptación del Sprint 7: las vistas protegidas, sus
+estados de carga/vacío/error/éxito y sus contrastes siguen sin revisión manual
+integral. La siguiente sesión requiere que Nicolle ejecute el recorrido con una
+cuenta de QA vigente en su entorno, o que se habilite una sesión de QA segura;
+no se deben compartir contraseñas por el repositorio ni en esta documentación.
+
 ## 6. Hallazgos y seguimiento
 
 - [x] Se separó el bundle de entrada: React, UI, íconos y gráficos se cargan en
