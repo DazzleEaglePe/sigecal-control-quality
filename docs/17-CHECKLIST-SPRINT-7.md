@@ -25,7 +25,7 @@ realizadas desde este entorno.
 | `npm run db:verify-seed`                                    | ✅ `users: 5`, `demoBatches: 5`, `demoResults: 8`, `demoSensorySessions: 1`, `demoSensoryPending: 1`, `demoNC: 2`           |
 | `npm run openapi:validate`                                  | ✅ Contrato OpenAPI válido                                                                                                  |
 | `npm run test:integration`                                  | ✅ 11 pruebas PostgreSQL en un contenedor desechable; el entorno de desarrollo no fue modificado                            |
-| `npm run test`                                              | ✅ 269 pruebas generales aprobadas (API 175, web 52 y shared 42); 11 de integración se omiten porque tienen comando aislado |
+| `npm run test`                                              | ✅ 271 pruebas generales aprobadas (API 175, web 54 y shared 42); 11 de integración se omiten porque tienen comando aislado |
 | `npm run lint`, `npm run typecheck`, `npm run format:check` | ✅ Sin advertencias, errores ni diferencias de formato                                                                      |
 | `npm run build`                                             | ✅ API y frontend de producción compilados; PWA genera manifest, service worker y Workbox                                   |
 | `npm run openapi:validate`                                  | ✅ Contrato OpenAPI válido                                                                                                  |
@@ -175,10 +175,20 @@ También se filtró Lotes por un código inexistente y se confirmó el estado va
 con instrucciones para ajustar o limpiar los filtros; fue una consulta de solo
 lectura.
 
-Regresión verificada: 52 pruebas web aprobadas en 30 archivos, junto con lint,
+Regresión verificada: 54 pruebas web aprobadas en 31 archivos, junto con lint,
 TypeScript y build PWA del frontend. Se mantienen abiertos el recorrido
 completo de teclado, la medición de contraste de todas las vistas/estados y la
 revisión de errores funcionales.
+
+### Validación accesible del alta de usuarios (05/10/2026)
+
+La prueba manual de envío vacío encontró que la validación HTML nativa
+interrumpía el evento antes de que la interfaz pudiera mostrar errores
+específicos. Se corrigió el formulario de alta: valida al escribir y al enviar,
+presenta el error junto al campo, enlaza control y mensaje mediante ARIA y
+mantiene un resumen general. Se agregaron regresiones para el envío vacío y la
+corrección de un correo. La suite web sube a 54 pruebas; esta corrección cubre
+el alta de usuarios, no sustituye la revisión de formularios en las demás vistas.
 
 ## 6. Hallazgos y seguimiento
 
@@ -209,7 +219,7 @@ revisión de errores funcionales.
 ## 8. Conclusión
 
 La versión es apta para revisión técnica y demostración con datos `DEMO`; lint,
-tipos, formato, build, OpenAPI, las 269 pruebas generales y las 11 pruebas de
+tipos, formato, build, OpenAPI, las 271 pruebas generales y las 11 pruebas de
 integración pasaron en este corte. El Sprint 7 **no se declara aceptado ni
 cerrado integralmente** hasta completar la revisión manual de accesibilidad,
 obtener la conformidad/evidencia de Nicolle y realizar las actividades de piloto
