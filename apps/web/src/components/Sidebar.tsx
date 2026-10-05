@@ -22,6 +22,7 @@ import { NavLink, type NavLinkRenderProps } from 'react-router-dom';
 
 import { Permission } from '@sigecal/shared';
 
+import { SidebarResizeHandle } from './SidebarResizeHandle.js';
 import { useAuth } from '../features/auth/useAuth.js';
 
 interface LinkProps {
@@ -34,7 +35,9 @@ interface SidebarProps {
   readonly action: () => void;
   readonly collapsed: boolean;
   readonly open: boolean;
+  readonly resizeTo: (widthRem: number) => void;
   readonly startResize: (event: React.PointerEvent) => void;
+  readonly widthRem: number;
   readonly toggleCollapsed: () => void;
 }
 
@@ -200,30 +203,26 @@ const SidebarToggle = ({
   </button>
 );
 
-const SidebarResizeHandle = ({
-  startResize,
-}: Pick<SidebarProps, 'startResize'>): React.JSX.Element => (
-  <div
-    className="sidebar-resize-handle"
-    role="separator"
-    aria-orientation="vertical"
-    aria-label="Ajustar el ancho del menú"
-    onPointerDown={startResize}
-  />
-);
-
 export const Sidebar = ({
   open,
   action,
   collapsed,
+  resizeTo,
   startResize,
+  widthRem,
   toggleCollapsed,
 }: SidebarProps): React.JSX.Element => (
   <CollapsedContext value={collapsed}>
     <aside className={`sidebar ${open ? 'is-open' : ''}`}>
       <SidebarBrand />
       <SidebarToggle collapsed={collapsed} toggleCollapsed={toggleCollapsed} />
-      {collapsed ? null : <SidebarResizeHandle startResize={startResize} />}
+      {collapsed ? null : (
+        <SidebarResizeHandle
+          resizeTo={resizeTo}
+          startResize={startResize}
+          widthRem={widthRem}
+        />
+      )}
       <nav aria-label="Navegación principal">
         <p className="nav-label">Principal</p>
         <PrimaryNavigation action={action} />

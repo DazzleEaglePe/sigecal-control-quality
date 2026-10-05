@@ -25,7 +25,7 @@ realizadas desde este entorno.
 | `npm run db:verify-seed`                                    | ✅ `users: 5`, `demoBatches: 5`, `demoResults: 8`, `demoSensorySessions: 1`, `demoSensoryPending: 1`, `demoNC: 2` |
 | `npm run openapi:validate`                                  | ✅ Contrato OpenAPI válido                                                                                        |
 | `npm run test:integration`                                  | ✅ 11 pruebas PostgreSQL en un contenedor desechable; el entorno de desarrollo no fue modificado                  |
-| `npm run test`                                              | ✅ 259 pruebas generales aprobadas; 11 de integración se omiten allí porque tienen su comando aislado             |
+| `npm run test`                                              | ✅ 261 pruebas generales aprobadas; 11 de integración se omiten allí porque tienen su comando aislado             |
 | `npm run lint`, `npm run typecheck`, `npm run format:check` | ✅ Sin advertencias, errores ni diferencias de formato                                                            |
 | `npm run build`                                             | ✅ API y frontend de producción compilados; PWA genera manifest, service worker y Workbox                         |
 | `npm run openapi:validate`                                  | ✅ Contrato OpenAPI válido                                                                                        |
@@ -77,7 +77,10 @@ no cubre gradientes, todos los estados ni el resto de las vistas. En activación
 de cuenta se detectó que el enlace inválido no se anunciaba: se añadió
 `role="alert"` y una prueba de regresión. También se hizo consistente el anuncio
 de los mensajes con clase `form-error` en las vistas de dominio; su contenido y
-contexto aún requieren revisión funcional manual.
+contexto aún requieren revisión funcional manual. El separador de la barra
+lateral se puede ajustar con flechas izquierda/derecha y Home/End, expone sus
+límites por ARIA y conserva foco visible; tiene pruebas del componente, pero
+esto no reemplaza recorrer todas las pantallas con teclado.
 
 ## 6. Hallazgos y seguimiento
 
@@ -108,7 +111,7 @@ contexto aún requieren revisión funcional manual.
 ## 8. Conclusión
 
 La versión es apta para revisión técnica y demostración con datos `DEMO`; lint,
-tipos, formato, build, OpenAPI, las 259 pruebas generales y las 11 pruebas de
+tipos, formato, build, OpenAPI, las 261 pruebas generales y las 11 pruebas de
 integración pasaron en este corte. El Sprint 7 **no se declara aceptado ni
 cerrado integralmente** hasta completar la revisión manual de accesibilidad,
 obtener la conformidad/evidencia de Nicolle y realizar las actividades de piloto

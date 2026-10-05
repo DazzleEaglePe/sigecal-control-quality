@@ -55,8 +55,14 @@
 }
 
 .sidebar-resize-handle:hover::after,
+.sidebar-resize-handle:focus-visible::after,
 .app-shell.is-resizing .sidebar-resize-handle::after {
   background: var(--ring);
+}
+
+.sidebar-resize-handle:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 /* Interruptor: círculo flotante sobre el borde del panel, a la altura de la

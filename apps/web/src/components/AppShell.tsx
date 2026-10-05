@@ -72,7 +72,7 @@ const shellStyle = (
 const useShellState = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { collapsed, toggle: toggleCollapsed } = useSidebarCollapsed();
-  const { dragging, startDrag, widthRem } = useSidebarWidth();
+  const { dragging, resizeTo, startDrag, widthRem } = useSidebarWidth();
   const palette = useCommandPalette();
   return {
     closeMenu: () => {
@@ -85,6 +85,7 @@ const useShellState = () => {
       palette.setOpen(true);
     },
     palette,
+    resizeTo,
     startDrag,
     toggleCollapsed,
     toggleMenu: () => {
@@ -93,6 +94,18 @@ const useShellState = () => {
     widthRem,
   };
 };
+
+const sidebarProps = (
+  shell: ReturnType<typeof useShellState>,
+): React.ComponentProps<typeof Sidebar> => ({
+  action: shell.closeMenu,
+  collapsed: shell.collapsed,
+  open: shell.menuOpen,
+  resizeTo: shell.resizeTo,
+  startResize: shell.startDrag,
+  toggleCollapsed: shell.toggleCollapsed,
+  widthRem: shell.widthRem,
+});
 
 export const AppShell = (): React.JSX.Element => {
   const shell = useShellState();
@@ -109,13 +122,7 @@ export const AppShell = (): React.JSX.Element => {
         onClick={shell.closeMenu}
         aria-hidden="true"
       />
-      <Sidebar
-        open={shell.menuOpen}
-        action={shell.closeMenu}
-        collapsed={shell.collapsed}
-        toggleCollapsed={shell.toggleCollapsed}
-        startResize={shell.startDrag}
-      />
+      <Sidebar {...sidebarProps(shell)} />
       <div className="workspace">
         <ConnectivityNotice />
         <Topbar

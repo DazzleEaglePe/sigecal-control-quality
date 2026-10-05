@@ -4,18 +4,20 @@ import {
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
+  type Dispatch,
+  type SetStateAction,
 } from 'react';
 
 const STORAGE_KEY = 'sigecal:sidebar-width';
-const MIN_REM = 14;
-const MAX_REM = 22;
+export const SIDEBAR_WIDTH_MIN_REM = 14;
+export const SIDEBAR_WIDTH_MAX_REM = 22;
 const DEFAULT_REM = 16.5;
 
 const rootFontSize = (): number =>
   parseFloat(getComputedStyle(document.documentElement).fontSize);
 const pxToRem = (px: number): number => px / rootFontSize();
 const clamp = (rem: number): number =>
-  Math.min(MAX_REM, Math.max(MIN_REM, rem));
+  Math.min(SIDEBAR_WIDTH_MAX_REM, Math.max(SIDEBAR_WIDTH_MIN_REM, rem));
 
 const readPreference = (): number => {
   try {
@@ -34,14 +36,10 @@ const persist = (rem: number): void => {
   }
 };
 
-/** Arrastre del borde del panel, al estilo del asa que separa el listado del
- * detalle en apps de escritorio. Solo aplica con el menú expandido. */
-export const useSidebarWidth = (): {
-  readonly dragging: boolean;
-  readonly startDrag: (event: ReactPointerEvent) => void;
-  readonly widthRem: number;
-} => {
-  const [widthRem, setWidthRem] = useState(readPreference);
+const usePointerDrag = (
+  widthRem: number,
+  setWidthRem: Dispatch<SetStateAction<number>>,
+) => {
   const [dragging, setDragging] = useState(false);
   const startX = useRef(0);
   const startWidth = useRef(0);
@@ -49,8 +47,9 @@ export const useSidebarWidth = (): {
   useEffect(() => {
     if (!dragging) return;
     const onMove = (event: PointerEvent): void => {
-      const deltaPx = event.clientX - startX.current;
-      setWidthRem(clamp(startWidth.current + pxToRem(deltaPx)));
+      setWidthRem(
+        clamp(startWidth.current + pxToRem(event.clientX - startX.current)),
+      );
     };
     const onUp = (): void => {
       setDragging(false);
@@ -61,12 +60,7 @@ export const useSidebarWidth = (): {
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
     };
-  }, [dragging]);
-
-  useEffect(() => {
-    if (dragging) return;
-    persist(widthRem);
-  }, [dragging, widthRem]);
+  }, [dragging, setWidthRem]);
 
   const startDrag = useCallback(
     (event: ReactPointerEvent) => {
@@ -77,5 +71,30 @@ export const useSidebarWidth = (): {
     [widthRem],
   );
 
-  return { dragging, startDrag, widthRem };
+  return { dragging, startDrag };
+};
+
+/** Arrastre del borde del panel, al estilo del asa que separa el listado del
+ * detalle en apps de escritorio. Solo aplica con el menú expandido. */
+export const useSidebarWidth = (): {
+  readonly dragging: boolean;
+  readonly resizeTo: (widthRem: number) => void;
+  readonly startDrag: (event: ReactPointerEvent) => void;
+  readonly widthRem: number;
+} => {
+  const [widthRem, setWidthRem] = useState(readPreference);
+  const pointer = usePointerDrag(widthRem, setWidthRem);
+
+  useEffect(() => {
+    if (pointer.dragging) return;
+    persist(widthRem);
+  }, [pointer.dragging, widthRem]);
+
+  return {
+    ...pointer,
+    resizeTo: (nextWidthRem) => {
+      setWidthRem(clamp(nextWidthRem));
+    },
+    widthRem,
+  };
 };
