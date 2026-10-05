@@ -231,6 +231,8 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
       evidencia en `17-CHECKLIST-SPRINT-7.md`.
 - [ ] Sesión breve de onboarding operativo para participantes del piloto,
       coordinada con Nicolle antes del inicio del uso.
+- [x] Guion y registro de sesión preparados (05/10/2026) en
+      `19-GUIA-ONBOARDING-PILOTO.md`; esto no marca la sesión como realizada.
 - [ ] Registro de incidencias y retroalimentación del piloto sin cambiar el
       alcance; requiere ejecución real con participantes.
 - [x] Verificación de aislamiento de caché (05/10/2026): Workbox solo

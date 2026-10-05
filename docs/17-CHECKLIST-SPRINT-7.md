@@ -67,6 +67,11 @@ realizadas desde este entorno.
       cada flujo operativo.
 - [ ] Nicolle confirma conformidad y registra la evidencia breve de aceptación.
 
+La agenda, las precondiciones y la ficha para registrar esa sesión están
+preparadas en `19-GUIA-ONBOARDING-PILOTO.md`. La sesión no se ha realizado; el
+piloto continúa condicionado a las aprobaciones metodológicas y a la
+confirmación de los datos reales por Tacama.
+
 Estas comprobaciones requieren una sesión manual con las vistas autenticadas;
 las pruebas automatizadas actuales no demuestran por sí solas estos criterios.
 

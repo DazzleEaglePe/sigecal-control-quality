@@ -7,29 +7,30 @@ Plan Completo (COT-2026-VT-001) · 8 módulos · Setiembre–diciembre 2026
 
 ## Índice
 
-| #   | Documento                                                            | Contenido                                                            |
-| --- | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| 00  | [Contexto del proyecto](00-CONTEXTO-PROYECTO.md)                     | Alcance, glosario del dominio, roles, restricciones                  |
-| 01  | [Análisis de la tesis](01-ANALISIS-TESIS.md)                         | Trazabilidad indicador ↔ módulo, riesgos, inconsistencias detectadas |
-| 02  | [Requerimientos funcionales](02-REQUERIMIENTOS-FUNCIONALES.md)       | RF por módulo, matriz de permisos                                    |
-| 03  | [Requerimientos no funcionales](03-REQUERIMIENTOS-NO-FUNCIONALES.md) | Mapeados a ISO/IEC 25010                                             |
-| 04  | [Arquitectura](04-ARQUITECTURA.md)                                   | Capas, estructura, patrones y decisiones ADR                         |
-| 05  | [Modelo de datos](05-MODELO-DATOS.md)                                | Entidades, enumeraciones, índices, seed                              |
-| 06  | [Contrato de API](06-API-CONTRACT.md)                                | Extremos REST, DTOs, códigos de error                                |
-| 07  | [Seguridad y autenticación](07-SEGURIDAD-AUTH.md)                    | JWT, RBAC, protecciones, variables de entorno                        |
-| 08  | [Pantallas y flujos](08-UX-FLUJOS.md)                                | Navegación, pantallas, WCAG 2.2                                      |
-| 09  | [Plan de desarrollo](09-PLAN-DESARROLLO.md)                          | 8 sprints quincenales                                                |
-| 10  | [Checklist Sprint 1](10-CHECKLIST-SPRINT-1.md)                       | Orden operativo, validaciones y criterio de cierre                   |
-| 11  | [Checklist Sprint 2](11-CHECKLIST-SPRINT-2.md)                       | Seguridad, usuarios, maestros y validaciones                         |
-| 12  | [Checklist Sprint 3](12-CHECKLIST-SPRINT-3.md)                       | Lotes, secuencia productiva y trazabilidad                           |
-| 13  | [Checklist Sprint 4](13-CHECKLIST-SPRINT-4.md)                       | Inspecciones, análisis fisicoquímico e inmutabilidad                 |
-| 14  | [Entrega funcional para Nicolle](14-CHECKLIST-ENTREGA-NICOLLE.md)    | Estado verificable, servicios y condiciones de demostración          |
-| 15  | [Checklist Sprint 5](15-CHECKLIST-SPRINT-5.md)                       | Evaluación organoléptica, perfiles e inmutabilidad                   |
-| 16  | [Checklist Sprint 2.1](16-CHECKLIST-SPRINT-2-1.md)                   | Cuentas internas, invitaciones y recuperación                        |
-| 17  | [Checklist Sprint 7](17-CHECKLIST-SPRINT-7.md)                       | Cierre técnico, calidad, PWA y pendientes de piloto                  |
-| 18  | [Guía de despliegue Sprint 8](18-GUIA-DESPLIEGUE-SPRINT-8.md)        | Compose, TLS, migraciones, respaldos y traspaso                      |
-| —   | [OpenAPI](openapi.yaml)                                              | Contrato ejecutable generado desde los esquemas Zod                  |
-| —   | [AGENTS.md](../AGENTS.md)                                            | Reglas para el agente de desarrollo                                  |
+| #   | Documento                                                            | Contenido                                                                |
+| --- | -------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| 00  | [Contexto del proyecto](00-CONTEXTO-PROYECTO.md)                     | Alcance, glosario del dominio, roles, restricciones                      |
+| 01  | [Análisis de la tesis](01-ANALISIS-TESIS.md)                         | Trazabilidad indicador ↔ módulo, riesgos, inconsistencias detectadas     |
+| 02  | [Requerimientos funcionales](02-REQUERIMIENTOS-FUNCIONALES.md)       | RF por módulo, matriz de permisos                                        |
+| 03  | [Requerimientos no funcionales](03-REQUERIMIENTOS-NO-FUNCIONALES.md) | Mapeados a ISO/IEC 25010                                                 |
+| 04  | [Arquitectura](04-ARQUITECTURA.md)                                   | Capas, estructura, patrones y decisiones ADR                             |
+| 05  | [Modelo de datos](05-MODELO-DATOS.md)                                | Entidades, enumeraciones, índices, seed                                  |
+| 06  | [Contrato de API](06-API-CONTRACT.md)                                | Extremos REST, DTOs, códigos de error                                    |
+| 07  | [Seguridad y autenticación](07-SEGURIDAD-AUTH.md)                    | JWT, RBAC, protecciones, variables de entorno                            |
+| 08  | [Pantallas y flujos](08-UX-FLUJOS.md)                                | Navegación, pantallas, WCAG 2.2                                          |
+| 09  | [Plan de desarrollo](09-PLAN-DESARROLLO.md)                          | 8 sprints quincenales                                                    |
+| 10  | [Checklist Sprint 1](10-CHECKLIST-SPRINT-1.md)                       | Orden operativo, validaciones y criterio de cierre                       |
+| 11  | [Checklist Sprint 2](11-CHECKLIST-SPRINT-2.md)                       | Seguridad, usuarios, maestros y validaciones                             |
+| 12  | [Checklist Sprint 3](12-CHECKLIST-SPRINT-3.md)                       | Lotes, secuencia productiva y trazabilidad                               |
+| 13  | [Checklist Sprint 4](13-CHECKLIST-SPRINT-4.md)                       | Inspecciones, análisis fisicoquímico e inmutabilidad                     |
+| 14  | [Entrega funcional para Nicolle](14-CHECKLIST-ENTREGA-NICOLLE.md)    | Estado verificable, servicios y condiciones de demostración              |
+| 15  | [Checklist Sprint 5](15-CHECKLIST-SPRINT-5.md)                       | Evaluación organoléptica, perfiles e inmutabilidad                       |
+| 16  | [Checklist Sprint 2.1](16-CHECKLIST-SPRINT-2-1.md)                   | Cuentas internas, invitaciones y recuperación                            |
+| 17  | [Checklist Sprint 7](17-CHECKLIST-SPRINT-7.md)                       | Cierre técnico, calidad, PWA y pendientes de piloto                      |
+| 18  | [Guía de despliegue Sprint 8](18-GUIA-DESPLIEGUE-SPRINT-8.md)        | Compose, TLS, migraciones, respaldos y traspaso                          |
+| 19  | [Guion de onboarding del piloto](19-GUIA-ONBOARDING-PILOTO.md)       | Precondiciones y agenda de preparación; no acredita una sesión realizada |
+| —   | [OpenAPI](openapi.yaml)                                              | Contrato ejecutable generado desde los esquemas Zod                      |
+| —   | [AGENTS.md](../AGENTS.md)                                            | Reglas para el agente de desarrollo                                      |
 
 ## Uso
 
@@ -41,7 +42,7 @@ Trabajar un sprint a la vez según `09-PLAN-DESARROLLO.md`.
 - ✅ Planificación revisada y decisiones críticas cerradas
 - ⏳ Correcciones metodológicas de la tesis: tesista + asesor
 - ✅ Desarrollo técnico: Sprints 1 a 7 implementados y verificados; pruebas de campo/piloto pendientes
-- ▶️ Siguiente foco técnico: despliegue reproducible de Sprint 8; piloto requiere autorización e insumos reales
+- ▶️ Siguiente foco: revisión manual de Sprint 7 y preparación técnica del despliegue reproducible; piloto requiere autorización e insumos reales
 - ⏳ Datos reales de empresa: pendientes; los estándares provisionales solo sirven para `DEMO`
 - ⏳ UML, manual de usuario y video demo: add-on **no aprobado**, no generar
 

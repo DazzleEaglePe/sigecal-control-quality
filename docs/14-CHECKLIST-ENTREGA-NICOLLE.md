@@ -23,16 +23,16 @@ publicación, el piloto y la entrega formal.
 
 ## 2. Estado por sprint
 
-| Sprint | Alcance                                                     | Estado                  | Apto para Nicolle                                                                |
-| ------ | ----------------------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------- |
-| 1      | Monorepo, PostgreSQL, Prisma, API base, frontend y OpenAPI  | ✅ Cerrado técnicamente | Sí; queda pendiente únicamente la grabación breve de evidencia                   |
-| 2      | Autenticación, RBAC, usuarios, áreas, maestros y estándares | ✅ Cerrado              | Sí, usando usuarios y datos de demostración                                      |
-| 3      | Lotes, seis etapas, QR y trazabilidad                       | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                    |
-| 4      | Inspecciones, estándares y resultados fisicoquímicos        | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                    |
-| 5      | Evaluación organoléptica                                    | ✅ Cerrado              | Sí; sesión, corrección inmutable, perfiles y comparación respaldados por pruebas |
-| 6      | Ciclo completo de NC, acciones, indicadores y reportes      | ✅ Cerrado técnicamente | Sí; notificaciones, KPI, PDF, Excel y búsqueda global disponibles                |
-| 7      | PWA, accesibilidad, seguridad, rendimiento y piloto         | 🟡 Cierre condicionado  | Demo técnica sí; revisión manual WCAG, evidencia/conformidad y piloto pendientes |
-| 8      | Despliegue, post-test y entrega formal                      | 🟡 Preparación técnica  | Imágenes y guía listas; dominio, proveedor, SMTP y datos reales pendientes       |
+| Sprint | Alcance                                                     | Estado                  | Apto para Nicolle                                                                                                             |
+| ------ | ----------------------------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 1      | Monorepo, PostgreSQL, Prisma, API base, frontend y OpenAPI  | ✅ Cerrado técnicamente | Sí; queda pendiente únicamente la grabación breve de evidencia                                                                |
+| 2      | Autenticación, RBAC, usuarios, áreas, maestros y estándares | ✅ Cerrado              | Sí, usando usuarios y datos de demostración                                                                                   |
+| 3      | Lotes, seis etapas, QR y trazabilidad                       | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                                                                 |
+| 4      | Inspecciones, estándares y resultados fisicoquímicos        | ✅ Cerrado              | Sí; flujo funcional respaldado por pruebas y evidencia previa                                                                 |
+| 5      | Evaluación organoléptica                                    | ✅ Cerrado              | Sí; sesión, corrección inmutable, perfiles y comparación respaldados por pruebas                                              |
+| 6      | Ciclo completo de NC, acciones, indicadores y reportes      | ✅ Cerrado técnicamente | Sí; notificaciones, KPI, PDF, Excel y búsqueda global disponibles                                                             |
+| 7      | PWA, accesibilidad, seguridad, rendimiento y piloto         | 🟡 Cierre condicionado  | Demo técnica sí; revisión manual WCAG, evidencia/conformidad y piloto pendientes; guion de onboarding listo, sesión pendiente |
+| 8      | Despliegue, post-test y entrega formal                      | 🟡 Preparación técnica  | Imágenes y guía listas; dominio, proveedor, SMTP y datos reales pendientes                                                    |
 
 ## 3. Funcionalidades aceptadas
 
