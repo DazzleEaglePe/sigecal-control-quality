@@ -70,4 +70,21 @@ describe('credenciales SMTP', () => {
       }),
     ).toMatchObject({ MAIL_USER: 'sigecal', MAIL_PASSWORD: 'test-password' });
   });
+
+  it('exige autenticación para la configuración de producción', () => {
+    expect(() =>
+      parseEnvironment({ ...validEnvironment(), NODE_ENV: 'production' }),
+    ).toThrow('La autenticación SMTP es obligatoria en producción.');
+  });
+
+  it('permite producción con el par de credenciales SMTP', () => {
+    expect(
+      parseEnvironment({
+        ...validEnvironment(),
+        NODE_ENV: 'production',
+        MAIL_USER: 'sigecal',
+        MAIL_PASSWORD: 'test-password',
+      }),
+    ).toMatchObject({ NODE_ENV: 'production', MAIL_USER: 'sigecal' });
+  });
 });

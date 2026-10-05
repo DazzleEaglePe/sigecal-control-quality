@@ -21,6 +21,7 @@ it('separa el enlace del texto para no incorporar puntuación al token', () => {
 it('agrega autenticación SMTP cuando hay credenciales configuradas', () => {
   expect(
     createSmtpTransportOptions({
+      NODE_ENV: 'production',
       MAIL_HOST: 'smtp.example.com',
       MAIL_PORT: 587,
       MAIL_SECURE: false,
@@ -29,12 +30,14 @@ it('agrega autenticación SMTP cuando hay credenciales configuradas', () => {
     }),
   ).toMatchObject({
     auth: { user: 'sigecal', pass: 'test-password' },
+    requireTLS: true,
   });
 });
 
 it('omite autenticación cuando usa un relay local sin credenciales', () => {
   expect(
     createSmtpTransportOptions({
+      NODE_ENV: 'development',
       MAIL_HOST: 'localhost',
       MAIL_PORT: 1025,
       MAIL_SECURE: false,

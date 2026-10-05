@@ -241,4 +241,5 @@ SEED_DEFAULT_PASSWORD="<definir en la instalación>"
 - [ ] Caché de datos verificada como vacía después de cerrar sesión o cambiar de usuario
 - [ ] SMTP de producción autenticado y `MAIL_FROM` autorizado por la empresa
 - [ ] `MAIL_USER` y `MAIL_PASSWORD` configurados juntos desde un gestor de secretos
+- [ ] TLS SMTP verificado con el proveedor; `MAIL_SECURE=false` requiere STARTTLS
 - [ ] Mailpit no expuesto en producción

@@ -20,7 +20,7 @@ sustituyen con pruebas automatizadas.
 | `npm run db:verify-seed`                                    | ✅ `users: 5`, `demoBatches: 5`, `demoResults: 8`, `demoSensorySessions: 1`, `demoSensoryPending: 1`, `demoNC: 2` |
 | `npm run openapi:validate`                                  | ✅ Contrato OpenAPI válido                                                                                        |
 | `npm run test:integration`                                  | ✅ 11 pruebas PostgreSQL en un contenedor desechable; el entorno de desarrollo no fue modificado                  |
-| `npm run test`                                              | ✅ 256 pruebas generales aprobadas; 11 de integración se omiten allí porque tienen su comando aislado             |
+| `npm run test`                                              | ✅ 258 pruebas generales aprobadas; 11 de integración se omiten allí porque tienen su comando aislado             |
 | `npm run lint`, `npm run typecheck`, `npm run format:check` | ✅ Sin advertencias, errores ni diferencias de formato                                                            |
 | Build web PWA                                               | ✅ Manifiesto, `sw.js`, Workbox y recursos precacheados generados                                                 |
 | Lighthouse sobre `http://localhost:5173/login`              | ✅ Accesibilidad **100/100**, sin hallazgos                                                                       |

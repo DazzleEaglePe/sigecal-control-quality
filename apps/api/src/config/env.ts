@@ -66,6 +66,15 @@ const EnvironmentSchema = z
       message: 'Configure juntos el usuario y la contraseña SMTP.',
       path: ['MAIL_USER'],
     },
+  )
+  .refine(
+    (value) =>
+      value.NODE_ENV !== 'production' ||
+      Boolean(value.MAIL_USER && value.MAIL_PASSWORD),
+    {
+      message: 'La autenticación SMTP es obligatoria en producción.',
+      path: ['MAIL_USER'],
+    },
   );
 
 export type Environment = z.infer<typeof EnvironmentSchema>;

@@ -10,7 +10,10 @@ producción los debe proporcionar la tesista o la organización.
 
 La configuración de correo admite `MAIL_USER` y `MAIL_PASSWORD` como par:
 Compose de producción rechaza el arranque si falta uno de los dos. Mailpit
-local sigue usando SMTP sin autenticación al omitir ambas variables.
+local sigue usando SMTP sin autenticación al omitir ambas variables. La API
+bloquea producción sin autenticación y, con `MAIL_SECURE=false`, exige STARTTLS
+antes de enviar credenciales o mensajes; use TLS implícito si el proveedor lo
+requiere. El envío real debe comprobarse con el SMTP proporcionado por Tacama.
 
 La imagen final de API usa dependencias de ejecución aisladas: `npm ci` de ese
 conjunto reportó cero vulnerabilidades conocidas y excluye el CLI de Prisma

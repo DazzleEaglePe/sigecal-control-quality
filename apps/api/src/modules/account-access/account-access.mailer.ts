@@ -21,12 +21,20 @@ export const accountEmailText = (
 export const createSmtpTransportOptions = (
   configuration: Pick<
     Environment,
-    'MAIL_HOST' | 'MAIL_PORT' | 'MAIL_SECURE' | 'MAIL_USER' | 'MAIL_PASSWORD'
+    | 'NODE_ENV'
+    | 'MAIL_HOST'
+    | 'MAIL_PORT'
+    | 'MAIL_SECURE'
+    | 'MAIL_USER'
+    | 'MAIL_PASSWORD'
   > = env,
 ): SMTPTransportOptions => ({
   host: configuration.MAIL_HOST,
   port: configuration.MAIL_PORT,
   secure: configuration.MAIL_SECURE,
+  ...(configuration.NODE_ENV === 'production' && !configuration.MAIL_SECURE
+    ? { requireTLS: true }
+    : {}),
   ...(configuration.MAIL_USER && configuration.MAIL_PASSWORD
     ? {
         auth: {

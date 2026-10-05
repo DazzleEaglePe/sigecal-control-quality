@@ -105,12 +105,12 @@ publicación, el piloto y la entrega formal.
 | Formato Prettier       | ✅ Sin diferencias                                                               |
 | ESLint                 | ✅ API, web y shared sin errores ni advertencias                                 |
 | TypeScript estricto    | ✅ Tres workspaces aprobados                                                     |
-| Pruebas automatizadas  | ✅ 267 pruebas: 256 en la batería general y 11 de integración PostgreSQL aislada |
+| Pruebas automatizadas  | ✅ 269 pruebas: 258 en la batería general y 11 de integración PostgreSQL aislada |
 | Archivos de prueba     | ✅ 88 archivos de prueba                                                         |
 | Builds de producción   | ✅ API, web y shared generados                                                   |
 | Imágenes de despliegue | ✅ API, web y tarea temporal de migración construidas                            |
 | Dependencias API prod. | ✅ `npm ci` de runtime sin hallazgos; Prisma CLI excluido de la imagen API       |
-| SMTP API               | ✅ Auth SMTP validada; envío real pendiente de proveedor autorizado              |
+| SMTP API               | ✅ Auth y STARTTLS obligatorios en producción; envío real pendiente de proveedor |
 | Modelo Prisma          | ✅ Formateado y válido                                                           |
 | Contrato OpenAPI       | ✅ Válido                                                                        |
 | Integridad del seed    | ✅ Incluye sesión y captura organoléptica pendientes `DEMO`                      |
