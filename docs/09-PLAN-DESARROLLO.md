@@ -222,10 +222,10 @@ El orden operativo, las comprobaciones y los criterios detallados están en `13-
 - [ ] Lista de verificación de seguridad de `07`: controles de despliegue
       quedan para Sprint 8; separar de los controles de aplicación ya cubiertos
       por pruebas.
-- [ ] Seguimiento de deuda técnica: cuatro vulnerabilidades altas reportadas
-      por `npm audit` en Prisma CLI/dependencias; la remediación automática
-      requiere bajar de Prisma 7 a 6 y no se aplicó por incompatibilidad con el
-      stack aprobado.
+- [x] Seguimiento de deuda técnica (05/10/2026): se mantienen Prisma 7.9.1 y
+      el stack aprobado; overrides de dependencias transitivas eliminan los
+      hallazgos del CLI. `npm audit` reporta cero vulnerabilidades en este
+      corte; evidencia en `17-CHECKLIST-SPRINT-7.md`.
 - [x] Pruebas de recorrido completo de los flujos A, B y C (05/10/2026):
       cubiertas por pruebas de dominio, rutas e integración PostgreSQL aislada;
       evidencia en `17-CHECKLIST-SPRINT-7.md`.

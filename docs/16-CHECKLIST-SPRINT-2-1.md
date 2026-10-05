@@ -56,4 +56,4 @@ Fuente: RF-M1-04 a RF-M1-15, contrato API §3–4, seguridad §1 y UX §2.0.
 ## Observaciones no bloqueantes
 
 - Vite mantiene una advertencia por el tamaño del paquete principal; el build termina correctamente y la optimización se prioriza en el Sprint 7.
-- `npm audit --omit=dev` informa cuatro alertas altas transitivas del CLI Prisma 7.9.1. Su corrección automática propone retroceder a Prisma 6, por lo que no se aplicó un cambio mayor contrario al stack aprobado; debe reevaluarse al actualizar Prisma.
+- [x] Deuda de dependencias del CLI resuelta el 05/10/2026: Prisma se mantiene en 7.9.1; los overrides de raíz fijan `deepmerge-ts` 8.0.0 y `mysql2` 3.24.5. `npm audit` reporta cero vulnerabilidades y el árbol resuelve con las versiones parcheadas.

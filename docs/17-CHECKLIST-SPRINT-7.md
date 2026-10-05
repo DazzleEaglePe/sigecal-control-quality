@@ -110,12 +110,12 @@ no se deben compartir contraseñas por el repositorio ni en esta documentación.
 - [x] Se actualizaron dependencias transitivas compatibles (`fast-uri`,
       `ip-address`, `qs`) y Nodemailer a 10.0.14; el API de producción usa una
       instalación aislada sin Prisma CLI y reportó cero vulnerabilidades npm.
-- [ ] `npm audit` del repositorio reporta cuatro hallazgos altos en Prisma CLI
-      y dependencias transitivas (`@prisma/config`, `deepmerge-ts`, `mysql2`,
-      `prisma`). La solución automática propone bajar a Prisma 6.19.3, un cambio
-      mayor incompatible con el stack aprobado; no se aplicó. El CLI se excluye
-      de la imagen API, pero sigue en desarrollo y en la imagen temporal de
-      migraciones. Requiere seguimiento de dependencias antes del despliegue.
+- [x] Deuda del CLI resuelta sin cambio mayor: Prisma 7.9.1 se conserva como
+      herramienta de desarrollo en la raíz del monorepo; overrides fijan
+      `deepmerge-ts` 8.0.0 y `mysql2` 3.24.5. `npm ls` confirma las versiones
+      instaladas y `npm audit` reporta cero vulnerabilidades en este corte.
+      `db:validate`, build, pruebas unitarias e integración PostgreSQL aislada
+      pasaron con esta resolución. Revalidar dependencias antes del despliegue.
 
 ## 7. Pendiente antes del cierre integral/piloto
 
