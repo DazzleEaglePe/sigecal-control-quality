@@ -209,6 +209,7 @@ RATE_LIMIT_MAX=5
 MAIL_HOST="localhost"
 MAIL_PORT=1025
 MAIL_SECURE=false
+# MAIL_USER y MAIL_PASSWORD se omiten para Mailpit local sin autenticación.
 MAIL_FROM="SIGECAL <no-responder@sigecal.local>"
 WEB_BASE_URL="http://localhost:5173"
 ACTIVATION_TOKEN_MINUTES=1440
@@ -239,4 +240,5 @@ SEED_DEFAULT_PASSWORD="<definir en la instalación>"
 - [ ] Cuentas de prueba innecesarias desactivadas
 - [ ] Caché de datos verificada como vacía después de cerrar sesión o cambiar de usuario
 - [ ] SMTP de producción autenticado y `MAIL_FROM` autorizado por la empresa
+- [ ] `MAIL_USER` y `MAIL_PASSWORD` configurados juntos desde un gestor de secretos
 - [ ] Mailpit no expuesto en producción

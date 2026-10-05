@@ -37,6 +37,8 @@ const EnvironmentSchema = z
       .enum(['true', 'false'])
       .default('false')
       .transform((value) => value === 'true'),
+    MAIL_USER: z.string().min(1).optional(),
+    MAIL_PASSWORD: z.string().min(1).optional(),
     MAIL_FROM: z
       .string()
       .min(3)
@@ -57,7 +59,14 @@ const EnvironmentSchema = z
   })
   .refine((value) => value.JWT_ACCESS_SECRET !== value.JWT_REFRESH_SECRET, {
     message: 'Los secretos JWT deben ser diferentes.',
-  });
+  })
+  .refine(
+    (value) => Boolean(value.MAIL_USER) === Boolean(value.MAIL_PASSWORD),
+    {
+      message: 'Configure juntos el usuario y la contraseña SMTP.',
+      path: ['MAIL_USER'],
+    },
+  );
 
 export type Environment = z.infer<typeof EnvironmentSchema>;
 

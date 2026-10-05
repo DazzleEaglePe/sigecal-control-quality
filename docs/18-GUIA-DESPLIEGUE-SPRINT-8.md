@@ -8,6 +8,10 @@ Esto deja reproducible la preparación del despliegue. El sistema todavía no
 está publicado: el dominio, proveedor, certificados TLS, SMTP y credenciales de
 producción los debe proporcionar la tesista o la organización.
 
+La configuración de correo admite `MAIL_USER` y `MAIL_PASSWORD` como par:
+Compose de producción rechaza el arranque si falta uno de los dos. Mailpit
+local sigue usando SMTP sin autenticación al omitir ambas variables.
+
 La imagen final de API usa dependencias de ejecución aisladas: `npm ci` de ese
 conjunto reportó cero vulnerabilidades conocidas y excluye el CLI de Prisma
 (esto no equivale a un escaneo de la imagen base del sistema operativo). El
@@ -47,8 +51,9 @@ TLS gestionado, salida SMTP autorizada y espacio persistente para PostgreSQL.
 3. Sustituir todos los valores `replace-*`, usar dos secretos JWT distintos de
    al menos 64 caracteres y establecer los datos SMTP reales. Mantener
    `COOKIE_SECURE=true` y el origen público exacto en `CORS_ORIGIN` y
-   `WEB_BASE_URL`. Codificar con percent-encoding los caracteres reservados
-   de la contraseña cuando se inserte dentro de `DATABASE_URL`.
+   `WEB_BASE_URL`. Citar con comillas simples los valores del archivo Compose
+   que contengan `$`, `#` o espacios; codificar con percent-encoding los
+   caracteres reservados de la contraseña cuando se inserte en `DATABASE_URL`.
 4. Configurar el proveedor TLS para dirigir HTTPS a `WEB_PORT` del servidor y
    preservar `Host` y `X-Forwarded-Proto`.
 5. Validar la configuración y construir imágenes:

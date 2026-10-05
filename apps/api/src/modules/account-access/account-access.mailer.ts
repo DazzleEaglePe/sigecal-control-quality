@@ -1,6 +1,9 @@
-import nodemailer, { type Transporter } from 'nodemailer';
+import nodemailer, {
+  type SMTPTransportOptions,
+  type Transporter,
+} from 'nodemailer';
 
-import { env } from '../../config/env.js';
+import { env, type Environment } from '../../config/env.js';
 import type { AccountMailPort, AccountTarget } from './account-access.types.js';
 
 const accountUrl = (path: string, token: string): string => {
@@ -15,15 +18,30 @@ export const accountEmailText = (
   closing: string,
 ): string => `${introduction}:\n${url}\n\n${closing}`;
 
+export const createSmtpTransportOptions = (
+  configuration: Pick<
+    Environment,
+    'MAIL_HOST' | 'MAIL_PORT' | 'MAIL_SECURE' | 'MAIL_USER' | 'MAIL_PASSWORD'
+  > = env,
+): SMTPTransportOptions => ({
+  host: configuration.MAIL_HOST,
+  port: configuration.MAIL_PORT,
+  secure: configuration.MAIL_SECURE,
+  ...(configuration.MAIL_USER && configuration.MAIL_PASSWORD
+    ? {
+        auth: {
+          user: configuration.MAIL_USER,
+          pass: configuration.MAIL_PASSWORD,
+        },
+      }
+    : {}),
+});
+
 export class SmtpAccountMailer implements AccountMailPort {
   private readonly transport: Transporter;
 
   public constructor() {
-    this.transport = nodemailer.createTransport({
-      host: env.MAIL_HOST,
-      port: env.MAIL_PORT,
-      secure: env.MAIL_SECURE,
-    });
+    this.transport = nodemailer.createTransport(createSmtpTransportOptions());
   }
 
   public async sendActivation(

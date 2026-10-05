@@ -46,6 +46,8 @@ services:
       MAIL_HOST: ${MAIL_HOST:?MAIL_HOST is required}
       MAIL_PORT: ${MAIL_PORT:-587}
       MAIL_SECURE: ${MAIL_SECURE:-false}
+      MAIL_USER: ${MAIL_USER:?MAIL_USER is required}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:?MAIL_PASSWORD is required}
       MAIL_FROM: ${MAIL_FROM:?MAIL_FROM is required}
       WEB_BASE_URL: ${WEB_BASE_URL:?WEB_BASE_URL is required}
       ACTIVATION_TOKEN_MINUTES: ${ACTIVATION_TOKEN_MINUTES:-1440}

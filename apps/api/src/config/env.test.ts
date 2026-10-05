@@ -47,3 +47,27 @@ describe('parseEnvironment', () => {
     ).toThrow();
   });
 });
+
+describe('credenciales SMTP', () => {
+  it('rechaza usuario o contraseña sin su par', () => {
+    const partialCredentials = [
+      { MAIL_USER: 'sigecal' },
+      { MAIL_PASSWORD: 'test-password' },
+    ];
+    for (const credentials of partialCredentials) {
+      expect(() =>
+        parseEnvironment({ ...validEnvironment(), ...credentials }),
+      ).toThrow('Configure juntos el usuario y la contraseña SMTP.');
+    }
+  });
+
+  it('acepta usuario y contraseña configurados como par', () => {
+    expect(
+      parseEnvironment({
+        ...validEnvironment(),
+        MAIL_USER: 'sigecal',
+        MAIL_PASSWORD: 'test-password',
+      }),
+    ).toMatchObject({ MAIL_USER: 'sigecal', MAIL_PASSWORD: 'test-password' });
+  });
+});

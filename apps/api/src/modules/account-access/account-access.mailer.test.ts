@@ -1,6 +1,9 @@
 import { expect, it } from 'vitest';
 
-import { accountEmailText } from './account-access.mailer.js';
+import {
+  accountEmailText,
+  createSmtpTransportOptions,
+} from './account-access.mailer.js';
 
 it('separa el enlace del texto para no incorporar puntuación al token', () => {
   const url = 'http://localhost:5173/restablecer-contrasena?token=abc_DEF-123';
@@ -13,4 +16,28 @@ it('separa el enlace del texto para no incorporar puntuación al token', () => {
 
   expect(linkLine).toBe(url);
   expect(linkLine?.endsWith('.')).toBe(false);
+});
+
+it('agrega autenticación SMTP cuando hay credenciales configuradas', () => {
+  expect(
+    createSmtpTransportOptions({
+      MAIL_HOST: 'smtp.example.com',
+      MAIL_PORT: 587,
+      MAIL_SECURE: false,
+      MAIL_USER: 'sigecal',
+      MAIL_PASSWORD: 'test-password',
+    }),
+  ).toMatchObject({
+    auth: { user: 'sigecal', pass: 'test-password' },
+  });
+});
+
+it('omite autenticación cuando usa un relay local sin credenciales', () => {
+  expect(
+    createSmtpTransportOptions({
+      MAIL_HOST: 'localhost',
+      MAIL_PORT: 1025,
+      MAIL_SECURE: false,
+    }),
+  ).not.toHaveProperty('auth');
 });
