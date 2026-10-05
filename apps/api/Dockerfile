@@ -24,7 +24,10 @@ COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
 COPY packages/shared/package.json packages/shared/package.json
-RUN npm ci --omit=dev --workspace @sigecal/api --workspace @sigecal/shared
+# Prisma is a peer of @prisma/client but only its CLI is needed for migration.
+# Disable automatic peer installation in the API runtime image; direct runtime
+# dependencies, including the generated Prisma client, remain installed.
+RUN npm ci --omit=dev --legacy-peer-deps --workspace @sigecal/api --workspace @sigecal/shared
 
 FROM node:24-alpine AS runtime
 

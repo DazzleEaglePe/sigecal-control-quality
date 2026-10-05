@@ -8,6 +8,15 @@ Esto deja reproducible la preparación del despliegue. El sistema todavía no
 está publicado: el dominio, proveedor, certificados TLS, SMTP y credenciales de
 producción los debe proporcionar la tesista o la organización.
 
+La imagen final de API usa dependencias de ejecución aisladas: `npm ci` de ese
+conjunto reportó cero vulnerabilidades conocidas y excluye el CLI de Prisma
+(esto no equivale a un escaneo de la imagen base del sistema operativo). El
+audit del repositorio sigue señalando cuatro hallazgos altos en Prisma CLI
+7.9.1 y sus dependencias, que permanecen en desarrollo y en la imagen temporal
+de migraciones; el riesgo se documenta en ADR-003 hasta contar con una
+actualización compatible de Prisma. Nodemailer se actualizó a 10.0.14 por sus
+avisos de seguridad, según ADR-013.
+
 ## Arquitectura de publicación
 
 ```text

@@ -222,7 +222,7 @@ clave única; reinicios y ejecuciones concurrentes no producen duplicados.
 
 **Justificación.** Genera tipos de TypeScript a partir del esquema, lo que elimina desalineaciones entre base de datos y código. Sus migraciones son versionadas y reproducibles (RNF-PO-04). Impide por diseño la concatenación de SQL (RNF-SE-06). El esquema declarativo sirve además como insumo directo para el diagrama entidad-relación del add-on de UML.
 
-**Seguimiento de dependencias (24/08/2026).** El CLI de Prisma 7.9.1 fija transitivamente `deepmerge-ts` 7.1.5, afectado por [GHSA-ggr8-5vv4-36mx](https://github.com/advisories/GHSA-ggr8-5vv4-36mx). El escenario requiere que esa biblioteca procese grafos recursivos construidos por un atacante; en SIGECAL solo forma parte del CLI de desarrollo y procesa configuración versionada y confiable, no entradas HTTP. `npm audit` propone bajar a Prisma 6, lo que contradice este ADR, y el override hacia 8.0.2 no es respetado por la dependencia exacta de Prisma. Se acepta temporalmente el riesgo residual, se excluye el CLI de la imagen de producción y se revisará al actualizar Prisma. No se ocultará la alerta ni se forzará una combinación no soportada.
+**Seguimiento de dependencias (24/08/2026).** El CLI de Prisma 7.9.1 fija transitivamente `deepmerge-ts` 7.1.5, afectado por [GHSA-ggr8-5vv4-36mx](https://github.com/advisories/GHSA-ggr8-5vv4-36mx). El escenario requiere que esa biblioteca procese grafos recursivos construidos por un atacante; Prisma CLI solo debe ejecutarse en desarrollo y en la etapa temporal de migración, con configuración controlada, no ante entradas HTTP. `npm audit` propone bajar a Prisma 6, lo que contradice este ADR, y no se debe forzar una combinación no soportada. La imagen final excluye el CLI y sus dependencias administrativas; la imagen temporal de migración conserva Prisma para `migrate deploy`. Se revisará el riesgo al actualizar Prisma y no se ocultará la alerta.
 
 ---
 
@@ -323,3 +323,17 @@ El mínimo de 8 observaciones es una regla operativa de SIGECAL, no una afirmaci
 Las variantes creadas con `cva` viven en módulos aparte (`*-variants.ts`) porque la regla `react-refresh/only-export-components` prohíbe exportar funciones junto a componentes.
 
 **Consecuencia.** Los estilos manuscritos previos siguen funcionando y se migran por pantalla, sin una reescritura global. La accesibilidad de foco y contraste queda centralizada en los tokens, en lugar de repetirse en cada hoja de estilo.
+
+---
+
+## ADR-013 · Nodemailer 10 para corregir avisos de seguridad
+
+**Estado:** Aceptada
+
+**Contexto.** El audit de producción señala avisos de severidad alta en Nodemailer 9.1.1. Las correcciones publicadas están en la rama 10.x. El código usa únicamente `createTransport`, `sendMail` y el tipo `Transporter`.
+
+**Decisión.** Actualizar Nodemailer a 10.0.14 y retirar `@types/nodemailer`, porque 10.x distribuye sus propias definiciones TypeScript.
+
+**Compatibilidad revisada.** La versión requiere Node.js 20 o posterior; las imágenes y el entorno aprobados usan Node.js 24. El transporte SMTP conserva las llamadas públicas usadas por `SmtpAccountMailer`; se verificará el build, tipos y pruebas del módulo después del cambio.
+
+**Consecuencia.** Se acepta el cambio mayor acotado al transporte de correo para corregir los avisos; antes del despliegue se debe verificar envío real con el proveedor SMTP autorizado. [Notas oficiales de Nodemailer 10](https://github.com/nodemailer/nodemailer/blob/master/CHANGELOG.md).
