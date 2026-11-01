@@ -29,6 +29,7 @@ Plan Completo (COT-2026-VT-001) · 8 módulos · Setiembre–diciembre 2026
 | 17  | [Checklist Sprint 7](17-CHECKLIST-SPRINT-7.md)                       | Cierre técnico, calidad, PWA y pendientes de piloto                      |
 | 18  | [Guía de despliegue Sprint 8](18-GUIA-DESPLIEGUE-SPRINT-8.md)        | Compose, TLS, migraciones, respaldos y traspaso                          |
 | 19  | [Guion de onboarding del piloto](19-GUIA-ONBOARDING-PILOTO.md)       | Precondiciones y agenda de preparación; no acredita una sesión realizada |
+| 20  | [Plan de cierre: tesis y software](20-PLAN-CIERRE-TESIS.md)          | Brecha tesis ↔ software, checklists y sprints hasta la sustentación      |
 | —   | [OpenAPI](openapi.yaml)                                              | Contrato ejecutable generado desde los esquemas Zod                      |
 | —   | [AGENTS.md](../AGENTS.md)                                            | Reglas para el agente de desarrollo                                      |
 
