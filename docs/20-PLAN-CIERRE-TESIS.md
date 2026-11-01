@@ -110,18 +110,22 @@ Avance del 01/11 en `TESIS_NICOLLE_FINAL_editada_v3.docx` (116 páginas, unas 18
 - [ ] Parte estadística: seguir lo que explique el asesor en S11, con SPSS y los datos pareados del pre-test y post-test (ver sección 6).
 - [ ] Discusión: contrastar los resultados con los antecedentes del capítulo II.
 - [ ] Conclusiones (una por objetivo: general y 3 específicos) y recomendaciones.
-- [ ] Introducción: retirar inventarios, mantenimiento de equipos y gestión de personal, y actualizar la cantidad de capítulos.
+- [x] Introducción sin inventarios, mantenimiento ni gestión de personal, y con la estructura del informe actualizada (v4).
+- [x] Portada con el año 2026; justificación metodológica con Scrum como metodología y UML como lenguaje de modelado; delimitación social con los 15 colaboradores; corrección de «PRÓPOSITO» (v4).
+- [ ] Confirmar la delimitación temporal: en la v4 dice «entre septiembre de 2025 y noviembre de 2026»; ajustar el mes de cierre según la fecha real del post-test.
+- [x] Borrador sin datos de resultados, discusión, conclusiones y recomendaciones (`05_Borrador_…` en el kit): tablas vacías, plantillas de interpretación y contraste con los antecedentes, para completar con SPSS.
 - [ ] Resumen y abstract en pasado, con resultados.
 
 ### 4.3 Para S13–S14 (16/11–23/11)
 
-- [ ] Anexos según lo que indique el asesor en S12: matriz de consistencia, operacionalización e instrumentos (Anexos 4 y 5), con las presentaciones corregidas (inconsistencias 8, 11, 12 y 15 de `01-ANALISIS-TESIS.md`).
+- [x] Borradores de anexos listos: matriz de consistencia (Anexo 1) y de operacionalización en `05_Borrador_…`; Anexo 4 (18 ítems, solo post-test) y Anexo 5 (27 ítems) con presentaciones corregidas.
+- [ ] Anexos según lo que indique el asesor en S12: armar la sección de anexos en la tesis con esas matrices y los instrumentos.
 - [ ] Inconsistencias de `01-ANALISIS-TESIS.md` que siguen en el PDF:
-  - 3: "UML como metodología" en 1.3. UML es un lenguaje; la metodología es Scrum.
+  - ~~3: "UML como metodología" en 1.3.~~ Corregida en la v4.
   - ~~4: "maquinarias agrícolas" en 3.2.2.~~ Corregida el 01/11.
-  - 5: delimitación temporal set. 2025 – ago. 2026.
-  - 6: la introducción promete módulos fuera de alcance.
-  - 10: la portada dice 2025.
+  - ~~5: delimitación temporal set. 2025 – ago. 2026.~~ Actualizada en la v4; falta confirmar el mes de cierre.
+  - ~~6: la introducción promete módulos fuera de alcance.~~ Corregida en la v4.
+  - ~~10: la portada dice 2025.~~ Corregida en la v4.
   - La 9 (autor en los metadatos del PDF) ya está corregida.
 - [ ] Cambiar las viñetas de precondiciones y postcondiciones por texto corrido.
 - [ ] Regenerar los índices de tablas y gráficos; dejar la página del informe antiplagio para el final.
