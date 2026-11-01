@@ -1,6 +1,6 @@
 # 20 · PLAN DE CIERRE: TESIS Y SOFTWARE
 
-**Corte:** 01/11/2026
+**Corte:** 01/11/2026 (actualizado con el avance de la tesis editada y la decisión de formular el pre-test)
 
 **Fuentes:**
 
@@ -80,22 +80,33 @@ séptimo módulo opcional, solo si el límite de palabras lo permite.
 
 ### 4.1 Para la clase S11 (02/11): mínimo presentable
 
-- [ ] Insertar las capturas (2 por CU, ya listas en `output/capturas-tesis/`), con la nota: «Captura del sistema SIGECAL con datos de demostración».
-- [ ] Separar el inicio de sesión como CU02.
-- [ ] Ajustar los roles a 4 en la Tabla 5 (actores), en RF01 de la Tabla 2 y en los textos.
-- [ ] Pasar las 12 tablas a APA 7: sin líneas verticales ni sombreado; solo bordes horizontales (arriba, bajo el encabezado y abajo).
+Hecho el 01/11 en `TESIS_NICOLLE_FINAL_editada.docx` (el original queda intacto).
+
+- [x] Insertar las capturas (2 por CU, ya listas en `output/capturas-tesis/`), con la nota: «Captura del sistema SIGECAL con datos de demostración».
+- [x] Separar el inicio de sesión como CU02, con caso de uso, tabla, diagramas de actividades y secuencia y capturas.
+- [x] Reescribir CU01 como registro por invitación, con diagramas nuevos.
+- [x] Ajustar los roles a 4 en la Tabla 5 (actores), en RF01–RF02 y en los textos.
+- [x] Pasar las tablas a APA 7: sin líneas verticales ni sombreado; solo bordes horizontales (arriba, bajo el encabezado y abajo).
+- [x] Renumerar casos de uso, tablas y gráficos, y regenerar el índice y las listas con páginas reales.
+- [ ] Revisar en Microsoft Word los números del índice y las listas: se calcularon con LibreOffice.
 
 ### 4.2 Para S12 (09/11): capítulos IV y V completos
 
-- [ ] Reescribir los casos de uso según la sección 2. Prioridad: CU06 organoléptico, CU08 reportes, CU01/CU02 y CU03.
-- [ ] Rehacer los diagramas de actividades y secuencia afectados: CU01, CU02 (nuevo), CU03, CU06 y CU08. Ajustes menores en CU04, CU05 y CU07.
-- [ ] Ajustar los RF de la Tabla 2 que describen funciones inexistentes: RF02 (contraseña temporal), RF04 (disponibilidad), RF06 (parcela), RF10 (zona de riesgo), RF12 (código aleatorio), RF14 (dispersión), RF17 (reposo de 3 meses) y RF18 (certificado).
-- [ ] 4.2.3: dejar unas 10 tablas reales (`User`, `Batch`, `BatchStage`, `Inspection`, `Parameter`, `Standard`, `PhysChemResult`, `SensorySession`, `NonConformity`, `CorrectiveAction`), reducir la Tabla 4 y usar un diagrama general más un máximo de 2 de detalle.
-- [ ] Recortar para Turnitin. Hoy hay unas 23 300 palabras (conteo aproximado desde el PDF); la meta es quedar en unas 20 000 antes de agregar estadística, discusión y conclusiones.
-  - Capítulo II: de 8 488 a unas 5 000 palabras.
-  - Capítulo IV: de 9 164 palabras; acortar las narraciones de flujo.
-  - Las capturas no suman palabras.
-- [ ] Capítulo III: agregar la Tabla de población (15 colaboradores: 1 jefe y 14 empleados) y la Tabla de muestra (censal); confirmar con el asesor. Corregir la frase inicial, que anuncia población y muestra inexistentes, y quitar "maquinarias agrícolas" e "inventarios" de 3.2.2.
+Avance del 01/11 en `TESIS_NICOLLE_FINAL_editada_v2.docx` (135 páginas, unas 19 900 palabras en total):
+
+- [x] Rehacer el Gráfico 9 (diagrama general) con los 4 roles: heredan «Iniciar sesión» del actor Usuario del sistema.
+- [x] Capítulo III: 3.4 Población y muestra con la Tabla 1 (15 colaboradores: 1 jefe de área y 14 empleados) y la Tabla 2 (muestra censal). Las demás tablas pasan a ser 3–15. Se corrigió la frase inicial y se quitaron "inventarios" y "maquinarias agrícolas" de 3.2.2. Falta confirmar la población con el asesor.
+- [x] Recortar el capítulo II para Turnitin: de unas 8 500 a unas 3 200 palabras, sin perder ninguna cita. Se quitaron cifras atribuidas a autores que no se pudieron verificar y lo que contradecía al sistema (microservicios como arquitectura, incertidumbre y "zona de riesgo", comparación de panelistas).
+- [ ] Verificar contra las fuentes originales las citas del capítulo II, que parecen redactadas con IA.
+
+Avance del 01/11 en `TESIS_NICOLLE_FINAL_editada_v3.docx` (116 páginas, unas 18 600 palabras):
+
+- [x] Reescribir CU003–CU008 según el código de SIGECAL: texto, tabla de especificación y diagramas de caso de uso, actividades y secuencia. CU003 pasa a «Programar inspecciones» y CU008 a «Cerrar lote y generar reportes»; los nombres de los demás se mantienen.
+- [x] Rehacer los diagramas: los 24 de CU001–CU008, el Gráfico 3 (modelo de negocio con los 4 roles) y el Gráfico 9 (sin notificaciones por correo: el sistema solo envía correos de acceso).
+- [x] Ajustar los RF de la tabla de requerimientos funcionales (ahora Tabla 4) y quitar sus encabezados repetidos. También se alineó la descripción del modelo de negocio (4.2.1.3).
+- [x] 4.2.3: 10 tablas reales (`User`, `Batch`, `BatchStage`, `Inspection`, `Parameter`, `Standard`, `PhysChemResult`, `SensorySession`, `NonConformity`, `CorrectiveAction`) en la Tabla 6, un diagrama general y 2 de detalle. Los gráficos pasan a ser 47.
+- [ ] Revisar en Word el capítulo IV completo: al quitar los saltos por página del PDF, el texto fluye de forma continua.
+- [ ] Mantener el total por debajo de 25 000 palabras al agregar estadística, discusión y conclusiones (hoy unas 19 900). Al reescribir CU003–CU008, acortar las narraciones de flujo del capítulo IV (unas 10 300 palabras).
 - [ ] Parte estadística: seguir lo que explique el asesor en S11, con SPSS y los datos pareados del pre-test y post-test (ver sección 6).
 - [ ] Discusión: contrastar los resultados con los antecedentes del capítulo II.
 - [ ] Conclusiones (una por objetivo: general y 3 específicos) y recomendaciones.
@@ -107,7 +118,7 @@ séptimo módulo opcional, solo si el límite de palabras lo permite.
 - [ ] Anexos según lo que indique el asesor en S12: matriz de consistencia, operacionalización e instrumentos (Anexos 4 y 5), con las presentaciones corregidas (inconsistencias 8, 11, 12 y 15 de `01-ANALISIS-TESIS.md`).
 - [ ] Inconsistencias de `01-ANALISIS-TESIS.md` que siguen en el PDF:
   - 3: "UML como metodología" en 1.3. UML es un lenguaje; la metodología es Scrum.
-  - 4: "maquinarias agrícolas" en 3.2.2.
+  - ~~4: "maquinarias agrícolas" en 3.2.2.~~ Corregida el 01/11.
   - 5: delimitación temporal set. 2025 – ago. 2026.
   - 6: la introducción promete módulos fuera de alcance.
   - 10: la portada dice 2025.
@@ -139,6 +150,23 @@ Las 17 capturas y el PDF están en `output/capturas-tesis/` (carpeta sin version
 - [ ] Entorno local: yallego ocupa 5434, 1025 y 8025. En `.env` (sin versionar) SIGECAL pasó a PostgreSQL 5436 y Mailpit 1026/8026; hay copia previa en `.env.backup-capturas`.
 - [ ] Las cuentas técnicas del seed ya cambiaron la contraseña provisional; la nueva está en `.env` como `CAPTURAS_PASSWORD`.
 
+### 5.1.2 Diferencias entre documentación y código (revisión de CU003–CU008, 01/11/2026)
+
+Ninguna se corrigió en el software. La tesis describe lo que hace el código.
+
+- [ ] La web no tiene botón para corregir un resultado fisicoquímico; la corrección solo existe en la API.
+- [ ] La no conformidad automática no notifica al jefe de calidad, aunque `08-UX-FLUJOS.md` lo indica. Programar una inspección tampoco avisa en ese momento: los avisos llegan 48 h antes y al vencer.
+- [ ] El aviso de falta de estándar muestra el UUID del parámetro en lugar de su nombre.
+- [ ] La observación por parámetro no se puede capturar desde la interfaz.
+- [ ] El ADMIN puede verificar y cerrar no conformidades: la matriz de permisos lo permite, pero RF-M7-14 dice solo JEFE_CALIDAD.
+- [ ] Ningún flujo usa el estado `EN_ANALISIS` de la no conformidad.
+- [ ] No hay pantalla web para las plantillas de inspección; reasignar el equipo solo se puede por la API.
+- [ ] Sin umbral sensorial vigente, `/sensory/preparation` responde 404 y el contrato dice 422.
+- [ ] El QR del lote solo se genera en SVG; el contrato dice PNG o SVG.
+- [ ] Con el lote cerrado todavía se puede registrar una no conformidad (RF-M3-10), y el cierre no exige estar en Embotellado.
+- [ ] El contrato lista extremos de KPI sueltos, pero el código solo tiene `/reports/dashboard`.
+- [ ] Las capturas CU06-1 y CU06-2 muestran 6 y 5 atributos sensoriales, respectivamente.
+
 ### 5.2 Pendientes de Sprint 7 (`17-CHECKLIST-SPRINT-7.md`)
 
 - [ ] Recorrer todas las vistas con teclado y comprobar orden y foco visible.
@@ -169,20 +197,28 @@ Las 17 capturas y el PDF están en `output/capturas-tesis/` (carpeta sin version
 El asesor espera la parte estadística para S12 (09/11). El diseño preexperimental
 exige este orden (ver `01-ANALISIS-TESIS.md`):
 
-1. [ ] Pre-test (Anexo 5) a los 15 colaboradores **antes** de darles acceso a SIGECAL. Confirmar si ya se aplicó.
-2. [ ] Piloto con la duración y los participantes aprobados por el asesor.
-3. [ ] Post-test: Anexo 5 y Anexo 4.
-4. [ ] Tabulación en SPSS con código seudónimo por participante; prueba para muestras relacionadas definida con el asesor.
+**Estado al 01/11: el pre-test no se ha aplicado.** Ningún colaborador debe
+recibir credenciales de SIGECAL antes de responderlo.
 
-> Si no hay tiempo para un piloto real antes del 09/11, hay que plantearlo al
-> asesor en S11. Nunca se completan respuestas ni resultados que no se hayan
-> recolectado.
+1. [x] Preparar el kit del pre-test (`Descargas/KIT_PRETEST_ANEXO5/`): cuestionario del Anexo 5 (27 ítems, Likert 1–5) con consentimiento informado, guía de aplicación y análisis en SPSS, y plantilla de tabulación con baremos. Si existe el texto del Anexo 5 aprobado en el proyecto, se usa ese texto exacto.
+2. [ ] S11 (02/11): presentar al asesor el instrumento, la duración del piloto y la prueba estadística propuesta (Shapiro-Wilk por ser n < 50; luego t de Student para muestras relacionadas o Wilcoxon).
+3. [ ] Si el asesor lo pide, validar el instrumento por juicio de 3 expertos y calcular el alfa de Cronbach con los datos del pre-test.
+4. [ ] Pre-test (Anexo 5) a los 15 colaboradores **antes** de darles acceso a SIGECAL, con fecha y código seudónimo por participante.
+5. [ ] Piloto con la duración y los participantes aprobados por el asesor.
+6. [ ] Post-test: Anexo 5 y Anexo 4, con el mismo código seudónimo.
+7. [ ] Tabulación en SPSS; tablas y gráficos de resultados por dimensión en el capítulo IV; contraste de la hipótesis general y de las 3 específicas.
+
+> El calendario es ajustado: con el pre-test el 03–04/11, el post-test solo
+> puede aplicarse cuando termine el piloto. Si no hay tiempo para un piloto real
+> antes del 09/11, hay que plantearlo al asesor en S11. Nunca se completan
+> respuestas ni resultados que no se hayan recolectado.
 
 ## 7. Sprints hasta la sustentación
 
 | Sprint | Fechas   | Documento                                                                                                                                        | Software                                                                                                         |
 | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| T1     | 01–02/11 | Capturas, CU02 de inicio de sesión, 4 roles y tablas APA                                                                                         | Levantar el entorno, recorrer los 8 flujos y capturar                                                            |
-| T2     | 03–08/11 | Realinear casos de uso y diagramas; BD de 10 tablas; recorte para Turnitin; capítulo III; estadística, discusión, conclusiones y recomendaciones | Soporte al piloto: cuentas individuales, prueba en teléfono real, registro de incidencias; pedir rangos a Tacama |
+| T1 ✅  | 01/11    | Capturas, CU02 de inicio de sesión, 4 roles y tablas APA                                                                                         | Levantar el entorno, recorrer los 8 flujos y capturar                                                            |
+| T2a ✅ | 01/11    | Gráfico 9 con 4 roles; capítulo III con población y muestra; recorte del capítulo II para Turnitin; kit del pre-test                             | —                                                                                                                |
+| T2b    | 03–08/11 | CU003–CU008, BD de 10 tablas y RF ✅ (01/11). Falta: pre-test y piloto; estadística, discusión, conclusiones y recomendaciones; revisión en Word | Soporte al piloto: cuentas individuales, prueba en teléfono real, registro de incidencias; pedir rangos a Tacama |
 | T3     | 09–15/11 | Correcciones del asesor, anexos, inconsistencias restantes, índices y pre-Turnitin                                                               | Integrar a `develop`/`main`; decidir entre demo local estable o despliegue (Sprint 8)                            |
 | T4     | 16–22/11 | Versión final, Turnitin en 2 bloques, diapositivas y ensayo                                                                                      | Congelar la versión, preparar datos `DEMO` para la demostración y respaldar                                      |
